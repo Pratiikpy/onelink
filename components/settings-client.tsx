@@ -66,7 +66,7 @@ export function SettingsClient() {
           <ShieldCheck className="size-3.5" />
           Testnet configuration
         </Pill>
-        <h1 className="mt-3 text-4xl font-black">Launch settings</h1>
+        <h1 className="mt-3 text-4xl font-black tracking-tighter2">Launch settings</h1>
         <p className="mt-2 text-white/52">Use these values when deploying and demoing OneLink.</p>
       </div>
 

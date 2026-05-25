@@ -143,12 +143,12 @@ export function CreateLinkForm() {
             Arc Testnet
           </Pill>
           <div>
-            <h1 className="max-w-2xl text-balance text-5xl font-black leading-[0.95] tracking-normal text-white sm:text-6xl">
+            <h1 className="max-w-2xl text-balance text-5xl font-black leading-[0.95] tracking-tighter2 text-white sm:text-6xl">
               One link. Any USDC. Instantly on Arc.
             </h1>
-            <p className="mt-4 max-w-xl text-base font-medium leading-7 text-white/55">
-              Create a clean USDC payment link. Payers can settle directly on Arc Testnet, then
-              bridge into Arc through Circle App Kit when they start from another chain.
+            <p className="mt-5 max-w-xl text-base font-medium leading-7 text-white/55">
+              A clean USDC payment link. Payers settle directly on Arc Testnet, or bridge in from
+              Base, Ethereum, or Arbitrum through Circle App Kit — in a single tap.
             </p>
           </div>
         </div>

@@ -115,7 +115,7 @@ export function DashboardClient() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <Pill>Receiver dashboard</Pill>
-          <h1 className="mt-3 text-4xl font-black text-white">Your collection links</h1>
+          <h1 className="mt-3 text-4xl font-black tracking-tighter2 text-white">Your collection links</h1>
           <p className="mt-2 text-white/52">Status pulled from on-chain settlement and local cache.</p>
         </div>
         <Button

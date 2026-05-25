@@ -9,19 +9,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#050507",
-        panel: "#101016",
-        panel2: "#171523",
-        line: "rgba(255,255,255,0.11)",
-        violet: "#8f84ff",
-        mint: "#55d79a",
-        ash: "#a4a1ad",
+        // Surface
+        ink: "#08090C",
+        panel: "#13141B",
+        panel2: "#1B1D27",
+        line: "rgba(255,255,255,0.08)",
+
+        // Brand / accent
+        violet: "#7C5CFF",
+        "violet-soft": "#A89BFF",
+        cyan: "#5AE3FF",
+        mint: "#34D399",
+        amber: "#FBBF24",
+        ash: "#9CA1B0",
       },
       boxShadow: {
-        glow: "0 24px 80px rgba(143, 132, 255, 0.2)",
+        // Subtle violet glow, Apple-restrained — used only on primary CTAs.
+        glow: "0 14px 40px -16px rgba(124, 92, 255, 0.55)",
+        "glow-sm": "0 8px 24px -12px rgba(124, 92, 255, 0.5)",
+        hairline: "inset 0 1px 0 rgba(255,255,255,0.06)",
       },
       fontFamily: {
         sans: [
+          "var(--font-geist-sans)",
           "-apple-system",
           "BlinkMacSystemFont",
           "SF Pro Display",
@@ -30,6 +40,10 @@ const config: Config = {
           "system-ui",
           "sans-serif",
         ],
+      },
+      letterSpacing: {
+        tightish: "-0.012em",
+        tighter2: "-0.025em",
       },
     },
   },
