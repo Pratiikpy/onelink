@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.next
+node_modules
+out
+dist
+cache
+coverage
+broadcast
+contracts/cache
+contracts/out
+*.log
+tsconfig.tsbuildinfo
+.DS_Store
