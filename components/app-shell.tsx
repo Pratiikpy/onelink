@@ -4,6 +4,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ArrowDownToLine, BarChart3, Home, Settings, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Footer } from "@/components/footer";
 import { Logo } from "@/components/logo";
 import { ARC_FAUCET_URL } from "@/lib/arc";
 import { HAS_CONTRACT } from "@/lib/contracts";
@@ -47,7 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {!HAS_CONTRACT && (
         <div className="-mx-4 border-b border-amber-400/20 bg-amber-400/10 px-4 py-2 text-center text-[11px] font-bold tracking-wide text-amber-100/90 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-          Demo mode · payments are simulated. Deploy the contract to enable real settlement.
+          Preview mode · settlements are simulated. Real USDC isn&apos;t moved on this build.
         </div>
       )}
 
@@ -77,6 +78,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <section className="min-w-0">{children}</section>
       </div>
+
+      <Footer />
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink/88 px-3 py-2 backdrop-blur-xl lg:hidden">
         <div className="mx-auto grid max-w-md grid-cols-3 gap-1">

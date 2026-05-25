@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Check, Copy, ExternalLink, RefreshCw, WalletCards, X } from "lucide-react";
+import { Check, Copy, ExternalLink, Loader2, RefreshCw, WalletCards, X } from "lucide-react";
 import { Button, Card, Pill } from "@/components/ui";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { listPaymentLinks, updatePaymentStatus } from "@/lib/storage";
 import type { PaymentLink } from "@/lib/payments";
 import { shortAddress, statusTone } from "@/lib/payments";
@@ -21,6 +22,8 @@ export function DashboardClient() {
   const [links, setLinks] = useState<PaymentLink[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState<PaymentLink | null>(null);
   const [error, setError] = useState("");
   const { copy } = useCopy();
 
@@ -33,13 +36,17 @@ export function DashboardClient() {
   }
 
   const refresh = useCallback(async () => {
-    setLinks(await listPaymentLinks(address));
+    setRefreshing(true);
+    try {
+      setLinks(await listPaymentLinks(address));
+    } finally {
+      setRefreshing(false);
+    }
   }, [address]);
 
-  async function cancelLink(link: PaymentLink) {
-    if (!confirm(`Cancel "${link.memo}" for ${link.amountUSDC} USDC? This can't be undone.`)) {
-      return;
-    }
+  async function performCancel() {
+    if (!confirmTarget) return;
+    const link = confirmTarget;
     setError("");
     setCancellingId(link.id);
     try {
@@ -55,9 +62,11 @@ export function DashboardClient() {
         });
       }
       await updatePaymentStatus(link.id, "cancelled");
+      setConfirmTarget(null);
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not cancel link.");
+      setConfirmTarget(null);
     } finally {
       setCancellingId(null);
     }
@@ -107,10 +116,19 @@ export function DashboardClient() {
         <div>
           <Pill>Receiver dashboard</Pill>
           <h1 className="mt-3 text-4xl font-black text-white">Your collection links</h1>
-          <p className="mt-2 text-white/52">Simple status tracking from local cache/Supabase.</p>
+          <p className="mt-2 text-white/52">Status pulled from on-chain settlement and local cache.</p>
         </div>
-        <Button variant="secondary" onClick={refresh}>
-          <RefreshCw className="size-4" />
+        <Button
+          variant="secondary"
+          onClick={refresh}
+          disabled={refreshing}
+          aria-label="Refresh links"
+        >
+          {refreshing ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <RefreshCw className="size-4" />
+          )}
           Refresh
         </Button>
       </div>
@@ -151,7 +169,8 @@ export function DashboardClient() {
 
         {links.map((link) => {
           const payPath = `/pay/${link.slug}`;
-          const payUrl = typeof window === "undefined" ? payPath : `${window.location.origin}${payPath}`;
+          const payUrl =
+            typeof window === "undefined" ? payPath : `${window.location.origin}${payPath}`;
           const canCancel = link.status === "unpaid" || link.status === "processing";
           return (
             <Card key={link.id} className="p-4">
@@ -184,11 +203,11 @@ export function DashboardClient() {
                   <Button
                     variant="secondary"
                     disabled={!canCancel || cancellingId === link.id}
-                    onClick={() => cancelLink(link)}
+                    onClick={() => setConfirmTarget(link)}
                     aria-label="Cancel link"
                   >
                     {cancellingId === link.id ? (
-                      <RefreshCw className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin" />
                     ) : (
                       <X className="size-4" />
                     )}
@@ -204,6 +223,22 @@ export function DashboardClient() {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={confirmTarget !== null}
+        title="Cancel this payment link?"
+        body={
+          confirmTarget
+            ? `“${confirmTarget.memo}” for ${confirmTarget.amountUSDC} USDC will be cancelled on Arc. Anyone who tries to pay it after this will be blocked. This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Cancel link"
+        cancelLabel="Keep it open"
+        tone="danger"
+        busy={cancellingId !== null}
+        onConfirm={performCancel}
+        onCancel={() => setConfirmTarget(null)}
+      />
     </div>
   );
 }

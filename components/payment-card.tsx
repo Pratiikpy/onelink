@@ -37,16 +37,27 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
         <Pill className={statusTone(link.status)}>{link.status}</Pill>
       </div>
 
-      <div className="flex items-center justify-center rounded-2xl border border-white/8 bg-white p-4">
-        <QRCodeSVG
-          value={paymentUrl}
-          size={168}
-          bgColor="#ffffff"
-          fgColor="#050507"
-          level="M"
-          marginSize={1}
-        />
-      </div>
+      {link.status === "unpaid" || link.status === "processing" ? (
+        <div className="flex items-center justify-center rounded-2xl border border-white/8 bg-white p-4">
+          <QRCodeSVG
+            value={paymentUrl}
+            size={168}
+            bgColor="#ffffff"
+            fgColor="#050507"
+            level="M"
+            marginSize={1}
+          />
+        </div>
+      ) : (
+        <div className="grid place-items-center rounded-2xl border border-white/8 bg-white/[0.03] p-6 text-center">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-white/45">
+            {link.status === "paid" ? "Settled" : link.status === "cancelled" ? "Cancelled" : link.status}
+          </p>
+          <p className="mt-1 text-sm font-semibold text-white/55">
+            This link is no longer accepting payments.
+          </p>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-white/8 bg-black/24 p-4">
         <p className="text-sm font-semibold text-white/45">Memo</p>

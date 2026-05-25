@@ -2,6 +2,31 @@
   "name": "onelink-collect",
   "version": "0.1.0",
   "private": true,
+  "description": "Mobile-first USDC payment links that settle on Arc Testnet, with Circle App Kit bridging from any chain.",
+  "homepage": "https://onelink-mauve-nu.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pratiikpy/onelink.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Pratiikpy/onelink/issues"
+  },
+  "author": "Pratik <prtk8899@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "usdc",
+    "arc",
+    "circle",
+    "cctp",
+    "stablecoin",
+    "payments",
+    "next.js",
+    "wagmi",
+    "foundry"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -6,7 +6,7 @@ import { BadgeCheck, Check, Copy, ExternalLink, ReceiptText } from "lucide-react
 import { Button, Card, Pill } from "@/components/ui";
 import { ARC_EXPLORER_URL, explorerTx, isDemoTxHash } from "@/lib/arc";
 import type { PaymentLink } from "@/lib/payments";
-import { paymentMethodLabel, shortAddress, statusTone } from "@/lib/payments";
+import { formatTimestamp, paymentMethodLabel, shortAddress, statusTone } from "@/lib/payments";
 import { getPaymentLinkById } from "@/lib/storage";
 import { useCopy } from "@/lib/share";
 
@@ -74,7 +74,7 @@ export function ReceiptClient({ id }: { id: string }) {
             ["Payer", shortAddress(link.payerWallet)],
             ["Network", "Arc Testnet"],
             ["Method", paymentMethodLabel(link.paymentMethod)],
-            ["Created", new Date(link.createdAt).toLocaleString()],
+            ["Created", formatTimestamp(link.createdAt)],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between gap-4 border-b border-white/8 pb-3">
               <span className="text-sm font-bold text-white/42">{label}</span>
