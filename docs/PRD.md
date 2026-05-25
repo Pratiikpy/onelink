@@ -1,15 +1,14 @@
 # OneLink Collect — Product Requirements
 
-> Working doc for design + product. Use this to scope a high-fidelity Figma
-> prototype. Engineering reference is the live build at
-> [onelink-mauve-nu.vercel.app](https://onelink-mauve-nu.vercel.app) and the
-> source in this repo.
+> Product brief for design handoff. Use this to scope a high-fidelity Figma
+> prototype. The design system, screen layouts, components, colors, and
+> typography are **for the designer to define from scratch** — this doc only
+> describes *what the product does* and *why*.
 
 | | |
 |---|---|
-| **Status** | v1 — design polish before public launch |
+| **Status** | v1 — pre-launch |
 | **Owner** | Pratik (@Pratiikpy) |
-| **Stack** | Next.js 15 · Tailwind · wagmi + viem · Circle App Kit · Foundry · Supabase |
 | **Network** | Arc Testnet (chain id 5042002) — USDC as native gas |
 | **Last updated** | 2026-05-25 |
 
@@ -18,19 +17,21 @@
 ## 1 · Problem & opportunity
 
 **The problem.** Independent designers, freelancers, and small teams who get
-paid in USDC have no clean way to send a *single shareable link* the way Stripe
-Payment Links works for cards. Today they end up DMing their wallet address,
-hoping the payer is on the right chain, and chasing screenshots for receipts.
+paid in USDC have no clean way to send a *single shareable link* the way
+Stripe Payment Links works for cards. Today they end up DMing their wallet
+address, hoping the payer is on the right chain, and chasing screenshots for
+receipts.
 
 **Why now.**
+
 - USDC is the largest stablecoin and Arc (Circle's purpose-built chain) makes
   it the native gas token — sub-second settlement, no ETH-for-gas friction.
-- Circle App Kit (GA Aug 2025) ships a single SDK that can bridge USDC from
-  any chain into Arc via CCTP and spend across chains via Unified Balance.
-- Wallet UX in 2026 is dramatically better than 2022 — connecting with a phone
-  + QR is now a 5-second flow on every major wallet.
+- Circle App Kit (GA Aug 2025) ships a single SDK that bridges USDC from
+  any chain into Arc via CCTP and spends across chains via Unified Balance.
+- Wallet UX in 2026 is dramatically better than 2022 — connecting with a
+  phone + QR is now a 5-second flow on every major wallet.
 
-**The opportunity.** The "Stripe Payment Link, but for USDC on Arc." A clean,
+**The opportunity.** *Stripe Payment Links, but for USDC on Arc.* A clean,
 mobile-first, copy-and-paste payment link with on-chain settlement and a
 verifiable Arcscan receipt.
 
@@ -42,260 +43,185 @@ verifiable Arcscan receipt.
 
 | Audience | Use case | What they need |
 |---|---|---|
-| **Independent designer / dev** *(primary)* | "Pay me $250 for the branding work" | Create a link in <30s, paste it in iMessage / Slack / Twitter, get a receipt. |
+| **Independent designer / dev** *(primary)* | "Pay me 250 USDC for the branding work" | Create a link in under 30 seconds, paste it in iMessage / Slack / Twitter, get a verifiable receipt. |
 | **Crypto-native team / DAO** | Recurring contributor payouts | Bulk-link generation, CSV export, multi-recipient. *(v2)* |
-| **Web3 founder collecting beta sub fees** | Small, ad-hoc charges | Public-facing link, no wallet setup friction for payer. |
+| **Web3 founder collecting beta sub fees** | Small, ad-hoc charges | Public-facing link, zero wallet-setup friction for the payer. |
 | **The payer** *(secondary but critical)* | "I owe Pratik USDC, here's a link" | Mobile-first flow that works on any chain they have funds on. |
 
 ### Anti-personas (not designing for)
 
 - High-volume merchants (no API, no inventory, no SKUs in v1).
-- Cards/ACH/fiat payers (this is USDC-only by design).
-- Custodial users (no key management on our side).
+- Cards / ACH / fiat payers — USDC-only by design.
+- Custodial users — we never touch keys on our side.
 
 ---
 
 ## 3 · Core promise — what shipping looks like
 
-1. **Create a link in <30 seconds** — amount + memo + (optional) expiry. Recipient is the wallet I'm connected with by default.
-2. **Pay in <30 seconds** — open link on mobile, connect wallet, tap pay. If my USDC is on Base/Ethereum/Arbitrum Sepolia, CCTP bridges it in under one tap.
-3. **Receipt in <5 seconds** — on-chain settlement, Arcscan link, status = `paid`.
-4. **Track everything** — a creator dashboard with all my links, copy/share/cancel actions.
+A successful v1 satisfies all four:
 
-If any of these breaks, we don't ship.
+1. **Create a link in under 30 seconds** — amount + memo + (optional) expiry. Recipient defaults to the connected wallet.
+2. **Pay in under 30 seconds** — open the link on a phone, connect a wallet, tap pay. If the payer's USDC lives on a non-Arc chain, CCTP bridges it in via a single tap.
+3. **Receipt in under 5 seconds** — on-chain settlement, Arcscan transaction link, status flips to paid.
+4. **Track everything** — a creator surface showing every link the user has created, with copy / share / cancel actions per link.
+
+If any of those four breaks for a non-trivial percentage of users, v1 isn't ready.
 
 ---
 
 ## 4 · Primary user flows
 
+The designer should treat each flow as a complete journey. The number of
+intermediate screens and how they're composed is a design call.
+
 ### Flow A · Create a link
 
 ```
-Connect wallet → Fill amount + memo + optional expiry → Sign createLink tx
-              → Land on /pay/[slug] (the link)
-              → Tap Copy or Share → Send via iMessage/Slack/Twitter
+Creator lands on the product → connects a wallet → fills amount + memo + (optional) expiry
+       → confirms the on-chain createLink transaction
+       → arrives at a shareable URL for that specific link
+       → copies or natively shares the URL
 ```
 
-| Step | What we show | Edge cases |
-|---|---|---|
-| Connect | Generic wallet sheet (RainbowKit) | Wallet not installed → install prompt |
-| Form | Amount (USDC, 6 decimals), Recipient (defaults to connected wallet), Memo, Expiration (optional) | Amount > 1M USDC blocked, expiry-in-past blocked, recipient must be checksum-valid |
-| Sign | Wallet sheet for `createLink` | User rejects → inline error, form stays filled |
-| Result | `/pay/[slug]` with QR + status `unpaid` | Demo mode (no contract): no tx, just localStorage write |
+**Decisions the creator makes.**
+
+- Amount in USDC (6-decimal precision, hard-capped at 1,000,000 per link).
+- Recipient address (defaults to the connected wallet; can be overridden).
+- Memo (free-text, what the link is for; required, non-empty).
+- Expiry (optional; if set, must be in the future).
+
+**Failure modes the design must handle.**
+
+- Wallet not connected → primary action is blocked with a clear, friendly call to connect.
+- Invalid input (negative amount, too-large amount, past expiry, malformed recipient) → inline validation, the form stays filled in.
+- User rejects the wallet signature → return to the form with an explanatory message; nothing is lost.
+- Network / RPC failure → user-recoverable error with retry.
 
 ### Flow B · Pay a link
 
 ```
-Open /pay/[slug] from a shared link → Connect wallet → Choose path:
-  ├─ Pay on Arc        (if already have USDC on Arc)
-  ├─ Bridge & pay      (from Base/Ethereum/Arbitrum Sepolia)
-  └─ Unified Balance   (Circle Gateway — spends across chains)
-→ Approve → Settle → Receipt
+Payer opens the shared link on a phone → connects a wallet
+       → picks a settlement path:
+           a) Pay directly on Arc Testnet (already holds USDC there)
+           b) Bridge & pay — from Base / Ethereum / Arbitrum Sepolia via CCTP
+           c) Pay from a unified balance held across multiple chains (Gateway)
+       → approves spend → settles → sees a receipt with the on-chain tx
 ```
 
-| Step | What we show | Edge cases |
-|---|---|---|
-| Land | Amount, memo, receiver shortAddress, QR code, network = Arc Testnet | Link not found → /not-found  ·  Link expired → red banner, buttons disabled  ·  Link cancelled → red banner, buttons disabled  ·  Link already paid → green banner + "View receipt" |
-| Pay flow | A 4-step row: `Approve · Move USDC · Settle on Arc · Receipt` showing active/done/failed | Insufficient USDC → "need 12.34 more USDC on Arc" hint + faucet link  ·  Wrong chain → amber hint, switchChain on tap |
-| Done | `status = paid`, tx hash, Arcscan link | Demo mode tx hash is `0xDEM0…` — receipt shows amber "no on-chain transaction" badge |
+**Decisions the payer makes.**
+
+- Which settlement path. The product proposes the cheapest / fastest path for the funds they actually have.
+- Which wallet to connect. Standard wallet-connect UX; not part of our product surface.
+
+**Failure modes the design must handle.**
+
+- Link does not exist → friendly not-found state with a way back to the product.
+- Link is already paid → show the receipt instead of the pay form; no double-payment possible.
+- Link is expired → blocked, with the creator's identity exposed so the payer can reach out.
+- Link was cancelled by the creator → blocked, with copy explaining the link is no longer accepting payment.
+- Payer's wallet is on the wrong chain → prompt to switch with a single tap; the product handles the switch.
+- Payer has insufficient USDC on the destination chain → show a clear deficit (e.g. "you need X more USDC") and offer a faucet link (testnet) or the bridge path.
+- Bridge step fails / times out → step-level error surfaced; retryable.
+- Transaction rejected in wallet → return to the pay screen with the link still actionable.
 
 ### Flow C · Track + manage links
 
 ```
-Dashboard → See all links by status → Per link:
-  ├─ Copy link URL
-  ├─ Open the pay page
-  ├─ Cancel (if unpaid)
-  └─ View receipt
+Creator opens the dashboard → connects their wallet
+       → sees a list of every link they have created, with status
+       → per link can: copy the URL, open the pay page, cancel (if unpaid),
+         or open the receipt
+       → KPI roll-up across all links
 ```
 
-| Step | What we show | Edge cases |
-|---|---|---|
-| Empty (no wallet) | Card prompting Connect | n/a |
-| Empty (no links) | Card prompting "Create your first link" | n/a |
-| List | Each link: amount, memo, status pill, receiver short address + 4 action buttons | If link is paid/cancelled → cancel disabled |
-| Cancel | Confirm modal (custom, not `window.confirm`) explaining it's irreversible | If on wrong chain: switch first, then sign |
+**Decisions the creator makes.**
+
+- Whether to cancel a still-open link (irreversible, on-chain).
+- Whether to share a still-open link to a different audience.
+
+**Failure modes the design must handle.**
+
+- Wallet not connected → there is nothing to show; design a clear connect prompt instead of empty zeros.
+- Wallet connected but no links yet → a clear first-link onboarding state, not silent zeros.
+- Cancel attempted on a link that has just been paid in a different tab → graceful error, refresh the list.
+- Network/RPC failure during cancel → user-recoverable error with retry.
 
 ---
 
-## 5 · Screens & states (designer's checklist)
+## 5 · Functional states the design must cover
 
-### 5.1 · App chrome (every page)
+Per logical entity. *How* these are represented visually is the designer's
+call, but every state listed here must be representable somewhere in the UI.
 
-- **Top bar**: logo + DEMO pill (when no contract) · Faucet button · Connect Wallet
-- **Left rail (≥lg)**: Create · Dashboard · Settings (active item highlighted)
-- **Bottom dock (<lg)**: same 3 tabs, sticky bottom, icon + label
-- **Demo banner** (when `!HAS_CONTRACT`): full-width amber strip — "Preview mode · settlements are simulated…"
-- **Footer**: brand · nav · year · MIT note · chain id reference
+### 5.1 · A payment link
 
-### 5.2 · Create link (`/`)
+A link is always in exactly one state. The design should make it obvious which one.
 
-| State | What's on screen |
+| State | Meaning | What the design conveys |
+|---|---|---|
+| `unpaid` | Created, nobody has paid yet | Actionable — share + pay flows are available |
+| `processing` | A pay attempt is in flight | In-progress, not yet final |
+| `paid` | Settlement complete on Arc | Sealed, success, receipt is the destination |
+| `expired` | Past its expiry, nobody can pay it now | Read-only, with a clear reason |
+| `cancelled` | The creator voided it before it was paid | Read-only, with a clear reason |
+| `failed` | A pay attempt failed and was not retried | Recoverable — payer can try again |
+
+### 5.2 · The product itself
+
+| Mode | Meaning |
 |---|---|
-| Wallet not connected | Hero + form is rendered but disabled · CTA reads "Connect wallet to create" |
-| Wallet connected | Form active · CTA reads "Create payment link" |
-| Submitting | CTA shows spinner + label stays |
-| Validation error | Inline red banner above CTA (specific message — see Flow A) |
-| Created | Route to `/pay/[slug]` |
+| **Live mode** | The on-chain contract is configured. All flows move real USDC. |
+| **Preview mode** | The contract is not configured (e.g. before deploy, or for hackathon previews). All flows are simulated end-to-end; receipts are clearly marked as not on-chain. The design must make this distinction unmistakable so a visitor never confuses a simulated receipt with a real one. |
 
-**Sidebar (right column ≥lg).** *Why payers love it* card with 4 benefit rows + *Testnet tip* card.
+### 5.3 · Wallet connection
 
-### 5.3 · Pay link (`/pay/[slug]`)
-
-| State | Notes |
+| State | Meaning |
 |---|---|
-| Loading | Centered card with spinner |
-| Not found | Centered card · "Link not found" · CTA "Create a link" |
-| Unpaid (default) | Left col: amount + QR + memo + actions (Copy / Share / Receipt). Right col: balance + 3 settlement CTAs + 4-step flow card |
-| Wallet not connected | All CTAs disabled · primary reads "Connect wallet to pay" |
-| Insufficient USDC on Arc | Pay button disabled · "Need 12.34 more USDC on Arc" · amber hint with faucet link |
-| Wrong chain | Amber hint: "Your wallet is on a different chain. Pay-on-Arc will prompt a chain switch before sending." |
-| Expired | All pay buttons disabled · red banner: "This link is expired." |
-| Cancelled | All pay buttons disabled · red banner: "The creator cancelled this payment link. Reach out to them for a new one." |
-| Paid (and not demo) | Primary CTA: "Already paid" · "View on Arcscan" link · QR replaced with a "Settled" card |
-| Paid in demo mode | Same as paid but with amber "Demo settlement · no on-chain transaction" note. Arcscan link hidden. |
-| Submitting | 4-step flow card cycles through `idle → active → done` per step. Per-step icon swap. |
-| Failed step | Step icon turns red · error banner under buttons |
-
-**4-step flow card states (designed once, reused).**
-- `idle` (default ash)
-- `active` (violet spinner)
-- `done` (mint check)
-- `failed` (red X)
-
-### 5.4 · Receipt (`/receipt/[id]`)
-
-| State | Notes |
-|---|---|
-| Loading | Centered spinner card |
-| No receipt | Card with empty state · CTA "Create a link" |
-| Paid (real settlement) | Violet header band with big amount + check icon · 6 metadata rows · Copy + Arcscan buttons |
-| Paid (demo) | Same but with amber "demo settlement" badge above the buttons · Arcscan button disabled |
-| Expired / Cancelled / Failed | Same shell but the status pill carries the tone color · Arcscan disabled if no tx |
-
-### 5.5 · Dashboard (`/dashboard`)
-
-| State | Notes |
-|---|---|
-| Not connected | Single centered card · wallet icon · Connect button · secondary "Or create a link first" |
-| Empty (connected) | Centered card · "No links yet" · CTA "Create link" |
-| Refreshing | Refresh button spinner |
-| Populated | 3 KPI cards (Total collected / Links / Paid) + list of link cards |
-| Cancel confirm | Custom modal · title "Cancel this payment link?" · body explains irreversibility · primary danger button "Cancel link" · secondary "Keep it open" |
-| Cancelling | Per-row spinner replaces the X icon · modal shows "Working…" |
-
-**Each link row.** Amount + status pill + memo + receiver shortAddress · 4-button column (Copy / Open / Cancel / Receipt).
-
-### 5.6 · Settings (`/settings`)
-
-| State | Notes |
-|---|---|
-| Always | Page header + 4 cards: Environment health · Wallet · Network reference · Faucet/Arcscan launchers |
-| Env health all-green | Top-right pill reads "Ready" (mint) |
-| Env health missing | Top-right pill reads "Action needed" (amber). Each row has a check or X plus a friendly action hint |
-
-### 5.7 · System pages
-
-- **`/not-found` (any unknown URL)** — branded 404 card with compass icon
-- **`/error` (runtime crash)** — branded crash card with "Try again" + "Home" + optional digest ID
-- **Confirm dialog (modal)** — accessible `<dialog>` with title, body, danger or primary action
+| `not connected` | No wallet attached. Creation and payment are gated. |
+| `connected, correct chain` | Wallet on Arc Testnet — primary actions are immediately actionable. |
+| `connected, wrong chain` | Wallet on a different chain — the product offers a one-tap switch. |
 
 ---
 
 ## 6 · Feature list (prioritized)
 
-Each row is a complete vertical slice — engineering + design + copy.
+Each row is a complete vertical slice — design + engineering + copy.
 
 | # | Feature | Priority | Notes |
 |---|---|---|---|
-| 1 | Create USDC payment link | **P0** | Amount, recipient (default self), memo, optional expiry; on-chain `createLink` + offchain metadata |
-| 2 | Pay a link directly on Arc | **P0** | `approve` + `payLink`; 4-step UI |
-| 3 | Bridge & pay from Base / Ethereum / Arbitrum Sepolia | **P0** | One button per source chain via Circle App Kit + CCTP |
-| 4 | Pay with Circle Unified Balance | **P0** | Single call across chains via Gateway |
-| 5 | Receipt with Arcscan tx | **P0** | Sealed, shareable URL; copy + Arcscan launcher |
-| 6 | QR code on pay screen | **P0** | Native QR for cross-device handoff |
-| 7 | Native share sheet (mobile) | **P0** | Web Share API with clipboard fallback |
-| 8 | Creator dashboard | **P0** | List, KPIs, copy / open / cancel / receipt |
-| 9 | Cancel link (creator-only, unpaid-only) | **P0** | On-chain `cancelLink` + sealed state |
-| 10 | Demo mode for previewing without a contract | **P0** | Visually unmistakable banner + `0xDEM0…` tx hashes; production-safety throw if `NEXT_PUBLIC_ALLOW_DEMO` not opted-in |
-| 11 | Environment health panel on Settings | **P1** | "Action needed" pill turns to "Ready" when contract / Supabase / WalletConnect / app URL all set |
-| 12 | Pre-flight USDC balance check | **P1** | "Need X more USDC on Arc" hint + faucet link |
-| 13 | Pre-flight chain hint | **P1** | Amber message + auto-switch on Pay tap |
-| 14 | Locale-independent timestamps | **P2** | `Intl.DateTimeFormat("en-US")` pinned format |
-| 15 | OG image + Apple touch icon + PWA manifest | **P2** | Dynamic via Next.js `app/*` routes |
-| 16 | SEO basics (sitemap, robots, noindex on private routes) | **P2** | private = pay / receipt / dashboard |
-| 17 | Bulk link generation + CSV import | **V2** | For DAO / team payouts |
-| 18 | Webhooks for paid links | **V2** | "Notify Slack when this link is paid" |
-| 19 | Multiple recipients (split payment) | **V2** | Sender pays once, contract splits |
-| 20 | Native mainnet support | **V2** | When Arc Mainnet launches; promote out of Testnet |
+| 1 | Create USDC payment link | **P0** | Amount, recipient (default self), memo, optional expiry. On-chain `createLink` + off-chain metadata. |
+| 2 | Pay a link directly on Arc | **P0** | Approve + settle. |
+| 3 | Bridge & pay from Base / Ethereum / Arbitrum Sepolia | **P0** | One action per source chain via Circle App Kit + CCTP. |
+| 4 | Pay with Circle Unified Balance | **P0** | Single call across chains via Circle Gateway. |
+| 5 | Receipt with Arcscan transaction | **P0** | Sealed, shareable URL with verifiable on-chain proof. |
+| 6 | QR for cross-device handoff | **P0** | Designer's call where it lives; product needs the payer-on-mobile flow to work. |
+| 7 | Native share sheet (mobile) | **P0** | Web Share API with clipboard fallback. |
+| 8 | Creator dashboard | **P0** | List, KPIs, copy / open / cancel / receipt per link. |
+| 9 | Cancel link (creator-only, unpaid-only) | **P0** | On-chain `cancelLink`. Irreversible. Confirm before signing. |
+| 10 | Preview mode for unconfigured deploys | **P0** | Visually unmistakable preview-mode signaling everywhere a "payment" surface appears. |
+| 11 | Environment health on a settings surface | **P1** | "Ready" vs "action needed" at-a-glance — for the operator, not the end user. |
+| 12 | Pre-flight USDC balance check | **P1** | "You need X more USDC on Arc" with a one-tap faucet link (testnet). |
+| 13 | Pre-flight chain hint + auto-switch | **P1** | Detect wrong chain, switch automatically when the payer taps pay. |
+| 14 | Bulk link generation + CSV import | **V2** | DAO / team payouts. |
+| 15 | Webhooks for paid links | **V2** | "Notify Slack when this link is paid." |
+| 16 | Multiple recipients / split payment | **V2** | One link → contract splits across N recipients. |
+| 17 | Mainnet support | **V2** | When Arc Mainnet launches. |
 
-P0 = in v1 today. P1/P2 = polish before public launch. V2 = explicitly out of scope for the first version.
+P0 = in v1. P1 = polish before public launch. V2 = explicitly out of scope.
 
 ---
 
-## 7 · Brand foundation
+## 7 · Brand direction (for the designer to interpret)
 
-The current build *is* the visual system. Designer should treat this as the
-starting point and refine, not redesign from scratch.
+These are constraints, not solutions.
 
-### 7.1 · Color tokens (`tailwind.config.ts`)
-
-| Token | Hex | Use |
-|---|---|---|
-| `ink` | `#08090C` | App background |
-| `panel` | `#13141B` | Surface fills (rarely needed — most cards use `.glass`) |
-| `panel2` | `#1B1D27` | Elevated surface |
-| `line` | `rgba(255,255,255,0.08)` | Hairline borders |
-| `violet` | `#7C5CFF` | Primary accent — buttons, focus rings, highlights |
-| `violet-soft` | `#A89BFF` | Hover / lighter accent |
-| `cyan` | `#5AE3FF` | Reserved for highlight glows (sparingly) |
-| `mint` | `#34D399` | Success — paid status, env-health checks |
-| `amber` | `#FBBF24` | Warning — demo banner, expired/insufficient hints |
-| `ash` | `#9CA1B0` | Tertiary text |
-
-**Text opacity ladder** on white `#F5F4FF`:
-`100% → 85% → 65% → 45% → 38% → 25%`. Use these consistently for hierarchy.
-
-### 7.2 · Type
-
-- **Family:** `Geist Sans` (loaded via `geist` npm package, variable font).
-- **Display headings** (≥4xl): `font-black` (900), `tracking-tighter2` (−0.025em).
-- **Section headings**: `font-bold` (700), `tracking-tight` or default.
-- **Eyebrow labels**: `font-black uppercase tracking-[0.16em]`, all-caps, used sparingly.
-- **Body**: `font-medium` (500) at 14–16px, leading-6 to leading-7.
-- **Mono**: not used in v1 (no inline code in product surfaces).
-
-### 7.3 · Radius, spacing, motion
-
-| Token | Value | Use |
-|---|---|---|
-| Card radius | `rounded-[28px]` | Hero cards |
-| Sub-card radius | `rounded-2xl` (16px) | Buttons, inputs, inner tiles |
-| Pill radius | `rounded-full` | Status pills, eyebrow tags |
-| Icon container | `size-12` or `size-14`, `rounded-2xl`, 30% accent border + 10% fill | Pay/receipt/error icons |
-| Shadow | `shadow-glow` (subtle violet) — only on primary CTA | |
-| Motion | 200ms ease for hover, 150ms for state changes | No big motion choreography in v1 |
-
-### 7.4 · Background
-
-Single subtle radial-gradient violet glow at the top, then uniform dark.
-Not two layered gradients, not a glass-y mesh. Restraint.
-
-```css
-background:
-  radial-gradient(900px circle at 50% -10%, rgba(124,92,255,0.10), transparent 60%),
-  #08090c;
-```
-
-### 7.5 · Components in `components/ui.tsx`
-
-- `<Card>` — `.glass` + 28px radius + padding
-- `<Field>` — label + child + optional hint
-- `<Input>` / `<Textarea>` — 56px tall, 16px radius, focus ring violet
-- `<Button>` — primary (violet bg + glow) / secondary (white/8 + border) / ghost
-- `<Pill>` — violet-on-violet eyebrow tag
-
-These are the only building blocks. New screens should compose from these, not introduce new primitives.
+- **Tone.** Confident, modest, fast. We're a financial tool, not a meme coin. We don't shout.
+- **Visual feel.** Clean. Modern. Apple-like. Restraint over decoration. The mood is closer to Linear / Stripe / Vercel than to typical Web3 dashboards.
+- **Mobile-first.** A creator on a laptop and a payer on a phone are the two primary surfaces. The phone experience is at least as important as the desktop one.
+- **Dark or light?** Open to the designer.
+- **Color count.** Prefer few colors used deliberately over many. We're a payments product; trust signals matter more than vibe.
+- **Type.** Open. Pick a typeface that supports the "confident and modest" tone and has a strong variable-font implementation.
+- **Density.** Prefer breathing room. The product carries small amounts of dense data (addresses, hashes, amounts) on otherwise spacious screens. Don't trade legibility for compactness.
 
 ---
 
@@ -304,11 +230,11 @@ These are the only building blocks. New screens should compose from these, not i
 - No fiat on/off-ramp.
 - No mainnet support (testnet only until Arc Mainnet launches).
 - No notifications (no email, no SMS, no Slack).
-- No teams / multi-creator (single-wallet creator surface only).
+- No teams / multi-creator (single wallet creator surface only).
 - No invoicing (no line items, no PDF export — receipt is the deliverable).
-- No analytics dashboard for the creator beyond `Total collected / Links / Paid` KPIs.
+- No analytics dashboard for the creator beyond a small KPI roll-up.
 
-If a stakeholder asks for one of these, the answer is "v2."
+If a stakeholder asks for one of these, the answer is *v2*.
 
 ---
 
@@ -318,53 +244,52 @@ If we hit these in the first 90 days post-launch, v1 is a success.
 
 | Metric | Target |
 |---|---|
-| **Time to first link created** (from landing page to `/pay/[slug]`) | <60s |
-| **Pay completion rate** (links opened → paid) | ≥40% |
-| **Mobile share rate** (Share button taps / pay screen visits) | ≥25% |
-| **Bridge usage** (CCTP / Unified Balance payments / total paid) | ≥30% — proves the multi-chain value prop |
-| **Lighthouse mobile score** | ≥90 for Performance, Accessibility, Best Practices, SEO |
+| **Time to first link created** (landing → shareable URL) | under 60 seconds |
+| **Pay completion rate** (links opened → paid) | ≥ 40% |
+| **Mobile share rate** (Share action taps / pay screen visits) | ≥ 25% |
+| **Bridge usage** (CCTP / Unified Balance pays / total pays) | ≥ 30% — proves the multi-chain value prop |
+| **Lighthouse mobile** | ≥ 90 across Performance, Accessibility, Best Practices, SEO |
 
 ---
 
-## 10 · Open design questions
+## 10 · Open product questions
 
-Things I'd love the designer to push back on / propose alternatives for.
+These are *product* unknowns — not visual ones. The designer should push back
+on any of these where their experience suggests an answer.
 
-1. **The 4-step flow card.** Today it's a vertical list. Could be a horizontal stepper (matches Stripe/Plaid). Which feels more native on mobile?
-2. **QR code on the pay screen.** Lives inside the same `<Card>` as the amount. Should it be its own card? Should it dismiss after the payer connects a wallet?
-3. **The amber demo banner.** Visible on every page. Is that too loud? Should it collapse after dismiss?
-4. **Pay buttons hierarchy.** Currently: primary (Pay on Arc) + 3 bridge chains + Unified Balance. Five CTAs on one screen is a lot. Maybe collapse the bridge chains into a single "Bridge from another chain" picker?
-5. **Receipt as an artifact.** Currently a webpage. Should there be a downloadable PNG/PDF version? A signed receipt card you can drop into Notion?
-6. **Cancel UX.** Custom confirm modal is good, but no undo. Should a cancellation have a 30-second undo window before the on-chain `cancelLink` actually fires?
-7. **Dashboard density.** One card per link. For someone with 50 links, does this break down? Should there be a compact table view at a breakpoint?
-8. **Wallet connect entry.** RainbowKit's default modal is functional but generic. Worth a branded wallet picker? Or stay with RainbowKit for the network effects?
+1. **Memo as required?** It's required in v1 because empty memos make for ugly receipts and confused payers. Should the field instead suggest a default ("Payment for {creator}") and stay optional?
+2. **Expiry default.** Today expiry is opt-in and defaults to never. For pay-me-once-by-Friday use cases, should links default to a 7-day expiry the user can extend?
+3. **Cancel cool-down.** Cancel is on-chain and instant — no undo. Should we add a 30-second client-side cool-down before the chain tx fires so accidental clicks are recoverable?
+4. **Settlement-path discovery.** The payer has 3+ ways to settle (direct on Arc, bridge per source chain, unified balance). Is auto-detecting the cheapest / fastest path and proposing it as the default the right move, or is exposing every path upfront the more honest trade?
+5. **Receipts as artifacts.** Today receipts are a webpage. Should there be a downloadable / shareable image version, a Notion-embeddable block, or a printable PDF?
+6. **Notifications.** v1 has none. Is "the page" enough as the source of truth, or should the creator get an email / Slack ping when a link is paid? (This is V2 in §6 but worth confirming.)
+7. **Multiple links open at once.** A creator might paste the same link to two different clients. Today the link is single-use (first paid wins). Should we expose a "single use vs. open invoice" toggle at creation time?
+8. **Wallet picker.** Worth a branded wallet picker, or stay with a standard wallet-connect UX for the network effects? (Probably standard for v1.)
 
 ---
 
 ## 11 · Deliverables we need from design
 
-To go from this PRD to a buildable prototype:
+To go from this brief to a prototype:
 
-1. **High-fidelity Figma frames** for every screen × state in §5.
-2. **A short Loom (or recorded screen-share)** walking through Flow A → Flow B → Flow C, narrating the design decisions.
-3. **A revised set of color tokens** if the designer wants to tweak the palette (commit-ready hex codes — engineering will update `tailwind.config.ts`).
-4. **Type spec table** — if anything in §7.2 should change, please ship it as a table not a screenshot.
-5. **Motion specs** for any animations beyond the existing 200ms ease.
-6. **Empty-state illustrations** *if* the designer wants to push past the current icon-in-a-card pattern. Optional but welcome.
-
----
-
-## 12 · References
-
-- **Live build**: https://onelink-mauve-nu.vercel.app
-- **Repo**: https://github.com/Pratiikpy/onelink
-- **Screenshots**: [`docs/screenshots/`](./screenshots/)
-- **Engineering README** (architecture, launch checklist, security trade-offs): [`README.md`](../README.md)
-- **Contributor guide**: [`CONTRIBUTING.md`](../CONTRIBUTING.md)
-- **Stripe Payment Links** (the mental model for non-crypto folks): https://stripe.com/payments/payment-links
-- **Circle App Kit docs**: https://docs.circle.com
-- **Arc Testnet docs**: https://docs.arc.io
+1. **High-fidelity Figma frames** for every flow in §4, covering every state in §5, at both desktop and mobile breakpoints.
+2. **A short Loom (or recorded screen-share)** walking through Flow A → Flow B → Flow C, narrating the design decisions and the rationale where they diverge from the obvious path.
+3. **A design-system page** in Figma containing the chosen typography scale, named color tokens, spacing scale, radius scale, motion specs, and the set of UI primitives the prototype is composed from. Engineering will translate these into code tokens.
+4. **Empty / loading / error states** — these tend to get skipped. Treat them as first-class.
+5. **A 1-page "rationale" doc** answering each open product question in §10. If the answer is "I picked option B because X," that's enough.
+6. **Optional but welcome:** a brand exploration moodboard before the high-fi pass — 2-3 visual directions to align on tone before committing.
 
 ---
 
-*Questions / objections / "this is wrong because" → file an issue on the repo or DM Pratik. Iterate this doc as we learn.*
+## 12 · External references (for context, not for visual lifts)
+
+These are linked for the *product mental model*, not as visual targets.
+
+- **Stripe Payment Links** — the closest non-crypto analogue. https://stripe.com/payments/payment-links
+- **Circle App Kit docs** — the SDK that powers the bridge + unified-balance flows. https://docs.circle.com
+- **Arc Testnet docs** — the chain we settle on. https://docs.arc.io
+
+---
+
+*Questions / objections / "this is wrong because" → file an issue on the
+repo or DM me. Iterate this doc as we learn.*
