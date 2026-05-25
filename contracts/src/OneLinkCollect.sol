@@ -12,14 +12,17 @@ contract OneLinkCollect {
         uint256 amount;
         uint64 expiresAt;
         bool paid;
+        bool cancelled;
     }
 
     error NotOwner();
+    error NotCreator();
     error InvalidRecipient();
     error InvalidAmount();
     error LinkAlreadyExists();
     error LinkNotFound();
     error LinkAlreadyPaid();
+    error LinkCancelled();
     error LinkExpired();
     error FeeTooHigh();
     error TransferFailed();
@@ -45,6 +48,7 @@ contract OneLinkCollect {
         uint256 grossAmount,
         uint256 feeAmount
     );
+    event PaymentLinkCancelled(bytes32 indexed linkId, address indexed creator);
     event FeeConfigUpdated(address indexed feeRecipient, uint16 feeBps);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
@@ -72,16 +76,31 @@ contract OneLinkCollect {
             recipient: recipient,
             amount: amount,
             expiresAt: expiresAt,
-            paid: false
+            paid: false,
+            cancelled: false
         });
 
         emit PaymentLinkCreated(linkId, msg.sender, recipient, amount, expiresAt);
+    }
+
+    /// @notice Creator can void an unpaid link so payLink stops working.
+    /// @dev Reverts if the link is already paid or already cancelled.
+    function cancelLink(bytes32 linkId) external {
+        PaymentLink storage link = links[linkId];
+        if (link.creator == address(0)) revert LinkNotFound();
+        if (link.creator != msg.sender) revert NotCreator();
+        if (link.paid) revert LinkAlreadyPaid();
+        if (link.cancelled) revert LinkCancelled();
+
+        link.cancelled = true;
+        emit PaymentLinkCancelled(linkId, msg.sender);
     }
 
     function payLink(bytes32 linkId) external {
         PaymentLink storage link = links[linkId];
         if (link.creator == address(0)) revert LinkNotFound();
         if (link.paid) revert LinkAlreadyPaid();
+        if (link.cancelled) revert LinkCancelled();
         if (link.expiresAt != 0 && block.timestamp > link.expiresAt) revert LinkExpired();
 
         link.paid = true;

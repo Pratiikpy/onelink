@@ -1,15 +1,29 @@
 "use client";
 
-import { Copy, ExternalLink, ReceiptText } from "lucide-react";
+import { useMemo } from "react";
+import { Check, Copy, ExternalLink, ReceiptText, Share2 } from "lucide-react";
 import Link from "next/link";
+import { QRCodeSVG } from "qrcode.react";
 import { Card, Button, Pill } from "@/components/ui";
-import { explorerTx } from "@/lib/arc";
+import { explorerTx, isDemoTxHash } from "@/lib/arc";
 import type { PaymentLink } from "@/lib/payments";
 import { shortAddress, statusTone } from "@/lib/payments";
+import { shareOrCopy, useCopy } from "@/lib/share";
 
 export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
-  const paymentUrl =
-    typeof window === "undefined" ? `/pay/${link.slug}` : `${window.location.origin}/pay/${link.slug}`;
+  const paymentUrl = useMemo(() => {
+    if (typeof window === "undefined") return `/pay/${link.slug}`;
+    return `${window.location.origin}/pay/${link.slug}`;
+  }, [link.slug]);
+  const { copied, copy } = useCopy();
+
+  async function share() {
+    await shareOrCopy({
+      title: `Pay ${link.amountUSDC} USDC on Arc`,
+      text: link.memo,
+      url: paymentUrl,
+    });
+  }
 
   return (
     <Card className="space-y-5">
@@ -21,6 +35,17 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
           </h2>
         </div>
         <Pill className={statusTone(link.status)}>{link.status}</Pill>
+      </div>
+
+      <div className="flex items-center justify-center rounded-2xl border border-white/8 bg-white p-4">
+        <QRCodeSVG
+          value={paymentUrl}
+          size={168}
+          bgColor="#ffffff"
+          fgColor="#050507"
+          level="M"
+          marginSize={1}
+        />
       </div>
 
       <div className="rounded-2xl border border-white/8 bg-black/24 p-4">
@@ -39,15 +64,26 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <Button
           type="button"
           variant="secondary"
-          onClick={() => navigator.clipboard.writeText(paymentUrl)}
+          onClick={() => copy(paymentUrl)}
           className="w-full"
+          aria-label="Copy payment link"
         >
-          <Copy className="size-4" />
-          Copy link
+          {copied ? <Check className="size-4 text-mint" /> : <Copy className="size-4" />}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={share}
+          className="w-full"
+          aria-label="Share payment link"
+        >
+          <Share2 className="size-4" />
+          Share
         </Button>
         <Link href={`/receipt/${link.id}`} className="w-full">
           <Button type="button" variant="secondary" className="w-full">
@@ -57,7 +93,7 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
         </Link>
       </div>
 
-      {link.txHash && (
+      {link.txHash && !isDemoTxHash(link.txHash) && (
         <a
           href={explorerTx(link.txHash)}
           target="_blank"
@@ -67,6 +103,12 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
           View on Arcscan
           <ExternalLink className="size-4" />
         </a>
+      )}
+
+      {isDemoTxHash(link.txHash) && (
+        <p className="text-center text-xs font-bold text-amber-200/80">
+          Demo settlement · no on-chain transaction
+        </p>
       )}
     </Card>
   );

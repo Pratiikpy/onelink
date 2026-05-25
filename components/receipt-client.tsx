@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BadgeCheck, Copy, ExternalLink, ReceiptText } from "lucide-react";
+import { BadgeCheck, Check, Copy, ExternalLink, ReceiptText } from "lucide-react";
 import { Button, Card, Pill } from "@/components/ui";
-import { ARC_EXPLORER_URL, explorerTx } from "@/lib/arc";
+import { ARC_EXPLORER_URL, explorerTx, isDemoTxHash } from "@/lib/arc";
 import type { PaymentLink } from "@/lib/payments";
-import { shortAddress, statusTone } from "@/lib/payments";
+import { paymentMethodLabel, shortAddress, statusTone } from "@/lib/payments";
 import { getPaymentLinkById } from "@/lib/storage";
+import { useCopy } from "@/lib/share";
 
 export function ReceiptClient({ id }: { id: string }) {
   const [link, setLink] = useState<PaymentLink | null>(null);
   const [loading, setLoading] = useState(true);
+  const { copied, copy } = useCopy();
 
   useEffect(() => {
     async function load() {
@@ -71,7 +73,7 @@ export function ReceiptClient({ id }: { id: string }) {
             ["Receiver", shortAddress(link.recipientWallet)],
             ["Payer", shortAddress(link.payerWallet)],
             ["Network", "Arc Testnet"],
-            ["Method", link.paymentMethod || "pending"],
+            ["Method", paymentMethodLabel(link.paymentMethod)],
             ["Created", new Date(link.createdAt).toLocaleString()],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between gap-4 border-b border-white/8 pb-3">
@@ -80,13 +82,31 @@ export function ReceiptClient({ id }: { id: string }) {
             </div>
           ))}
 
+          {isDemoTxHash(link.txHash) && (
+            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-3 text-xs font-bold text-amber-100">
+              This receipt was generated in demo mode. No USDC moved on-chain.
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <Button variant="secondary" onClick={() => navigator.clipboard.writeText(receiptUrl)}>
-              <Copy className="size-4" />
-              Copy
+            <Button variant="secondary" onClick={() => copy(receiptUrl)}>
+              {copied ? <Check className="size-4 text-mint" /> : <Copy className="size-4" />}
+              {copied ? "Copied" : "Copy"}
             </Button>
-            <a href={link.txHash ? explorerTx(link.txHash) : ARC_EXPLORER_URL} target="_blank" rel="noreferrer">
-              <Button variant="secondary" className="w-full">
+            <a
+              href={
+                link.txHash && !isDemoTxHash(link.txHash)
+                  ? explorerTx(link.txHash)
+                  : ARC_EXPLORER_URL
+              }
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button
+                variant="secondary"
+                className="w-full"
+                disabled={isDemoTxHash(link.txHash)}
+              >
                 <ExternalLink className="size-4" />
                 Arcscan
               </Button>

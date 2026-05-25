@@ -8,6 +8,24 @@ export const HAS_CONTRACT =
 
 export const PLATFORM_FEE_BPS = Number(process.env.NEXT_PUBLIC_PLATFORM_FEE_BPS || 0);
 
+// When deploying to production, opt-out of demo mode by NOT setting
+// NEXT_PUBLIC_ALLOW_DEMO. Without a contract address, the app will refuse
+// to render so a misconfigured deploy can't silently fake payments.
+const ALLOW_DEMO_IN_PROD = process.env.NEXT_PUBLIC_ALLOW_DEMO === "true";
+
+if (
+  process.env.NODE_ENV === "production" &&
+  !HAS_CONTRACT &&
+  !ALLOW_DEMO_IN_PROD &&
+  typeof window !== "undefined"
+) {
+  throw new Error(
+    "OneLink production build is missing NEXT_PUBLIC_ONELINK_CONTRACT_ADDRESS. " +
+      "Deploy contracts/src/OneLinkCollect.sol to Arc Testnet first, or set " +
+      "NEXT_PUBLIC_ALLOW_DEMO=true to acknowledge demo mode in production.",
+  );
+}
+
 export const oneLinkCollectAbi = [
   {
     type: "function",
@@ -30,6 +48,13 @@ export const oneLinkCollectAbi = [
   },
   {
     type: "function",
+    name: "cancelLink",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "linkId", type: "bytes32" }],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "getLink",
     stateMutability: "view",
     inputs: [{ name: "linkId", type: "bytes32" }],
@@ -42,6 +67,7 @@ export const oneLinkCollectAbi = [
           { name: "amount", type: "uint256" },
           { name: "expiresAt", type: "uint64" },
           { name: "paid", type: "bool" },
+          { name: "cancelled", type: "bool" },
         ],
       },
     ],
@@ -66,6 +92,14 @@ export const oneLinkCollectAbi = [
       { name: "recipient", type: "address", indexed: true },
       { name: "grossAmount", type: "uint256", indexed: false },
       { name: "feeAmount", type: "uint256", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "PaymentLinkCancelled",
+    inputs: [
+      { name: "linkId", type: "bytes32", indexed: true },
+      { name: "creator", type: "address", indexed: true },
     ],
   },
 ] as const;

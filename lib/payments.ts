@@ -2,7 +2,13 @@ import { keccak256, parseUnits, stringToBytes, type Address } from "viem";
 import { nanoid } from "nanoid";
 import { USDC_DECIMALS } from "@/lib/arc";
 
-export type PaymentStatus = "unpaid" | "processing" | "paid" | "expired" | "failed";
+export type PaymentStatus =
+  | "unpaid"
+  | "processing"
+  | "paid"
+  | "expired"
+  | "failed"
+  | "cancelled";
 export type PaymentMethod = "arc-direct" | "app-kit-bridge" | "unified-balance" | "demo";
 
 export type PaymentLink = {
@@ -48,6 +54,18 @@ export function shortAddress(address?: string | null) {
 export function statusTone(status: PaymentStatus) {
   if (status === "paid") return "text-mint";
   if (status === "processing") return "text-violet";
-  if (status === "failed" || status === "expired") return "text-red-300";
+  if (status === "failed" || status === "expired" || status === "cancelled") return "text-red-300";
   return "text-ash";
+}
+
+const methodLabels: Record<PaymentMethod, string> = {
+  "arc-direct": "Direct on Arc",
+  "app-kit-bridge": "Bridged via Circle App Kit",
+  "unified-balance": "Circle Unified Balance",
+  demo: "Demo settlement",
+};
+
+export function paymentMethodLabel(method?: PaymentMethod | null) {
+  if (!method) return "Pending";
+  return methodLabels[method] ?? method;
 }

@@ -2,20 +2,66 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useAccount } from "wagmi";
-import { Copy, ExternalLink, RefreshCw } from "lucide-react";
+import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { Check, Copy, ExternalLink, RefreshCw, WalletCards, X } from "lucide-react";
 import { Button, Card, Pill } from "@/components/ui";
-import { listPaymentLinks } from "@/lib/storage";
+import { listPaymentLinks, updatePaymentStatus } from "@/lib/storage";
 import type { PaymentLink } from "@/lib/payments";
 import { shortAddress, statusTone } from "@/lib/payments";
+import { useCopy } from "@/lib/share";
+import { ARC_CHAIN_ID } from "@/lib/arc";
+import { HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS, oneLinkCollectAbi } from "@/lib/contracts";
 
 export function DashboardClient() {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
+  const { writeContractAsync } = useWriteContract();
   const [links, setLinks] = useState<PaymentLink[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const { copy } = useCopy();
+
+  async function copyLink(id: string, url: string) {
+    const ok = await copy(url);
+    if (ok) {
+      setCopiedId(id);
+      window.setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1500);
+    }
+  }
 
   const refresh = useCallback(async () => {
     setLinks(await listPaymentLinks(address));
   }, [address]);
+
+  async function cancelLink(link: PaymentLink) {
+    if (!confirm(`Cancel "${link.memo}" for ${link.amountUSDC} USDC? This can't be undone.`)) {
+      return;
+    }
+    setError("");
+    setCancellingId(link.id);
+    try {
+      if (HAS_CONTRACT) {
+        if (chainId !== ARC_CHAIN_ID) {
+          await switchChainAsync({ chainId: ARC_CHAIN_ID });
+        }
+        await writeContractAsync({
+          address: ONELINK_CONTRACT_ADDRESS,
+          abi: oneLinkCollectAbi,
+          functionName: "cancelLink",
+          args: [link.contractLinkId],
+        });
+      }
+      await updatePaymentStatus(link.id, "cancelled");
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not cancel link.");
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   useEffect(() => {
     refresh();
@@ -28,6 +74,32 @@ export function DashboardClient() {
         .reduce((sum, link) => sum + Number(link.amountUSDC), 0),
     [links],
   );
+
+  if (!isConnected) {
+    return (
+      <div className="mx-auto max-w-md space-y-6">
+        <Card className="space-y-4 text-center">
+          <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-violet/30 bg-violet/10">
+            <WalletCards className="size-6 text-violet" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black">Connect a wallet</h1>
+            <p className="mt-2 text-sm font-semibold text-white/55">
+              Your dashboard shows the collection links you created with the connected wallet.
+            </p>
+          </div>
+          <div className="flex justify-center pt-1">
+            <ConnectButton />
+          </div>
+          <Link href="/">
+            <Button variant="secondary" className="mx-auto">
+              Or create a link first
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -71,9 +143,16 @@ export function DashboardClient() {
           </Card>
         )}
 
+        {error && (
+          <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-200">
+            {error}
+          </div>
+        )}
+
         {links.map((link) => {
           const payPath = `/pay/${link.slug}`;
           const payUrl = typeof window === "undefined" ? payPath : `${window.location.origin}${payPath}`;
+          const canCancel = link.status === "unpaid" || link.status === "processing";
           return (
             <Card key={link.id} className="p-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -85,15 +164,35 @@ export function DashboardClient() {
                   <p className="mt-1 font-semibold text-white/60">{link.memo}</p>
                   <p className="mt-1 text-sm text-white/38">{shortAddress(link.recipientWallet)}</p>
                 </div>
-                <div className="grid grid-cols-3 gap-2 sm:w-64">
-                  <Button variant="secondary" onClick={() => navigator.clipboard.writeText(payUrl)}>
-                    <Copy className="size-4" />
+                <div className="grid grid-cols-4 gap-2 sm:w-80">
+                  <Button
+                    variant="secondary"
+                    onClick={() => copyLink(link.id, payUrl)}
+                    aria-label="Copy pay link"
+                  >
+                    {copiedId === link.id ? (
+                      <Check className="size-4 text-mint" />
+                    ) : (
+                      <Copy className="size-4" />
+                    )}
                   </Button>
-                  <Link href={payPath}>
+                  <Link href={payPath} aria-label="Open pay link">
                     <Button variant="secondary" className="w-full">
                       <ExternalLink className="size-4" />
                     </Button>
                   </Link>
+                  <Button
+                    variant="secondary"
+                    disabled={!canCancel || cancellingId === link.id}
+                    onClick={() => cancelLink(link)}
+                    aria-label="Cancel link"
+                  >
+                    {cancellingId === link.id ? (
+                      <RefreshCw className="size-4 animate-spin" />
+                    ) : (
+                      <X className="size-4" />
+                    )}
+                  </Button>
                   <Link href={`/receipt/${link.id}`}>
                     <Button variant="secondary" className="w-full">
                       Receipt

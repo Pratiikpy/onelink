@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAccount, useBalance, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import type { EIP1193Provider } from "viem";
+import type { BridgeParams, SpendParams } from "@circle-fin/app-kit";
 import { ArrowRight, BadgeCheck, Cable, ExternalLink, Loader2, WalletCards } from "lucide-react";
 import { Card, Button, Pill } from "@/components/ui";
 import { PaymentSummaryCard } from "@/components/payment-card";
@@ -64,6 +65,12 @@ export function PayLinkClient({ slug }: { slug: string }) {
     return Date.now() > new Date(link.expiresAt).getTime();
   }, [link]);
 
+  const balanceNumber = usdcBalance ? Number(usdcBalance.formatted) : 0;
+  const amountNumber = link ? Number(link.amountUSDC) : 0;
+  const insufficient =
+    isConnected && Number.isFinite(balanceNumber) && balanceNumber < amountNumber;
+  const wrongChain = isConnected && chainId !== ARC_CHAIN_ID;
+
   function setStep(index: number, state: Step["state"]) {
     setSteps((current) =>
       current.map((step, stepIndex) => (stepIndex === index ? { ...step, state } : step)),
@@ -109,8 +116,16 @@ export function PayLinkClient({ slug }: { slug: string }) {
       setStep(2, "done");
       setStep(3, "done");
 
+      // Demo tx hashes are tagged 0xDEM0… so they are never mistaken for an
+      // on-chain settlement in receipts or copy/paste workflows.
+      const demoSuffix = crypto
+        .randomUUID()
+        .replaceAll("-", "")
+        .toUpperCase()
+        .slice(0, 60)
+        .padEnd(60, "0");
       const paid = await updatePaymentStatus(link.id, "paid", {
-        txHash: `0x${crypto.randomUUID().replaceAll("-", "").padEnd(64, "0")}` as `0x${string}`,
+        txHash: `0xDEM0${demoSuffix}` as `0x${string}`,
         payerWallet: address,
         paymentMethod: "demo",
         sourceChain: "Arc_Testnet demo",
@@ -168,11 +183,13 @@ export function PayLinkClient({ slug }: { slug: string }) {
       setStep(0, "done");
       setStep(1, "active");
 
-      await kit.bridge({
+      const bridgeParams: BridgeParams = {
         from: { adapter, chain: sourceChain },
         to: { adapter, chain: "Arc_Testnet", useForwarder: true },
         amount: link.amountUSDC,
-      });
+        token: "USDC",
+      };
+      await kit.bridge(bridgeParams);
 
       setStep(1, "done");
       await settleOnArc("app-kit-bridge");
@@ -204,15 +221,17 @@ export function PayLinkClient({ slug }: { slug: string }) {
       const adapter = await createViemAdapterFromProvider({ provider });
       setStep(1, "active");
 
-      await kit.unifiedBalance.spend({
+      const spendParams: SpendParams = {
         from: { adapter },
         amount: link.amountUSDC,
+        token: "USDC",
         to: {
           adapter,
           chain: "Arc_Testnet",
           recipientAddress: link.recipientWallet,
         },
-      });
+      };
+      await kit.unifiedBalance.spend(spendParams);
 
       setStep(1, "done");
       await settleOnArc("unified-balance");
@@ -267,7 +286,14 @@ export function PayLinkClient({ slug }: { slug: string }) {
           <div className="grid gap-2">
             <Button
               onClick={payDirect}
-              disabled={busy || link.status === "paid" || isExpired}
+              disabled={
+                busy ||
+                link.status === "paid" ||
+                link.status === "cancelled" ||
+                isExpired ||
+                !isConnected ||
+                insufficient
+              }
               className="w-full"
             >
               {busy && method === "arc-direct" ? (
@@ -277,13 +303,27 @@ export function PayLinkClient({ slug }: { slug: string }) {
               ) : (
                 <ArrowRight className="size-4" />
               )}
-              {link.status === "paid" ? "Already paid" : "Pay on Arc"}
+              {link.status === "paid"
+                ? "Already paid"
+                : link.status === "cancelled"
+                  ? "Cancelled by creator"
+                  : !isConnected
+                    ? "Connect wallet to pay"
+                    : insufficient
+                      ? `Need ${(amountNumber - balanceNumber).toFixed(2)} more USDC on Arc`
+                      : "Pay on Arc"}
             </Button>
 
             <Button
               variant="secondary"
               onClick={() => bridgeAndPay(84532, "Base_Sepolia")}
-              disabled={busy || link.status === "paid" || isExpired}
+              disabled={
+                busy ||
+                link.status === "paid" ||
+                link.status === "cancelled" ||
+                isExpired ||
+                !isConnected
+              }
               className="w-full"
             >
               <Cable className="size-4" />
@@ -293,13 +333,33 @@ export function PayLinkClient({ slug }: { slug: string }) {
             <Button
               variant="secondary"
               onClick={spendUnifiedBalance}
-              disabled={busy || link.status === "paid" || isExpired}
+              disabled={
+                busy ||
+                link.status === "paid" ||
+                link.status === "cancelled" ||
+                isExpired ||
+                !isConnected
+              }
               className="w-full"
             >
               <Cable className="size-4" />
               Pay with Unified Balance
             </Button>
           </div>
+
+          {wrongChain && !insufficient && isConnected && (
+            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-3 text-sm font-semibold text-amber-100">
+              Your wallet is on a different chain. Pay-on-Arc will prompt a chain switch before
+              sending.
+            </div>
+          )}
+
+          {insufficient && (
+            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-3 text-sm font-semibold text-amber-100">
+              Not enough Arc USDC to pay directly. Use Bridge or Unified Balance, or top up at the
+              Circle faucet.
+            </div>
+          )}
 
           {error && (
             <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-200">
@@ -310,6 +370,12 @@ export function PayLinkClient({ slug }: { slug: string }) {
           {isExpired && (
             <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-200">
               This link is expired.
+            </div>
+          )}
+
+          {link.status === "cancelled" && (
+            <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-200">
+              The creator cancelled this payment link. Reach out to them for a new one.
             </div>
           )}
         </Card>
@@ -346,16 +412,21 @@ export function PayLinkClient({ slug }: { slug: string }) {
 
         <Card className="space-y-3">
           <p className="text-sm font-black uppercase tracking-[0.16em] text-white/38">
-            Supported source chains
+            Bridge from
           </p>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-3">
             {SUPPORTED_SOURCE_CHAINS.map((chain) => (
-              <div key={chain.id} className="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
-                <p className="font-bold">{chain.label}</p>
-                <p className="text-xs text-white/38">{chain.appKitName}</p>
+              <div
+                key={chain.id}
+                className="rounded-2xl border border-white/8 bg-white/[0.03] p-3 text-center"
+              >
+                <p className="text-sm font-bold text-white/85">{chain.label}</p>
               </div>
             ))}
           </div>
+          <p className="text-xs font-medium text-white/40">
+            USDC bridged via Circle CCTP, then settled on Arc Testnet.
+          </p>
         </Card>
 
         {link.txHash && (
@@ -370,9 +441,11 @@ export function PayLinkClient({ slug }: { slug: string }) {
           </a>
         )}
 
-        <p className="text-center text-xs font-semibold text-white/35">
-          Connected payer: {shortAddress(address)}
-        </p>
+        {address && (
+          <p className="text-center text-xs font-semibold text-white/35">
+            Connected payer · {shortAddress(address)}
+          </p>
+        )}
       </section>
     </div>
   );

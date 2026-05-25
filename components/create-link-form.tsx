@@ -3,13 +3,16 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
-import { isAddress, type Address } from "viem";
+import { getAddress, isAddress, type Address } from "viem";
 import { ArrowRight, BadgeDollarSign, CalendarClock, Link2, Loader2, Sparkles } from "lucide-react";
 import { Card, Field, Input, Textarea, Button, Pill } from "@/components/ui";
 import { ARC_CHAIN_ID } from "@/lib/arc";
 import { HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS, oneLinkCollectAbi } from "@/lib/contracts";
 import { amountToUnits, makeContractLinkId, makeSlug, type PaymentLink } from "@/lib/payments";
 import { savePaymentLink } from "@/lib/storage";
+
+const AMOUNT_RE = /^\d+(\.\d{1,6})?$/;
+const MAX_USDC = 1_000_000; // hard cap per link to catch typos / unit confusion
 
 export function CreateLinkForm() {
   const router = useRouter();
@@ -38,12 +41,49 @@ export function CreateLinkForm() {
     }
 
     if (!isAddress(normalizedRecipient)) {
-      setError("Enter a valid recipient wallet address.");
+      setError("Enter a valid recipient wallet address (0x… 42 chars).");
       return;
     }
 
-    if (!Number(amount) || Number(amount) <= 0) {
+    if (!AMOUNT_RE.test(amount)) {
+      setError("Amount must be a number with up to 6 decimals (USDC precision).");
+      return;
+    }
+
+    const amountNum = Number(amount);
+    if (!Number.isFinite(amountNum) || amountNum <= 0) {
       setError("Amount must be greater than 0 USDC.");
+      return;
+    }
+    if (amountNum > MAX_USDC) {
+      setError(`Amount is capped at ${MAX_USDC.toLocaleString()} USDC per link.`);
+      return;
+    }
+
+    if (memo.trim().length === 0) {
+      setError("Memo can't be empty — describe what the payer is sending you USDC for.");
+      return;
+    }
+
+    let expirySeconds = 0;
+    if (expiresAt) {
+      const expiryMs = new Date(expiresAt).getTime();
+      if (!Number.isFinite(expiryMs)) {
+        setError("Expiration date is invalid.");
+        return;
+      }
+      if (expiryMs <= Date.now()) {
+        setError("Expiration must be in the future.");
+        return;
+      }
+      expirySeconds = Math.floor(expiryMs / 1000);
+    }
+
+    let checksummedRecipient: Address;
+    try {
+      checksummedRecipient = getAddress(normalizedRecipient);
+    } catch {
+      setError("Recipient address failed checksum validation.");
       return;
     }
 
@@ -56,7 +96,6 @@ export function CreateLinkForm() {
       const slug = makeSlug(memo, amount);
       const contractLinkId = makeContractLinkId(slug);
       const now = new Date().toISOString();
-      const expirySeconds = expiresAt ? Math.floor(new Date(expiresAt).getTime() / 1000) : 0;
 
       if (HAS_CONTRACT) {
         await writeContractAsync({
@@ -65,7 +104,7 @@ export function CreateLinkForm() {
           functionName: "createLink",
           args: [
             contractLinkId,
-            normalizedRecipient as Address,
+            checksummedRecipient,
             amountToUnits(amount),
             BigInt(expirySeconds),
           ],
@@ -76,9 +115,9 @@ export function CreateLinkForm() {
         id: crypto.randomUUID(),
         slug,
         creatorWallet: address,
-        recipientWallet: normalizedRecipient as Address,
+        recipientWallet: checksummedRecipient,
         amountUSDC: amount,
-        memo,
+        memo: memo.trim(),
         status: "unpaid",
         expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
         contractLinkId,
@@ -168,36 +207,43 @@ export function CreateLinkForm() {
             </div>
           )}
 
-          <Button type="button" onClick={createLink} disabled={busy} className="w-full">
+          <Button
+            type="button"
+            onClick={createLink}
+            disabled={busy || !isConnected}
+            className="w-full"
+          >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <ArrowRight className="size-4" />}
-            Create payment link
+            {isConnected ? "Create payment link" : "Connect wallet to create"}
           </Button>
         </Card>
       </section>
 
       <aside className="space-y-4">
         <Card className="space-y-4">
-          <p className="text-sm font-bold text-white/48">Launch stack</p>
+          <p className="text-sm font-bold text-white/48">Why payers love it</p>
           {[
-            "Arc USDC gas",
-            "Sub-second settlement receipts",
-            "App Kit Bridge path",
-            "Unified Balance ready",
-            "Circle Wallets staged",
+            { title: "Tap. Pay. Done.", body: "One link, settled in seconds on Arc." },
+            { title: "Pay from any chain", body: "Bridges from Base, Ethereum, Arbitrum." },
+            { title: "USDC end-to-end", body: "No conversion, no surprise rates." },
+            { title: "Receipt on Arcscan", body: "Instant proof of payment, always public." },
           ].map((item) => (
-            <div key={item} className="flex items-center gap-3 rounded-2xl bg-white/[0.04] p-3">
-              <span className="size-2 rounded-full bg-mint" />
-              <span className="text-sm font-bold text-white/80">{item}</span>
+            <div key={item.title} className="flex items-start gap-3 rounded-2xl bg-white/[0.04] p-3">
+              <span className="mt-1.5 size-2 shrink-0 rounded-full bg-mint" />
+              <div>
+                <p className="text-sm font-bold text-white">{item.title}</p>
+                <p className="mt-0.5 text-xs font-medium text-white/55">{item.body}</p>
+              </div>
             </div>
           ))}
         </Card>
 
         <Card className="bg-violet/12">
-          <p className="text-sm font-semibold text-white/55">Testnet note</p>
-          <p className="mt-2 text-2xl font-black leading-tight text-white">Use faucet USDC first.</p>
+          <p className="text-sm font-semibold text-white/55">Testnet tip</p>
+          <p className="mt-2 text-2xl font-black leading-tight text-white">Top up at the faucet first.</p>
           <p className="mt-2 text-sm leading-6 text-white/50">
-            Arc uses USDC as gas. Your wallet may display it like ETH, but the underlying native gas
-            token is USDC.
+            Arc uses USDC as its native gas. Your wallet may show it like ETH, but every fee on Arc
+            is paid in USDC.
           </p>
         </Card>
       </aside>
