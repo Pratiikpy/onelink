@@ -1,18 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "OneLink Collect — One link. Any USDC. Instantly on Arc.",
+    default: "OneLink Collect — One link. Supported USDC. Settled on Arc.",
     template: "%s · OneLink Collect",
   },
   description:
-    "Mobile-first USDC payment links that settle on Arc Testnet. Bridge from Base, Ethereum, or Arbitrum Sepolia through Circle App Kit, or pay directly with Unified Balance.",
+    "Mobile-first USDC payment links settled on Arc Testnet. Pay directly on Arc or bridge from Base Sepolia through Circle App Kit and CCTP.",
   applicationName: "OneLink Collect",
   manifest: "/manifest.json",
   icons: {
@@ -31,9 +34,9 @@ export const metadata: Metadata = {
     "Web3",
   ],
   openGraph: {
-    title: "OneLink Collect — One link. Any USDC. Instantly on Arc.",
+    title: "OneLink Collect — Supported USDC payments settled on Arc.",
     description:
-      "Create and pay USDC collection links on Arc Testnet. Bridge from any chain via Circle App Kit.",
+      "Create and pay USDC collection links on Arc Testnet using implemented Circle App Kit routes.",
     url: appUrl,
     siteName: "OneLink Collect",
     type: "website",
@@ -42,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "OneLink Collect",
     description:
-      "One link. Any USDC. Instantly on Arc Testnet — powered by Circle App Kit.",
+      "One link for supported testnet USDC routes, settled and verified on Arc.",
   },
   robots: {
     index: true,
@@ -51,7 +54,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050507",
+  themeColor: "#0A0A0C",
   width: "device-width",
   initialScale: 1,
   // Allow pinch-zoom — locking it breaks WCAG 1.4.4 (Resize Text) and is a
@@ -65,7 +68,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={GeistSans.variable}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
+    >
       <body className="font-sans antialiased">
         <Providers>{children}</Providers>
       </body>

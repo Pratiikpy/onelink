@@ -10,17 +10,25 @@ export default function AppleIcon() {
         style={{
           width: "100%",
           height: "100%",
-          background: "linear-gradient(180deg, #14122a 0%, #050507 70%)",
+          background: "#0A0A0C",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#8F84FF",
-          fontWeight: 900,
-          fontSize: 96,
-          letterSpacing: "-0.04em",
         }}
       >
-        OL
+        <svg width="112" height="112" viewBox="0 0 36 36">
+          <circle
+            cx="18"
+            cy="18"
+            r="13"
+            fill="none"
+            stroke="#C9F267"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeDasharray="66 16"
+            transform="rotate(-40 18 18)"
+          />
+        </svg>
       </div>
     ),
     { ...size },

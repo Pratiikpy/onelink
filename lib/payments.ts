@@ -10,6 +10,7 @@ export type PaymentStatus =
   | "failed"
   | "cancelled";
 export type PaymentMethod = "arc-direct" | "app-kit-bridge" | "unified-balance" | "demo";
+export type SettlementMode = "invoice" | "profile";
 
 export type PaymentLink = {
   id: string;
@@ -27,6 +28,7 @@ export type PaymentLink = {
   payerWallet?: Address;
   paymentMethod?: PaymentMethod;
   sourceChain?: string;
+  settlementMode?: SettlementMode;
 };
 
 export function amountToUnits(amount: string) {
@@ -48,14 +50,14 @@ export function makeContractLinkId(slug: string) {
 
 export function shortAddress(address?: string | null) {
   if (!address) return "Not connected";
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
 export function statusTone(status: PaymentStatus) {
-  if (status === "paid") return "text-mint";
-  if (status === "processing") return "text-violet";
-  if (status === "failed" || status === "expired" || status === "cancelled") return "text-red-300";
-  return "text-ash";
+  if (status === "paid") return "text-lime";
+  if (status === "processing") return "text-amber";
+  if (status === "failed" || status === "expired" || status === "cancelled") return "text-danger";
+  return "text-white/70";
 }
 
 const methodLabels: Record<PaymentMethod, string> = {

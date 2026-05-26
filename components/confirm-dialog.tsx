@@ -57,7 +57,7 @@ export function ConfirmDialog({
             className={`grid size-12 shrink-0 place-items-center rounded-2xl border ${
               tone === "danger"
                 ? "border-red-300/30 bg-red-300/10 text-red-200"
-                : "border-violet/30 bg-violet/10 text-violet"
+                : "border-lime/30 bg-lime/10 text-lime"
             }`}
           >
             <AlertTriangle className="size-5" />
@@ -95,7 +95,7 @@ export function ConfirmDialog({
             className={`inline-flex h-12 items-center justify-center rounded-2xl text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-45 ${
               tone === "danger"
                 ? "bg-red-400 text-ink hover:bg-red-300"
-                : "bg-violet text-ink shadow-glow hover:bg-[#a59cff]"
+                : "bg-lime text-ink shadow-glow hover:bg-[#d9fa7b]"
             }`}
           >
             {busy ? "Working…" : confirmLabel}

@@ -33,6 +33,7 @@ contract OneLinkCollect {
     uint16 public feeBps;
 
     mapping(bytes32 linkId => PaymentLink link) private links;
+    mapping(bytes32 paymentId => bool paid) private profilePayments;
 
     event PaymentLinkCreated(
         bytes32 indexed linkId,
@@ -113,6 +114,24 @@ contract OneLinkCollect {
         }
 
         emit PaymentCompleted(linkId, msg.sender, link.recipient, link.amount, feeAmount);
+    }
+
+    /// @notice Settles a user-defined payment against a reusable creator profile URL.
+    function payRecipient(bytes32 paymentId, address recipient, uint256 amount) external {
+        if (recipient == address(0)) revert InvalidRecipient();
+        if (amount == 0) revert InvalidAmount();
+        if (profilePayments[paymentId]) revert LinkAlreadyPaid();
+
+        profilePayments[paymentId] = true;
+        uint256 feeAmount = (amount * feeBps) / 10_000;
+        uint256 recipientAmount = amount - feeAmount;
+
+        if (!usdc.transferFrom(msg.sender, recipient, recipientAmount)) revert TransferFailed();
+        if (feeAmount > 0 && !usdc.transferFrom(msg.sender, feeRecipient, feeAmount)) {
+            revert TransferFailed();
+        }
+
+        emit PaymentCompleted(paymentId, msg.sender, recipient, amount, feeAmount);
     }
 
     function getLink(bytes32 linkId) external view returns (PaymentLink memory) {

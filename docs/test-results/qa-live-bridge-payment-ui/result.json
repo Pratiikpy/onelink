@@ -1,0 +1,33 @@
+{
+  "status": "green",
+  "generatedAt": "2026-05-26T15:30:17.671Z",
+  "paymentUrl": "https://onelink-mauve-nu.vercel.app/pay/bridge-ui-qa-20260526152945",
+  "receiptUrl": "https://onelink-mauve-nu.vercel.app/receipt/03648af0-6f4d-4ccd-930f-5feb527f5999",
+  "payer": "0xf6F0888C3FBF62aFeb4c1cC929fE1C782D09B00a",
+  "amountUSDC": "0.05",
+  "baseGasBefore": "0.08998725881501831",
+  "createHash": "0x8e73b5abf2277a3104603c78137cbda58a172cb80540e6e48dfd79305a08ae48",
+  "transactions": [
+    {
+      "chainId": 84532,
+      "hash": "0x27d13cda517743534fe8c455ae9f5805d9ebb8fae6ff1154b459ffed343c8e46"
+    },
+    {
+      "chainId": 84532,
+      "hash": "0x051298e44c02b47ddc99b708bd3060c9287bba6cc130444219b3197b7630a9db"
+    },
+    {
+      "chainId": 5042002,
+      "hash": "0x7631260432ac0e65428f7286bae6ee1b3a2e6a5c2e86079154027ced0e97f79d"
+    },
+    {
+      "chainId": 5042002,
+      "hash": "0xc691611d560a299107443cac76d6165c451428200ffda81b116e766b45c120bb"
+    },
+    {
+      "chainId": 5042002,
+      "hash": "0xc5ac72e58a77fd48c9f6781031557fbd63cc6c7556876f25b1bb218aea240ee3"
+    }
+  ],
+  "reconciliationHash": "0xc5ac72e58a77fd48c9f6781031557fbd63cc6c7556876f25b1bb218aea240ee3"
+}

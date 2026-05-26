@@ -2,7 +2,7 @@
   "name": "onelink-collect",
   "version": "0.1.0",
   "private": true,
-  "description": "Mobile-first USDC payment links that settle on Arc Testnet, with Circle App Kit bridging from any chain.",
+  "description": "Mobile-first USDC payment links settled on Arc Testnet through supported Circle App Kit routes.",
   "homepage": "https://onelink-mauve-nu.vercel.app",
   "repository": {
     "type": "git",
@@ -27,13 +27,29 @@
   "engines": {
     "node": ">=22"
   },
+  "overrides": {
+    "cuer": {
+      "qr": "0.5.5"
+    }
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:contracts": "forge test"
+    "test:contracts": "node scripts/run-forge-test.mjs",
+    "qa:live:direct": "node scripts/qa-live-direct.mjs",
+    "qa:live:visual": "node scripts/qa-live-visual.mjs",
+    "qa:live:bridge": "node scripts/qa-live-bridge.mjs",
+    "qa:live:bridge-payment-ui": "node scripts/qa-live-bridge-payment-ui.mjs",
+    "qa:live:profile": "node scripts/qa-live-profile.mjs",
+    "qa:live:profile-payment": "node scripts/qa-live-profile-payment.mjs",
+    "qa:live:browser-wallet": "node scripts/qa-live-browser-wallet.mjs",
+    "qa:live:failure-states": "node scripts/qa-live-failure-states.mjs",
+    "qa:live:walletconnect-modal": "node scripts/qa-live-walletconnect-modal.mjs",
+    "qa:live:walletconnect-payment": "node scripts/qa-live-walletconnect-payment.mjs",
+    "qa:live:cancel": "node scripts/qa-live-cancel.mjs"
   },
   "dependencies": {
     "@circle-fin/adapter-viem-v2": "^1.11.1",
@@ -55,12 +71,18 @@
     "wagmi": "^2.14.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@reown/walletkit": "^1.5.5",
     "@types/node": "^22.13.4",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "@walletconnect/core": "^2.23.9",
+    "@walletconnect/utils": "^2.23.9",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.20.1",
     "eslint-config-next": "^15.1.7",
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3"

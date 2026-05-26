@@ -7,7 +7,7 @@ export function Card({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={clsx("glass rounded-[28px] p-5 sm:p-6", className)}>{children}</div>;
+  return <div className={clsx("surface rounded-[34px] p-6 sm:p-7", className)}>{children}</div>;
 }
 
 export function Field({
@@ -21,9 +21,9 @@ export function Field({
 }) {
   return (
     <label className="block space-y-2">
-      <span className="text-sm font-semibold text-white/72">{label}</span>
+      <span className="text-sm font-semibold text-white/66">{label}</span>
       {children}
-      {hint && <span className="block text-xs text-white/42">{hint}</span>}
+      {hint && <span className="block text-xs text-white/45">{hint}</span>}
     </label>
   );
 }
@@ -33,7 +33,7 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       className={clsx(
-        "h-14 w-full rounded-2xl border border-white/10 bg-black/30 px-4 text-base font-semibold text-white outline-none transition placeholder:text-white/25 focus:border-violet/80 focus:ring-4 focus:ring-violet/15",
+        "h-16 w-full rounded-[24px] border border-white/10 bg-[#1A1A1E] px-6 text-xl font-medium text-snow outline-none transition placeholder:text-white/24 focus:border-lime/55",
         props.className,
       )}
     />
@@ -45,7 +45,7 @@ export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
     <textarea
       {...props}
       className={clsx(
-        "min-h-24 w-full resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-base font-semibold text-white outline-none transition placeholder:text-white/25 focus:border-violet/80 focus:ring-4 focus:ring-violet/15",
+        "min-h-24 w-full resize-none rounded-[24px] border border-white/10 bg-[#1A1A1E] px-6 py-4 text-xl font-medium text-snow outline-none transition placeholder:text-white/24 focus:border-lime/55",
         props.className,
       )}
     />
@@ -64,10 +64,10 @@ export function Button({
     <button
       {...props}
       className={clsx(
-        "inline-flex h-14 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-45",
-        variant === "primary" && "bg-violet text-ink shadow-glow hover:bg-[#a59cff]",
+        "inline-flex h-14 items-center justify-center gap-2 rounded-[22px] px-6 text-lg font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
+        variant === "primary" && "bg-lime text-ink shadow-glow hover:bg-[#d9fa7b]",
         variant === "secondary" &&
-          "border border-white/12 bg-white/8 text-white hover:border-violet/50 hover:bg-white/12",
+          "border border-white/12 bg-white/7 text-white hover:border-white/22 hover:bg-white/10",
         variant === "ghost" && "text-white/70 hover:bg-white/8 hover:text-white",
         className,
       )}
@@ -81,7 +81,7 @@ export function Pill({ children, className }: { children: React.ReactNode; class
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-2 rounded-full border border-violet/25 bg-violet/10 px-3 py-1 text-xs font-bold text-violet",
+        "inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-1.5 text-sm font-medium text-white/82",
         className,
       )}
     >

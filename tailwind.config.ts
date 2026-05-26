@@ -9,25 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Surface
-        ink: "#08090C",
-        panel: "#13141B",
-        panel2: "#1B1D27",
-        line: "rgba(255,255,255,0.08)",
-
-        // Brand / accent
-        violet: "#7C5CFF",
-        "violet-soft": "#A89BFF",
-        cyan: "#5AE3FF",
-        mint: "#34D399",
-        amber: "#FBBF24",
-        ash: "#9CA1B0",
+        ink: "#0A0A0C",
+        panel: "#131316",
+        "panel-soft": "#1A1A1E",
+        line: "rgba(255,255,255,0.09)",
+        snow: "#FAFAFA",
+        muted: "#8e919a",
+        lime: "#C9F267",
+        amber: "#f2bf5f",
+        danger: "#ff7777",
       },
       boxShadow: {
-        // Subtle violet glow, Apple-restrained — used only on primary CTAs.
-        glow: "0 14px 40px -16px rgba(124, 92, 255, 0.55)",
-        "glow-sm": "0 8px 24px -12px rgba(124, 92, 255, 0.5)",
-        hairline: "inset 0 1px 0 rgba(255,255,255,0.06)",
+        glow: "0 16px 44px -26px rgba(201, 242, 103, 0.55)",
+        hairline: "inset 0 1px 0 rgba(255,255,255,0.05)",
       },
       fontFamily: {
         sans: [
@@ -35,15 +29,23 @@ const config: Config = {
           "-apple-system",
           "BlinkMacSystemFont",
           "SF Pro Display",
-          "Inter",
           "Segoe UI",
           "system-ui",
           "sans-serif",
         ],
+        mono: [
+          "var(--font-geist-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Monaco",
+          "Consolas",
+          "Liberation Mono",
+          "monospace",
+        ],
       },
       letterSpacing: {
-        tightish: "-0.012em",
-        tighter2: "-0.025em",
+        tighter2: "-0.03em",
       },
     },
   },

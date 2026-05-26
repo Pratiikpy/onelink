@@ -1,0 +1,16 @@
+{
+  "status": "green",
+  "generatedAt": "2026-05-26T15:45:27.469Z",
+  "liveUrl": "https://onelink-mauve-nu.vercel.app",
+  "paymentUrl": "https://onelink-mauve-nu.vercel.app/pay/browser-wallet-qa-20260526154443-0-02-og0FX9",
+  "receiptUrl": "https://onelink-mauve-nu.vercel.app/receipt/7e41bf18-b61c-4af2-baeb-b10f219d58e8",
+  "amountUSDC": "0.02",
+  "creator": "0x8fD0be3b709827535e1d690C17a7e51f577cEcdB",
+  "payer": "0xf6F0888C3FBF62aFeb4c1cC929fE1C782D09B00a",
+  "slug": "browser-wallet-qa-20260526154443-0-02-og0FX9",
+  "id": "7e41bf18-b61c-4af2-baeb-b10f219d58e8",
+  "createHash": "0x31010fb359a647788a44d0219756e92f9cb618117ce4352c3fed128595521d44",
+  "approveHash": "0x66a0190974dbd96424a0432e3250ec41ac1e75442f4fd3c24fde9b49b519db98",
+  "payHash": "0x6b921b06d601e88cf1cdb0ea1eb5237cd89dc7220c0ef2ab6b910f46b312c4ab",
+  "reconciledTxHash": "0x6b921b06d601e88cf1cdb0ea1eb5237cd89dc7220c0ef2ab6b910f46b312c4ab"
+}

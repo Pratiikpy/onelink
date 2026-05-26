@@ -5,8 +5,8 @@
 
 :root {
   color-scheme: dark;
-  background: #08090c;
-  --font-feature-default: "ss01", "cv11";
+  background: #0a0a0c;
+  --font-feature-default: "ss01", "cv11", "tnum";
 }
 
 * {
@@ -21,17 +21,9 @@ body {
   min-height: 100vh;
   margin: 0;
   font-feature-settings: var(--font-feature-default);
-  /* Quiet, near-uniform background with a single subtle glow at the top.
-     Apple/Linear-style — restraint over decoration. */
-  background:
-    radial-gradient(
-      900px circle at 50% -10%,
-      rgba(124, 92, 255, 0.10),
-      transparent 60%
-    ),
-    #08090c;
-  color: #f5f4ff;
-  letter-spacing: -0.011em;
+  background: #0a0a0c;
+  color: #fafafa;
+  letter-spacing: -0.012em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -44,15 +36,25 @@ textarea {
 }
 
 ::selection {
-  background: rgba(124, 92, 255, 0.55);
-  color: #ffffff;
+  background: rgba(201, 242, 103, 0.55);
+  color: #0b0d12;
 }
 
-/* Glass replaced with a clean hairline surface — no inset highlight,
-   no double-stop gradient. One color, one border, done. */
-.glass {
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.surface {
+  background: #131316;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.surface-soft {
+  background: #1a1a1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mono-label {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(236, 238, 242, 0.45);
 }
 
 .text-balance {

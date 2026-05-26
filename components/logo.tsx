@@ -1,23 +1,58 @@
 import Link from "next/link";
+import { clsx } from "clsx";
 
-export function Logo({ compact = false }: { compact?: boolean }) {
+function RingMark({ className }: { className?: string }) {
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label="OneLink Collect home">
-      <span className="grid size-9 place-items-center rounded-[10px] border border-violet/40 bg-violet/10">
-        <span className="relative block size-5">
-          <span className="absolute left-0 top-1 h-3 w-3 rounded-[5px] border-2 border-violet" />
-          <span className="absolute bottom-1 right-0 h-3 w-3 rounded-[5px] border-2 border-violet" />
-          <span className="absolute left-[7px] top-[7px] h-1.5 w-2.5 rounded-full bg-violet" />
-        </span>
-      </span>
+    <svg viewBox="0 0 36 36" className={clsx("h-9 w-9", className)} aria-hidden>
+      <circle
+        cx="18"
+        cy="18"
+        r="13"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeDasharray="66 16"
+        transform="rotate(-40 18 18)"
+      />
+    </svg>
+  );
+}
+
+export function Logo({
+  compact = false,
+  variant = "default",
+}: {
+  compact?: boolean;
+  variant?: "default" | "pay";
+}) {
+  const isPay = variant === "pay";
+  return (
+    <Link
+      href="/"
+      className={clsx("inline-flex shrink-0 items-center", isPay ? "gap-1.5" : "gap-2 sm:gap-2.5")}
+      aria-label="onelink home"
+    >
+      <RingMark
+        className={clsx(
+          "text-white",
+          isPay ? "h-[18px] w-[18px]" : "h-8 w-8 sm:h-9 sm:w-9 xl:h-[30px] xl:w-[30px]",
+        )}
+      />
       {!compact && (
-        <span className="leading-none">
-          <span className="block text-lg font-semibold tracking-normal text-white">OneLink</span>
-          <span className="block text-[11px] font-medium uppercase tracking-[0.18em] text-violet">
-            Collect
-          </span>
+        <span
+          className={clsx(
+            "font-semibold leading-none tracking-tight",
+            isPay ? "text-[15px]" : "text-[26px] sm:text-[34px] xl:text-[24px]",
+          )}
+        >
+          onelink
         </span>
       )}
     </Link>
   );
+}
+
+export function RingIcon({ className }: { className?: string }) {
+  return <RingMark className={className} />;
 }

@@ -2,47 +2,108 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useAccount, useBalance, useChainId, useSwitchChain, useWriteContract } from "wagmi";
-import type { EIP1193Provider } from "viem";
-import type { BridgeParams, SpendParams } from "@circle-fin/app-kit";
-import { ArrowRight, BadgeCheck, Cable, ExternalLink, Loader2, Wallet2, WalletCards } from "lucide-react";
-import { Card, Button, Pill } from "@/components/ui";
-import { PaymentSummaryCard } from "@/components/payment-card";
-import { ARC_CHAIN_ID, ARC_USDC_ADDRESS, SUPPORTED_SOURCE_CHAINS, explorerTx } from "@/lib/arc";
+import { useAccount, useBalance, useChainId, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { Check, Copy, Share2 } from "lucide-react";
+import { ARC_CHAIN_ID, ARC_USDC_ADDRESS, getSourceChain } from "@/lib/arc";
+import { bridgeUsdcToArc, ENABLE_GATEWAY_ROUTE, spendGatewayBalanceOnArc } from "@/lib/circle-payments";
 import {
+  ALLOW_DEMO_MODE,
   erc20Abi,
   HAS_CONTRACT,
   ONELINK_CONTRACT_ADDRESS,
   oneLinkCollectAbi,
 } from "@/lib/contracts";
-import { amountToUnits, shortAddress, type PaymentLink, type PaymentMethod } from "@/lib/payments";
-import { getPaymentLinkBySlug, updatePaymentStatus } from "@/lib/storage";
+import { amountToUnits, shortAddress, type PaymentLink } from "@/lib/payments";
+import { shareOrCopy, useCopy } from "@/lib/share";
+import { confirmPaidSettlement, getPaymentLinkBySlug, updatePaymentStatus } from "@/lib/storage";
 
-type AppKitBridgeChain = "Arc_Testnet" | "Base_Sepolia" | "Ethereum_Sepolia" | "Arbitrum_Sepolia";
+type QuickRoute = "arc-direct" | "app-kit-bridge" | "unified-balance";
 
-type Step = {
-  label: string;
-  state: "idle" | "active" | "done" | "failed";
-};
+const availableRoutes: QuickRoute[] = ENABLE_GATEWAY_ROUTE
+  ? ["arc-direct", "app-kit-bridge", "unified-balance"]
+  : ["arc-direct", "app-kit-bridge"];
 
-const initialSteps: Step[] = [
-  { label: "Approve", state: "idle" },
-  { label: "Move USDC", state: "idle" },
-  { label: "Settle on Arc", state: "idle" },
-  { label: "Receipt", state: "idle" },
-];
+function statusLabel(link: PaymentLink, isExpired: boolean) {
+  if (link.status === "paid") return "Paid";
+  if (link.status === "processing") return "Processing";
+  if (link.status === "failed") return "Payment failed";
+  if (link.status === "cancelled") return "Cancelled";
+  if (link.status === "expired" || isExpired) return "Expired";
+  return "Unpaid";
+}
+
+function statusDot(link: PaymentLink, isExpired: boolean) {
+  if (link.status === "paid") return "bg-lime";
+  if (link.status === "processing") return "bg-amber";
+  if (link.status === "failed" || link.status === "cancelled" || link.status === "expired" || isExpired) {
+    return "bg-danger";
+  }
+  return "bg-white/75";
+}
+
+function makeDemoPayLink(slug: string): PaymentLink {
+  const now = new Date();
+  const expires = new Date(now);
+  expires.setDate(expires.getDate() + 7);
+  expires.setHours(14, 22, 0, 0);
+  return {
+    id: `demo-${slug || "pay"}`,
+    slug: slug || "9c3af80e",
+    creatorWallet: "0x7a2f0000000000000000000000000000000091c4",
+    recipientWallet: "0x7a2f0000000000000000000000000000000091c4",
+    amountUSDC: "250.00",
+    memo: "Branding work · invoice #0042",
+    status: "unpaid",
+    expiresAt: expires.toISOString(),
+    contractLinkId: "0x1111111111111111111111111111111111111111111111111111111111111111",
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+  };
+}
+
+function formatExpiry(expiresAt: string | null) {
+  if (!expiresAt) return "Never";
+  const d = new Date(expiresAt);
+  if (!Number.isFinite(d.getTime())) return "—";
+  const date = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  return `${date} · ${time}`;
+}
 
 export function PayLinkClient({ slug }: { slug: string }) {
   const { address, isConnected, connector } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
+  const arcClient = usePublicClient({ chainId: ARC_CHAIN_ID });
+
   const [link, setLink] = useState<PaymentLink | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [steps, setSteps] = useState(initialSteps);
-  const [method, setMethod] = useState<PaymentMethod>("arc-direct");
+  const [activity, setActivity] = useState("");
+  const { copied, copy } = useCopy();
+  const [route, setRoute] = useState<QuickRoute>("arc-direct");
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      setError("");
+      try {
+        const saved = await getPaymentLinkBySlug(slug);
+        const canShowDemoLink =
+          ALLOW_DEMO_MODE || !process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://");
+        setLink(saved ?? (canShowDemoLink ? makeDemoPayLink(slug) : null));
+      } catch (err) {
+        setLink(null);
+        setError(err instanceof Error ? err.message : "Could not load this payment link.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [slug]);
 
   const { data: usdcBalance } = useBalance({
     address,
@@ -51,98 +112,83 @@ export function PayLinkClient({ slug }: { slug: string }) {
     query: { enabled: Boolean(address) },
   });
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setLink(await getPaymentLinkBySlug(slug));
-      setLoading(false);
-    }
-    load();
-  }, [slug]);
-
+  const amountNumber = link ? Number(link.amountUSDC) : 0;
+  const hasDirectBalance = usdcBalance !== undefined;
+  const balanceNumber = hasDirectBalance ? Number(usdcBalance.formatted) : 0;
+  const displayExpiry = link?.id.startsWith("demo-") ? "Fri, May 30 · 14:22" : formatExpiry(link?.expiresAt ?? null);
   const isExpired = useMemo(() => {
     if (!link?.expiresAt) return false;
     return Date.now() > new Date(link.expiresAt).getTime();
   }, [link]);
 
-  const balanceNumber = usdcBalance ? Number(usdcBalance.formatted) : 0;
-  const amountNumber = link ? Number(link.amountUSDC) : 0;
-  const insufficient =
-    isConnected && Number.isFinite(balanceNumber) && balanceNumber < amountNumber;
-  const wrongChain = isConnected && chainId !== ARC_CHAIN_ID;
+  const isClosed = link?.status === "paid" || link?.status === "cancelled" || isExpired;
 
-  function setStep(index: number, state: Step["state"]) {
-    setSteps((current) =>
-      current.map((step, stepIndex) => (stepIndex === index ? { ...step, state } : step)),
-    );
-  }
-
-  async function settleOnArc(selectedMethod: PaymentMethod) {
+  async function settleOnArc(method: "arc-direct" | "app-kit-bridge" | "unified-balance" | "demo") {
     if (!link || !address) return;
 
     if (HAS_CONTRACT) {
-      setStep(0, "active");
+      if (!arcClient) throw new Error("Arc RPC client is not available.");
+      setActivity("Switching to Arc for settlement...");
       await switchChainAsync({ chainId: ARC_CHAIN_ID });
-      const approvalHash = await writeContractAsync({
+      setActivity("Approving Arc USDC...");
+      const approveHash = await writeContractAsync({
         address: ARC_USDC_ADDRESS,
         abi: erc20Abi,
         functionName: "approve",
         args: [ONELINK_CONTRACT_ADDRESS, amountToUnits(link.amountUSDC)],
       });
-      setStep(0, "done");
+      const approveReceipt = await arcClient.waitForTransactionReceipt({ hash: approveHash });
+      if (approveReceipt.status !== "success") throw new Error("USDC approval failed on Arc.");
 
-      setStep(2, "active");
-      const payHash = await writeContractAsync({
-        address: ONELINK_CONTRACT_ADDRESS,
-        abi: oneLinkCollectAbi,
-        functionName: "payLink",
-        args: [link.contractLinkId],
-      });
-      setStep(2, "done");
-      setStep(3, "done");
+      setActivity("Submitting Arc settlement...");
+      const payHash =
+        link.settlementMode === "profile"
+          ? await writeContractAsync({
+              address: ONELINK_CONTRACT_ADDRESS,
+              abi: oneLinkCollectAbi,
+              functionName: "payRecipient",
+              args: [link.contractLinkId, link.recipientWallet, amountToUnits(link.amountUSDC)],
+            })
+          : await writeContractAsync({
+              address: ONELINK_CONTRACT_ADDRESS,
+              abi: oneLinkCollectAbi,
+              functionName: "payLink",
+              args: [link.contractLinkId],
+            });
+      const receipt = await arcClient.waitForTransactionReceipt({ hash: payHash });
+      if (receipt.status !== "success") throw new Error("Arc settlement transaction failed.");
 
-      // Reference approvalHash so it's not stripped by minifier and to keep
-      // the approve-then-pay flow auditable via wallet activity logs.
-      void approvalHash;
-
-      const paid = await updatePaymentStatus(link.id, "paid", {
+      const paid = await confirmPaidSettlement(link.id, {
         txHash: payHash,
         payerWallet: address,
-        paymentMethod: selectedMethod,
-        sourceChain: selectedMethod === "arc-direct" ? "Arc_Testnet" : "Bridged",
+        paymentMethod: method,
+        sourceChain: method === "arc-direct" ? "Arc_Testnet" : "Bridged",
       });
       if (paid) setLink(paid);
-    } else {
-      setStep(0, "done");
-      setStep(2, "active");
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      setStep(2, "done");
-      setStep(3, "done");
-
-      // Demo tx hashes are tagged 0xDEM0… so they are never mistaken for an
-      // on-chain settlement in receipts or copy/paste workflows.
-      const demoSuffix = crypto
-        .randomUUID()
-        .replaceAll("-", "")
-        .toUpperCase()
-        .slice(0, 60)
-        .padEnd(60, "0");
-      const paid = await updatePaymentStatus(link.id, "paid", {
-        txHash: `0xDEM0${demoSuffix}` as `0x${string}`,
-        payerWallet: address,
-        paymentMethod: "demo",
-        sourceChain: "Arc_Testnet demo",
-      });
-      if (paid) setLink(paid);
-    }
-  }
-
-  async function payDirect() {
-    setError("");
-    if (!isConnected || !address) {
-      setError("Connect a wallet first.");
+      setActivity("Settled on Arc.");
       return;
     }
+
+    setActivity("Recording preview-only demo settlement...");
+    const demoSuffix = crypto
+      .randomUUID()
+      .replaceAll("-", "")
+      .toUpperCase()
+      .slice(0, 60)
+      .padEnd(60, "0");
+    const paid = await updatePaymentStatus(link.id, "paid", {
+      txHash: `0xDEM0${demoSuffix}` as `0x${string}`,
+      payerWallet: address,
+      paymentMethod: "demo",
+      sourceChain: "Arc_Testnet demo",
+    });
+    if (paid) setLink(paid);
+  }
+
+  async function pay() {
+    setError("");
+    setActivity("");
+    if (!isConnected || !address) return;
     if (!link) return;
     if (isExpired) {
       setError("This payment link is expired.");
@@ -150,310 +196,267 @@ export function PayLinkClient({ slug }: { slug: string }) {
     }
 
     setBusy(true);
-    setSteps(initialSteps);
     try {
-      await settleOnArc("arc-direct");
-    } catch (err) {
-      setStep(2, "failed");
-      setError(err instanceof Error ? err.message : "Arc payment failed.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function bridgeAndPay(sourceChainId: number, sourceChain: AppKitBridgeChain) {
-    setError("");
-    if (!connector || !address || !link) {
-      setError("Connect a wallet first.");
-      return;
-    }
-
-    setBusy(true);
-    setSteps(initialSteps);
-    setMethod("app-kit-bridge");
-    try {
-      setStep(0, "active");
-      if (chainId !== sourceChainId) {
-        await switchChainAsync({ chainId: sourceChainId });
+      if (!HAS_CONTRACT) {
+        await settleOnArc("demo");
+        return;
       }
-      const provider = (await connector.getProvider()) as EIP1193Provider;
-      const [{ AppKit }, { createViemAdapterFromProvider }] = await Promise.all([
-        import("@circle-fin/app-kit"),
-        import("@circle-fin/adapter-viem-v2"),
-      ]);
-      const kit = new AppKit();
-      const adapter = await createViemAdapterFromProvider({ provider });
-      setStep(0, "done");
-      setStep(1, "active");
 
-      const bridgeParams: BridgeParams = {
-        from: { adapter, chain: sourceChain },
-        to: { adapter, chain: "Arc_Testnet", useForwarder: true },
-        amount: link.amountUSDC,
-        token: "USDC",
-      };
-      await kit.bridge(bridgeParams);
+      if (route === "arc-direct") {
+        const processing = await updatePaymentStatus(link.id, "processing", {
+          payerWallet: address,
+          paymentMethod: "arc-direct",
+          sourceChain: "Arc_Testnet",
+        });
+        if (processing) setLink(processing);
+        await settleOnArc("arc-direct");
+      }
 
-      setStep(1, "done");
-      await settleOnArc("app-kit-bridge");
+      if (route === "app-kit-bridge") {
+        if (!connector) throw new Error("Wallet connector missing.");
+        const source = getSourceChain(chainId);
+        if (!source) {
+          throw new Error("Select a supported testnet source chain. Base Sepolia is the verified bridge route.");
+        }
+        const processing = await updatePaymentStatus(link.id, "processing", {
+          payerWallet: address,
+          paymentMethod: "app-kit-bridge",
+          sourceChain: source.appKitName,
+        });
+        if (processing) setLink(processing);
+        setActivity(`Bridging USDC from ${source.label} to Arc via Circle CCTP...`);
+        await bridgeUsdcToArc({ connector, source, amount: link.amountUSDC, recipient: address });
+        await settleOnArc("app-kit-bridge");
+      }
+
+      if (route === "unified-balance") {
+        if (!connector) throw new Error("Wallet connector missing.");
+        const processing = await updatePaymentStatus(link.id, "processing", {
+          payerWallet: address,
+          paymentMethod: "unified-balance",
+          sourceChain: "Gateway_Unified_Testnet",
+        });
+        if (processing) setLink(processing);
+        setActivity("Spending your unified Gateway USDC balance onto Arc...");
+        await spendGatewayBalanceOnArc({ connector, amount: link.amountUSDC, recipient: address });
+        await settleOnArc("unified-balance");
+      }
     } catch (err) {
-      setStep(1, "failed");
-      setError(err instanceof Error ? err.message : "Bridge and pay failed.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function spendUnifiedBalance() {
-    setError("");
-    if (!connector || !address || !link) {
-      setError("Connect a wallet first.");
-      return;
-    }
-
-    setBusy(true);
-    setSteps(initialSteps);
-    setMethod("unified-balance");
-    try {
-      const provider = (await connector.getProvider()) as EIP1193Provider;
-      const [{ AppKit }, { createViemAdapterFromProvider }] = await Promise.all([
-        import("@circle-fin/app-kit"),
-        import("@circle-fin/adapter-viem-v2"),
-      ]);
-      const kit = new AppKit();
-      const adapter = await createViemAdapterFromProvider({ provider });
-      setStep(1, "active");
-
-      const spendParams: SpendParams = {
-        from: { adapter },
-        amount: link.amountUSDC,
-        token: "USDC",
-        to: {
-          adapter,
-          chain: "Arc_Testnet",
-          recipientAddress: link.recipientWallet,
-        },
-      };
-      await kit.unifiedBalance.spend(spendParams);
-
-      setStep(1, "done");
-      await settleOnArc("unified-balance");
-    } catch (err) {
-      setStep(1, "failed");
-      setError(err instanceof Error ? err.message : "Unified Balance spend failed.");
+      if (link && HAS_CONTRACT) {
+        const failed = await updatePaymentStatus(link.id, "failed", {
+          payerWallet: address,
+          paymentMethod: route,
+          sourceChain:
+            route === "unified-balance" ? "Gateway_Unified_Testnet" : getSourceChain(chainId)?.appKitName,
+        });
+        if (failed) setLink(failed);
+      }
+      setActivity("");
+      setError(err instanceof Error ? err.message : "Payment failed.");
     } finally {
       setBusy(false);
     }
   }
 
   if (loading) {
-    return (
-      <Card className="mx-auto max-w-md text-center">
-        <Loader2 className="mx-auto size-6 animate-spin text-violet" />
-        <p className="mt-3 font-bold text-white/60">Loading payment link</p>
-      </Card>
-    );
+    return <p className="pt-8 text-center text-base text-white/65">Loading payment link…</p>;
   }
 
   if (!link) {
     return (
-      <Card className="mx-auto max-w-md text-center">
-        <p className="text-2xl font-black">Link not found</p>
-        <p className="mt-2 text-white/50">This request is not in local cache or Supabase.</p>
-        <Link href="/">
-          <Button className="mt-5">Create a link</Button>
-        </Link>
-      </Card>
+      <div className="mx-auto grid h-full max-w-[342px] place-items-center pb-4 pt-2">
+        <div className="text-center">
+          <p className="mono-label text-[11px]">Payment link</p>
+          <h1 className="mt-4 text-[30px] font-medium tracking-tight">
+            {error ? "Could not load link" : "Link not found"}
+          </h1>
+          <p className="mt-3 text-[14px] text-white/45">
+            {error || "Ask the sender for a fresh OneLink URL."}
+          </p>
+        </div>
+      </div>
     );
   }
 
+  const missingDirect =
+    hasDirectBalance && Number.isFinite(balanceNumber) ? Math.max(0, amountNumber - balanceNumber) : 0;
+  const paymentUrl =
+    typeof window === "undefined" ? `/pay/${link.slug}` : `${window.location.origin}/pay/${link.slug}`;
+
+  async function sharePaymentLink(payment: PaymentLink) {
+    await shareOrCopy({
+      title: `Pay ${payment.amountUSDC} USDC with OneLink`,
+      text: payment.memo,
+      url: paymentUrl,
+    });
+  }
+
   return (
-    <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-      <PaymentSummaryCard link={link} />
-
-      <section className="space-y-4">
-        <Card className="space-y-5">
-          {link.status !== "paid" && link.status !== "cancelled" && (
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-white/45">Available on Arc</p>
-                <p className="text-4xl font-black">
-                  {usdcBalance ? Number(usdcBalance.formatted).toFixed(2) : "0.00"}
-                  <span className="text-lg text-white/42"> USDC</span>
-                </p>
-              </div>
-              <div className="grid size-14 place-items-center rounded-2xl border border-violet/30 bg-violet/10">
-                <WalletCards className="size-6 text-violet" />
-              </div>
-            </div>
-          )}
-
-          <div className="grid gap-2">
-            <Button
-              onClick={payDirect}
-              disabled={
-                busy ||
-                link.status === "paid" ||
-                link.status === "cancelled" ||
-                isExpired ||
-                !isConnected ||
-                insufficient
-              }
-              className="w-full"
-            >
-              {busy && method === "arc-direct" ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : link.status === "paid" ? (
-                <BadgeCheck className="size-4" />
-              ) : (
-                <ArrowRight className="size-4" />
-              )}
-              {link.status === "paid"
-                ? "Already paid"
-                : link.status === "cancelled"
-                  ? "Cancelled by creator"
-                  : !isConnected
-                    ? "Connect wallet to pay"
-                    : insufficient
-                      ? `Need ${(amountNumber - balanceNumber).toFixed(2)} more USDC on Arc`
-                      : "Pay on Arc"}
-            </Button>
-
-            <div className="rounded-2xl border border-white/8 bg-white/[0.025] p-3">
-              <p className="px-1 pb-2 text-[11px] font-black uppercase tracking-[0.18em] text-white/40">
-                Or bridge from another chain
-              </p>
-              <div className="grid gap-2 sm:grid-cols-3">
-                {SUPPORTED_SOURCE_CHAINS.map((chain) => (
-                  <Button
-                    key={chain.id}
-                    variant="secondary"
-                    onClick={() => bridgeAndPay(chain.id, chain.appKitName)}
-                    disabled={
-                      busy ||
-                      link.status === "paid" ||
-                      link.status === "cancelled" ||
-                      isExpired ||
-                      !isConnected
-                    }
-                    className="w-full"
-                  >
-                    <Cable className="size-4" />
-                    {chain.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <Button
-              variant="secondary"
-              onClick={spendUnifiedBalance}
-              disabled={
-                busy ||
-                link.status === "paid" ||
-                link.status === "cancelled" ||
-                isExpired ||
-                !isConnected
-              }
-              className="w-full"
-            >
-              <Wallet2 className="size-4" />
-              Pay with Circle Unified Balance
-            </Button>
+    <div className="mx-auto flex h-full max-w-[342px] flex-col">
+      <div className="-mt-[15px] space-y-[26px]">
+        <div>
+          <p className="mono-label text-[10px]">You&apos;re paying</p>
+          <div className="mt-[7px] flex items-center gap-3">
+            <span className="size-[25px] rounded-full bg-white/25" />
+            <p className="text-[13px] font-medium">{shortAddress(link.recipientWallet)}</p>
           </div>
+        </div>
 
-          {wrongChain && !insufficient && isConnected && (
-            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-3 text-sm font-semibold text-amber-100">
-              Your wallet is on a different chain. Pay-on-Arc will prompt a chain switch before
-              sending.
-            </div>
-          )}
-
-          {insufficient && (
-            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-3 text-sm font-semibold text-amber-100">
-              Not enough Arc USDC to pay directly. Use Bridge or Unified Balance, or top up at the
-              Circle faucet.
-            </div>
-          )}
-
-          {error && (
-            <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-200">
-              {error}
-            </div>
-          )}
-
-          {isExpired && (
-            <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-200">
-              This link is expired.
-            </div>
-          )}
-
-          {link.status === "cancelled" && (
-            <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-200">
-              The creator cancelled this payment link. Reach out to them for a new one.
-            </div>
-          )}
-        </Card>
-
-        <Card className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-black uppercase tracking-[0.16em] text-white/38">Flow</p>
-            <Pill>{HAS_CONTRACT ? "Contract mode" : "Demo mode"}</Pill>
+        <div>
+          <p className="mono-label text-[10px]">Amount</p>
+          <div className="mt-[8px] flex items-end gap-[5px]">
+            <p className="text-[66px] leading-none tracking-[-0.065em]">
+              {Number(link.amountUSDC).toFixed(2)}
+            </p>
+            <span className="pb-[7px] text-[14px] font-medium text-white/58">USDC</span>
           </div>
-          <div className="space-y-2">
-            {steps.map((step, index) => (
-              <div
-                key={step.label}
-                className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.03] p-3"
-              >
-                <span
-                  className={`grid size-8 place-items-center rounded-xl text-xs font-black ${
-                    step.state === "done"
-                      ? "bg-mint text-ink"
-                      : step.state === "active"
-                        ? "bg-violet text-ink"
-                        : step.state === "failed"
-                          ? "bg-red-300 text-ink"
-                          : "bg-white/8 text-white/40"
+        </div>
+
+        <div>
+          <p className="mono-label text-[10px]">Memo</p>
+          <p className="mt-[9px] whitespace-nowrap text-[16px] font-medium leading-none">{link.memo}</p>
+        </div>
+
+        <div className="surface rounded-[14px] px-[16px] py-[12px]">
+          <div className="flex items-center justify-between gap-5">
+            <div>
+              <p className="text-[13px] font-medium text-white/55">Expires</p>
+              <p className="mt-[2px] text-[14px]">{displayExpiry}</p>
+            </div>
+            <span className="inline-flex items-center gap-[6px] rounded-full border border-white/[0.08] bg-white/[0.04] px-[10px] py-[5px] text-[12px] font-semibold text-white/88">
+              <span className={`size-[7px] rounded-full ${statusDot(link, isExpired)}`} />
+              {statusLabel(link, isExpired)}
+            </span>
+          </div>
+        </div>
+
+        {isConnected && !isClosed && (
+          <div className="rounded-[14px] border border-white/10 bg-[#1A1A1E] p-1.5">
+            <div className="grid grid-cols-3 gap-2">
+              {availableRoutes.map((nextRoute) => (
+                <button
+                  key={nextRoute}
+                  type="button"
+                  onClick={() => setRoute(nextRoute)}
+                  className={`h-9 rounded-[9px] text-[13px] ${
+                    route === nextRoute ? "bg-ink text-snow" : "text-white/55"
                   }`}
                 >
-                  {index + 1}
-                </span>
-                <span className="font-bold text-white/78">{step.label}</span>
-              </div>
-            ))}
+                  {nextRoute === "arc-direct"
+                    ? "Arc"
+                    : nextRoute === "app-kit-bridge"
+                      ? "Bridge"
+                      : "Unified"}
+                </button>
+              ))}
+            </div>
           </div>
-        </Card>
+        )}
 
-        <Card className="space-y-2">
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-white/38">
-            How it settles
-          </p>
-          <p className="text-sm font-medium leading-6 text-white/55">
-            Pick a source chain above. Circle CCTP burns USDC there and mints it on Arc
-            Testnet — typically within seconds. Unified Balance lets you spend across chains in a
-            single call.
-          </p>
-        </Card>
+        {isConnected && route === "arc-direct" && hasDirectBalance && missingDirect > 0 && !isClosed && (
+          <p className="text-[12px] text-amber">Need {missingDirect.toFixed(2)} more Arc USDC for direct pay.</p>
+        )}
 
-        {link.txHash && (
-          <a
-            href={explorerTx(link.txHash)}
+        {isConnected && route === "app-kit-bridge" && !isClosed && (
+          <p className="text-[12px] text-white/48">
+            Base Sepolia proven · Ethereum Sepolia, Arbitrum Sepolia, Polygon Amoy beta.
+          </p>
+        )}
+
+        {ENABLE_GATEWAY_ROUTE && isConnected && route === "unified-balance" && !isClosed && (
+          <p className="text-[12px] text-white/48">Uses confirmed USDC previously deposited into Circle Gateway.</p>
+        )}
+
+        {activity && <p className="text-[12px] text-lime">{activity}</p>}
+        {error && <p className="text-[12px] text-[#ffbcbc]">{error}</p>}
+      </div>
+
+      <div className="mt-auto pt-6">
+        <div className="mx-auto max-w-[342px]">
+          {link.status === "paid" ? (
+            <Link
+              href={`/receipt/${link.id}`}
+              className="inline-flex h-[58px] w-full items-center justify-center rounded-[14px] bg-lime text-[16px] font-medium tracking-tight text-ink"
+            >
+              View verified receipt
+            </Link>
+          ) : isConnected ? (
+            <button
+              type="button"
+              onClick={pay}
+              disabled={
+                busy ||
+                isClosed ||
+                (route === "arc-direct" && hasDirectBalance && missingDirect > 0) ||
+                !Number.isFinite(amountNumber)
+              }
+              className="inline-flex h-[58px] w-full items-center justify-center rounded-[14px] bg-lime text-[16px] font-medium tracking-tight text-ink disabled:opacity-45"
+            >
+              {busy
+                ? "Processing..."
+                : link.status === "cancelled"
+                    ? "Link cancelled"
+                    : isExpired
+                      ? "Link expired"
+                      : route === "arc-direct"
+                        ? "Pay on Arc"
+                        : route === "app-kit-bridge"
+                          ? "Bridge & pay"
+                          : "Pay with unified balance"}
+            </button>
+          ) : (
+            <ConnectButton.Custom>
+              {({ openConnectModal }) => (
+                <button
+                  type="button"
+                  onClick={openConnectModal}
+                  className="inline-flex h-[58px] w-full items-center justify-center rounded-[14px] bg-lime text-[16px] font-medium tracking-tight text-ink"
+                >
+                  Connect wallet
+                </button>
+              )}
+            </ConnectButton.Custom>
+          )}
+          <p className="mt-[11px] text-center text-[12px] text-white/35">
+            {link.status === "paid"
+              ? "Settlement verified on Arc Testnet"
+              : link.status === "cancelled"
+                ? "This request is no longer accepting payment"
+                : isExpired
+                  ? "This request is no longer accepting payment"
+                  : !isConnected
+              ? "You'll choose a chain after connecting"
+              : `Connected: ${shortAddress(address)}${HAS_CONTRACT ? "" : " · demo settlement mode"}`}
+          </p>
+          <Link
+            href="/security"
             target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-2 text-sm font-bold text-violet"
+            className="mt-3 block text-center text-[12px] text-white/42 transition hover:text-white/70"
           >
-            View final settlement
-            <ExternalLink className="size-4" />
-          </a>
-        )}
-
-        {address && (
-          <p className="text-center text-xs font-semibold text-white/35">
-            Connected payer · {shortAddress(address)}
-          </p>
-        )}
-      </section>
+            Verification and testnet scope
+          </Link>
+          {link.status === "unpaid" && (
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => copy(paymentUrl)}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] border border-white/10 text-[13px] font-medium text-white/68"
+              >
+                {copied ? <Check className="size-4 text-lime" /> : <Copy className="size-4" />}
+                {copied ? "Copied" : "Copy link"}
+              </button>
+              <button
+                type="button"
+                onClick={() => sharePaymentLink(link)}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] border border-white/10 text-[13px] font-medium text-white/68"
+              >
+                <Share2 className="size-4" />
+                Share
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

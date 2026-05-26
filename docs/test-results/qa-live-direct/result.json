@@ -1,0 +1,29 @@
+{
+  "status": "green",
+  "generatedAt": "2026-05-26T15:20:29.081Z",
+  "liveUrl": "https://onelink-mauve-nu.vercel.app",
+  "paymentUrl": "https://onelink-mauve-nu.vercel.app/pay/qa-live-20260526152021",
+  "receiptUrl": "https://onelink-mauve-nu.vercel.app/receipt/c1ee1418-21a2-40bc-8ecd-bd51d3999267",
+  "arcscan": "https://testnet.arcscan.app/tx/0x54117d84667f38bf4c05ead3d7baba5e18d1adcb1243ef25b4a223d2c54ba72e",
+  "creator": "0x8fD0be3b709827535e1d690C17a7e51f577cEcdB",
+  "payer": "0xf6F0888C3FBF62aFeb4c1cC929fE1C782D09B00a",
+  "amountUSDC": "0.25",
+  "id": "c1ee1418-21a2-40bc-8ecd-bd51d3999267",
+  "slug": "qa-live-20260526152021",
+  "linkId": "0x8b8f135e3ca47556d0eab304e73e5451d8e9dcf8bcea7991d2b432ebc50c9eea",
+  "createHash": "0x2b9656b38a109c41ca3555c8a42bd58096d8354801b6029de4db222f0dab10b7",
+  "approveHash": "0x27c9fbd806de327d74422d805fc31372569ec314ef46bc9daf4405e52deda2f3",
+  "payHash": "0x54117d84667f38bf4c05ead3d7baba5e18d1adcb1243ef25b4a223d2c54ba72e",
+  "balancesBefore": {
+    "creatorNativeUSDC18": "20.933417182417756843",
+    "payerNativeUSDC18": "19.589951337563833389",
+    "payerErc20USDC6": "19.589951"
+  },
+  "supabaseRow": {
+    "status": "paid",
+    "tx_hash": "0x54117d84667f38bf4c05ead3d7baba5e18d1adcb1243ef25b4a223d2c54ba72e",
+    "payer_wallet": "0xf6F0888C3FBF62aFeb4c1cC929fE1C782D09B00a",
+    "payment_method": "arc-direct",
+    "source_chain": "Arc_Testnet"
+  }
+}

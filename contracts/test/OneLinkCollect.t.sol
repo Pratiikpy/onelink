@@ -165,6 +165,40 @@ contract OneLinkCollectTest is Test {
         vm.stopPrank();
     }
 
+    // --- payRecipient (reusable profile links) -------------------------------
+
+    function testPayRecipientSplitsFee() public {
+        bytes32 paymentId = keccak256("profile-payment");
+
+        vm.startPrank(payer);
+        usdc.approve(address(collect), amount);
+        collect.payRecipient(paymentId, recipient, amount);
+        vm.stopPrank();
+
+        assertEq(usdc.balanceOf(recipient), 99_500_000);
+        assertEq(usdc.balanceOf(feeRecipient), 500_000);
+    }
+
+    function testCannotDoublePayRecipientReference() public {
+        bytes32 paymentId = keccak256("profile-payment");
+
+        vm.startPrank(payer);
+        usdc.approve(address(collect), amount);
+        collect.payRecipient(paymentId, recipient, amount);
+        vm.expectRevert(OneLinkCollect.LinkAlreadyPaid.selector);
+        collect.payRecipient(paymentId, recipient, amount);
+        vm.stopPrank();
+    }
+
+    function testPayRecipientRejectsInvalidInput() public {
+        vm.startPrank(payer);
+        vm.expectRevert(OneLinkCollect.InvalidRecipient.selector);
+        collect.payRecipient(linkId, address(0), amount);
+        vm.expectRevert(OneLinkCollect.InvalidAmount.selector);
+        collect.payRecipient(linkId, recipient, 0);
+        vm.stopPrank();
+    }
+
     // --- cancelLink -----------------------------------------------------------
 
     function testCancelLinkBlocksPayment() public {

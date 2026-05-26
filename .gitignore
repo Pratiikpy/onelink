@@ -16,3 +16,4 @@ tsconfig.tsbuildinfo
 .vercel
 .claude
 .playwright-mcp
+tmp-ui-check/

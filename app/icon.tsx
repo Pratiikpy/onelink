@@ -10,18 +10,26 @@ export default function Icon() {
         style={{
           width: "100%",
           height: "100%",
-          background: "#050507",
+          background: "#0A0A0C",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#8F84FF",
-          fontWeight: 900,
-          fontSize: 36,
-          letterSpacing: "-0.02em",
           borderRadius: 14,
         }}
       >
-        OL
+        <svg width="40" height="40" viewBox="0 0 36 36">
+          <circle
+            cx="18"
+            cy="18"
+            r="13"
+            fill="none"
+            stroke="#C9F267"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeDasharray="66 16"
+            transform="rotate(-40 18 18)"
+          />
+        </svg>
       </div>
     ),
     { ...size },

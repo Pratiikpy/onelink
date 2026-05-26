@@ -1,27 +1,29 @@
 import Link from "next/link";
-import { Compass, Home } from "lucide-react";
+import { Logo } from "@/components/logo";
 
 export default function NotFound() {
   return (
-    <main className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center gap-5 px-6 text-center">
-      <div className="grid size-16 place-items-center rounded-2xl border border-violet/30 bg-violet/10">
-        <Compass className="size-8 text-violet" />
+    <main className="flex min-h-screen items-center justify-center bg-ink px-6 text-snow">
+      <section className="surface max-w-[720px] rounded-[34px] p-10 text-center">
+      <div className="flex justify-center">
+        <Logo />
       </div>
       <div>
-        <p className="text-sm font-black uppercase tracking-[0.18em] text-violet">404</p>
-        <h1 className="mt-2 text-3xl font-black text-white">Nothing at this link</h1>
-        <p className="mt-2 text-white/55">
-          The page or payment link you tried to open doesn&apos;t exist. Check the URL, or start a
-          new collection.
+        <p className="mono-label mt-10 text-[14px]">404</p>
+        <h1 className="mt-4 text-[64px] font-medium leading-none tracking-[-0.04em] text-white">
+          Nothing at this link
+        </h1>
+        <p className="mx-auto mt-5 max-w-[520px] text-[24px] leading-[1.35] text-white/55">
+          Check the URL, or start a new OneLink collection.
         </p>
       </div>
       <Link
-        href="/"
-        className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-violet px-6 text-sm font-bold text-ink shadow-glow"
+        href="/create"
+        className="mt-8 inline-flex h-16 items-center justify-center rounded-[22px] bg-lime px-10 text-[22px] font-medium text-ink"
       >
-        <Home className="size-4" />
-        Back to home
+        Create a link
       </Link>
+      </section>
     </main>
   );
 }

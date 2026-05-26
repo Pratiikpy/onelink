@@ -8,16 +8,16 @@ export const HAS_CONTRACT =
 
 export const PLATFORM_FEE_BPS = Number(process.env.NEXT_PUBLIC_PLATFORM_FEE_BPS || 0);
 
-// When deploying to production, opt-out of demo mode by NOT setting
-// NEXT_PUBLIC_ALLOW_DEMO. Without a contract address, the app will refuse
-// to render so a misconfigured deploy can't silently fake payments.
-const ALLOW_DEMO_IN_PROD = process.env.NEXT_PUBLIC_ALLOW_DEMO === "true";
+export const ALLOW_DEMO_MODE = process.env.NEXT_PUBLIC_ALLOW_DEMO === "true";
+
+const publicAppUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+const isPublicDeploy = publicAppUrl.startsWith("https://");
 
 if (
   process.env.NODE_ENV === "production" &&
+  isPublicDeploy &&
   !HAS_CONTRACT &&
-  !ALLOW_DEMO_IN_PROD &&
-  typeof window !== "undefined"
+  !ALLOW_DEMO_MODE
 ) {
   throw new Error(
     "OneLink production build is missing NEXT_PUBLIC_ONELINK_CONTRACT_ADDRESS. " +
@@ -44,6 +44,17 @@ export const oneLinkCollectAbi = [
     name: "payLink",
     stateMutability: "nonpayable",
     inputs: [{ name: "linkId", type: "bytes32" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "payRecipient",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "paymentId", type: "bytes32" },
+      { name: "recipient", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
     outputs: [],
   },
   {

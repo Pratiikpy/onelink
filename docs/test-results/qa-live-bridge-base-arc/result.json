@@ -1,0 +1,36 @@
+{
+  "status": "green",
+  "generatedAt": "2026-05-26T12:01:42.732Z",
+  "wallet": "0xf6F0888C3FBF62aFeb4c1cC929fE1C782D09B00a",
+  "route": "Base_Sepolia -> Arc_Testnet",
+  "amountUSDC": "0.50",
+  "state": "success",
+  "balances": {
+    "baseBefore": "20",
+    "baseAfter": "19.5",
+    "arcBefore": "19.557924",
+    "arcAfter": "20.054067"
+  },
+  "steps": [
+    {
+      "name": "approve",
+      "state": "success",
+      "txHash": "0xad1975f1b71140c4f5414ce64fbcddbe892cd37e061ddc9946c784eb318a610f"
+    },
+    {
+      "name": "burn",
+      "state": "success",
+      "txHash": "0xbffcd6157ac78aa11d38dc834bcd995ae55d606ad278dac99fd345999b379b7a"
+    },
+    {
+      "name": "fetchAttestation",
+      "state": "success",
+      "txHash": null
+    },
+    {
+      "name": "mint",
+      "state": "success",
+      "txHash": "0x89bbfa9a46d7e0cebe04648a37d963f8f48a2ff8d69291b11d29ccde1c723512"
+    }
+  ]
+}

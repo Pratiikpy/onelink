@@ -12,7 +12,7 @@ export default async function PayPage({ params }: { params: Promise<{ slug: stri
   const { slug } = await params;
 
   return (
-    <AppShell>
+    <AppShell mode="pay">
       <PayLinkClient slug={slug} />
     </AppShell>
   );

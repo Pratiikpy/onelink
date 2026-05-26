@@ -7,10 +7,10 @@
 
 | | |
 |---|---|
-| **Status** | v1 — pre-launch |
+| **Status** | v1 — live Arc Testnet demo scope |
 | **Owner** | Pratik (@Pratiikpy) |
 | **Network** | Arc Testnet (chain id 5042002) — USDC as native gas |
-| **Last updated** | 2026-05-25 |
+| **Last updated** | 2026-05-26 |
 
 ---
 
@@ -26,16 +26,16 @@ receipts.
 
 - USDC is the largest stablecoin and Arc (Circle's purpose-built chain) makes
   it the native gas token — sub-second settlement, no ETH-for-gas friction.
-- Circle App Kit (GA Aug 2025) ships a single SDK that bridges USDC from
-  any chain into Arc via CCTP and spends across chains via Unified Balance.
-- Wallet UX in 2026 is dramatically better than 2022 — connecting with a
-  phone + QR is now a 5-second flow on every major wallet.
+- Circle App Kit provides the CCTP bridge path used by OneLink's proven
+  Base Sepolia to Arc Testnet payment flow.
+- WalletConnect lets a payer approve testnet settlement from a compatible
+  connected wallet without sharing private key material with OneLink.
 
 **The opportunity.** *Stripe Payment Links, but for USDC on Arc.* A clean,
 mobile-first, copy-and-paste payment link with on-chain settlement and a
 verifiable Arcscan receipt.
 
-**One-line positioning.** *One link. Any USDC. Instantly on Arc.*
+**One-line positioning.** *One link. Supported USDC routes. Verified on Arc.*
 
 ---
 
@@ -46,7 +46,7 @@ verifiable Arcscan receipt.
 | **Independent designer / dev** *(primary)* | "Pay me 250 USDC for the branding work" | Create a link in under 30 seconds, paste it in iMessage / Slack / Twitter, get a verifiable receipt. |
 | **Crypto-native team / DAO** | Recurring contributor payouts | Bulk-link generation, CSV export, multi-recipient. *(v2)* |
 | **Web3 founder collecting beta sub fees** | Small, ad-hoc charges | Public-facing link, zero wallet-setup friction for the payer. |
-| **The payer** *(secondary but critical)* | "I owe Pratik USDC, here's a link" | Mobile-first flow that works on any chain they have funds on. |
+| **The payer** *(secondary but critical)* | "I owe Pratik USDC, here's a link" | Mobile-first flow with an honest supported-route choice and a verified receipt. |
 
 ### Anti-personas (not designing for)
 
@@ -61,7 +61,7 @@ verifiable Arcscan receipt.
 A successful v1 satisfies all four:
 
 1. **Create a link in under 30 seconds** — amount + memo + (optional) expiry. Recipient defaults to the connected wallet.
-2. **Pay in under 30 seconds** — open the link on a phone, connect a wallet, tap pay. If the payer's USDC lives on a non-Arc chain, CCTP bridges it in via a single tap.
+2. **Pay through a supported route** — open the link on a phone, connect a wallet, and either pay directly on Arc Testnet or bridge funded Base Sepolia USDC to Arc via CCTP.
 3. **Receipt in under 5 seconds** — on-chain settlement, Arcscan transaction link, status flips to paid.
 4. **Track everything** — a creator surface showing every link the user has created, with copy / share / cancel actions per link.
 
@@ -79,6 +79,7 @@ intermediate screens and how they're composed is a design call.
 ```
 Creator lands on the product → connects a wallet → fills amount + memo + (optional) expiry
        → confirms the on-chain createLink transaction
+       → server verifies the PaymentLinkCreated event and registers the shared invoice
        → arrives at a shareable URL for that specific link
        → copies or natively shares the URL
 ```
@@ -96,6 +97,7 @@ Creator lands on the product → connects a wallet → fills amount + memo + (op
 - Invalid input (negative amount, too-large amount, past expiry, malformed recipient) → inline validation, the form stays filled in.
 - User rejects the wallet signature → return to the form with an explanatory message; nothing is lost.
 - Network / RPC failure → user-recoverable error with retry.
+- Shared invoice registration fails → show a recoverable error; never create a dashboard row from an unverified browser write.
 
 ### Flow B · Pay a link
 
@@ -103,14 +105,13 @@ Creator lands on the product → connects a wallet → fills amount + memo + (op
 Payer opens the shared link on a phone → connects a wallet
        → picks a settlement path:
            a) Pay directly on Arc Testnet (already holds USDC there)
-           b) Bridge & pay — from Base / Ethereum / Arbitrum Sepolia via CCTP
-           c) Pay from a unified balance held across multiple chains (Gateway)
+           b) Bridge & pay — Base Sepolia to Arc Testnet via CCTP (live-proven)
        → approves spend → settles → sees a receipt with the on-chain tx
 ```
 
 **Decisions the payer makes.**
 
-- Which settlement path. The product proposes the cheapest / fastest path for the funds they actually have.
+- Which settlement path. The product exposes direct Arc payment and a live-proven Base Sepolia bridge route; additional displayed source-chain options are beta until proved with the same QA standard.
 - Which wallet to connect. Standard wallet-connect UX; not part of our product surface.
 
 **Failure modes the design must handle.**
@@ -191,8 +192,8 @@ Each row is a complete vertical slice — design + engineering + copy.
 |---|---|---|---|
 | 1 | Create USDC payment link | **P0** | Amount, recipient (default self), memo, optional expiry. On-chain `createLink` + off-chain metadata. |
 | 2 | Pay a link directly on Arc | **P0** | Approve + settle. |
-| 3 | Bridge & pay from Base / Ethereum / Arbitrum Sepolia | **P0** | One action per source chain via Circle App Kit + CCTP. |
-| 4 | Pay with Circle Unified Balance | **P0** | Single call across chains via Circle Gateway. |
+| 3 | Bridge & pay from Base Sepolia | **P0** | Live-proven payment route via Circle App Kit + CCTP. Other testnet source options remain beta. |
+| 4 | Pay with Circle Unified Balance | **V2 / gated** | Do not expose or claim until a funded Gateway payment is proven end-to-end. |
 | 5 | Receipt with Arcscan transaction | **P0** | Sealed, shareable URL with verifiable on-chain proof. |
 | 6 | QR for cross-device handoff | **P0** | Designer's call where it lives; product needs the payer-on-mobile flow to work. |
 | 7 | Native share sheet (mobile) | **P0** | Web Share API with clipboard fallback. |
@@ -202,10 +203,11 @@ Each row is a complete vertical slice — design + engineering + copy.
 | 11 | Environment health on a settings surface | **P1** | "Ready" vs "action needed" at-a-glance — for the operator, not the end user. |
 | 12 | Pre-flight USDC balance check | **P1** | "You need X more USDC on Arc" with a one-tap faucet link (testnet). |
 | 13 | Pre-flight chain hint + auto-switch | **P1** | Detect wrong chain, switch automatically when the payer taps pay. |
-| 14 | Bulk link generation + CSV import | **V2** | DAO / team payouts. |
-| 15 | Webhooks for paid links | **V2** | "Notify Slack when this link is paid." |
-| 16 | Multiple recipients / split payment | **V2** | One link → contract splits across N recipients. |
-| 17 | Mainnet support | **V2** | When Arc Mainnet launches. |
+| 14 | Server-verified shared storage | **P0** | Standard invoice creation, paid state, and cancelled state require matching Arc events before Supabase final state writes. |
+| 15 | Bulk link generation + CSV import | **V2** | DAO / team payouts. |
+| 16 | Webhooks for paid links | **V2** | "Notify Slack when this link is paid." |
+| 17 | Multiple recipients / split payment | **V2** | One link → contract splits across N recipients. |
+| 18 | Mainnet support | **V2** | When Arc Mainnet launches. |
 
 P0 = in v1. P1 = polish before public launch. V2 = explicitly out of scope.
 
@@ -247,7 +249,7 @@ If we hit these in the first 90 days post-launch, v1 is a success.
 | **Time to first link created** (landing → shareable URL) | under 60 seconds |
 | **Pay completion rate** (links opened → paid) | ≥ 40% |
 | **Mobile share rate** (Share action taps / pay screen visits) | ≥ 25% |
-| **Bridge usage** (CCTP / Unified Balance pays / total pays) | ≥ 30% — proves the multi-chain value prop |
+| **Bridge usage** (CCTP payments / total payments) | ≥ 30% — tests demand for the proven cross-chain path |
 | **Lighthouse mobile** | ≥ 90 across Performance, Accessibility, Best Practices, SEO |
 
 ---
@@ -260,7 +262,7 @@ on any of these where their experience suggests an answer.
 1. **Memo as required?** It's required in v1 because empty memos make for ugly receipts and confused payers. Should the field instead suggest a default ("Payment for {creator}") and stay optional?
 2. **Expiry default.** Today expiry is opt-in and defaults to never. For pay-me-once-by-Friday use cases, should links default to a 7-day expiry the user can extend?
 3. **Cancel cool-down.** Cancel is on-chain and instant — no undo. Should we add a 30-second client-side cool-down before the chain tx fires so accidental clicks are recoverable?
-4. **Settlement-path discovery.** The payer has 3+ ways to settle (direct on Arc, bridge per source chain, unified balance). Is auto-detecting the cheapest / fastest path and proposing it as the default the right move, or is exposing every path upfront the more honest trade?
+4. **Settlement-path discovery.** The payer can settle directly on Arc or use a proven Base Sepolia bridge route. When should additional routes become visible: after live proof only, or behind a clearly marked beta affordance?
 5. **Receipts as artifacts.** Today receipts are a webpage. Should there be a downloadable / shareable image version, a Notion-embeddable block, or a printable PDF?
 6. **Notifications.** v1 has none. Is "the page" enough as the source of truth, or should the creator get an email / Slack ping when a link is paid? (This is V2 in §6 but worth confirming.)
 7. **Multiple links open at once.** A creator might paste the same link to two different clients. Today the link is single-use (first paid wins). Should we expose a "single use vs. open invoice" toggle at creation time?

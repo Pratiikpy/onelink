@@ -1,13 +1,13 @@
 {
   "name": "OneLink Collect",
   "short_name": "OneLink",
-  "description": "One link. Any USDC. Instantly on Arc.",
+  "description": "One link. Supported USDC routes. Verified on Arc.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#050507",
-  "theme_color": "#050507",
+  "background_color": "#0A0A0C",
+  "theme_color": "#0A0A0C",
   "categories": ["finance", "productivity"],
   "icons": [
     {

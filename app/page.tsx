@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
-import { CreateLinkForm } from "@/components/create-link-form";
+import { LandingClient } from "@/components/landing-client";
 
 export const metadata: Metadata = {
-  title: "Create a USDC payment link",
+  title: "One link. Supported USDC. Settled on Arc.",
   description:
-    "Create a clean USDC payment link. Payers settle on Arc Testnet directly or bridge in from Base, Ethereum, or Arbitrum Sepolia via Circle App Kit.",
+    "USDC payment links on Arc Testnet with direct settlement and cross-chain bridge support.",
 };
 
 export default function Home() {
   return (
     <AppShell>
-      <CreateLinkForm />
+      <LandingClient />
     </AppShell>
   );
 }

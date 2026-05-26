@@ -43,7 +43,7 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
             value={paymentUrl}
             size={168}
             bgColor="#ffffff"
-            fgColor="#050507"
+            fgColor="#0A0A0C"
             level="M"
             marginSize={1}
           />
@@ -83,7 +83,7 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
           className="w-full"
           aria-label="Copy payment link"
         >
-          {copied ? <Check className="size-4 text-mint" /> : <Copy className="size-4" />}
+          {copied ? <Check className="size-4 text-lime" /> : <Copy className="size-4" />}
           {copied ? "Copied" : "Copy"}
         </Button>
         <Button
@@ -109,7 +109,7 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
           href={explorerTx(link.txHash)}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-center gap-2 text-sm font-bold text-violet"
+          className="flex items-center justify-center gap-2 text-sm font-bold text-lime"
         >
           View on Arcscan
           <ExternalLink className="size-4" />
