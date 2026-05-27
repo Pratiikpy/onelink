@@ -6,6 +6,10 @@
 
 A premium testnet payment-link product for freelancers: create one shareable link, let the payer use a supported USDC route, and finish with a server-verified Arc receipt.
 
+[![CI](https://github.com/Pratiikpy/onelink/actions/workflows/ci.yml/badge.svg)](https://github.com/Pratiikpy/onelink/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-c9f267.svg)](./LICENSE)
+[![Arc Testnet](https://img.shields.io/badge/Arc-Testnet-c9f267.svg)](https://testnet.arcscan.app)
+
 [**Open live app**](https://onelink-mauve-nu.vercel.app) · [**Read whitepaper**](https://onelink-mauve-nu.vercel.app/whitepaper) · [**Launch readiness**](./docs/LAUNCH_READINESS.md)
 
 <br />
@@ -34,6 +38,20 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
 | Receipts | Expose the verified Arc settlement transaction as the source of truth for completed payments. |
 | Trust center | Explain tested routes, limitations, privacy, wallet safety, and reconciliation rules. |
 | Whitepaper | Present the product thesis, architecture, Circle/Arc usage, and launch scope in a judge-facing format. |
+
+---
+
+## Repo map
+
+| File | Why it matters |
+| --- | --- |
+| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | System design, settlement model, trust boundaries, and current product limits. |
+| [`docs/LAUNCH_READINESS.md`](./docs/LAUNCH_READINESS.md) | Live deployment evidence, transaction hashes, screenshots, and QA matrix. |
+| [`docs/UI_UX_AUDIT.md`](./docs/UI_UX_AUDIT.md) | Final visual audit, responsive checks, and remaining non-UI product limits. |
+| [`docs/AI_BUILD_PROCESS.md`](./docs/AI_BUILD_PROCESS.md) | How Codex, MCP tools, local skills, and evidence-first QA were used. |
+| [`docs/PRD.md`](./docs/PRD.md) | Product requirements and end-to-end behavior definition. |
+| [`supabase/schema.sql`](./supabase/schema.sql) | Database schema, RLS policies, and immutability trigger. |
+| [`contracts/src/OneLinkCollect.sol`](./contracts/src/OneLinkCollect.sol) | Arc Testnet settlement contract used by verified receipts. |
 
 ---
 

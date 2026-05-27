@@ -1,0 +1,46 @@
+name: Feature request
+description: Propose a product, route, UX, or infrastructure improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the smallest useful version first.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Area
+      options:
+        - Arc settlement
+        - Circle CCTP bridge
+        - Circle Gateway
+        - Freelancer profile
+        - Dashboard
+        - Receipt / proof
+        - UI / visual system
+        - QA automation
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: proof
+    attributes:
+      label: Acceptance criteria
+      description: What evidence would prove this is done?
+      placeholder: |
+        - User can ...
+        - Test covers ...
+        - Documentation updated ...
+    validations:
+      required: true

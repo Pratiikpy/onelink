@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/Pratiikpy/onelink/issues"
   },
-  "author": "Pratik <prtk8899@gmail.com>",
+  "author": "OneLink contributors",
   "license": "MIT",
   "keywords": [
     "usdc",
@@ -25,7 +25,7 @@
     "foundry"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22 <25"
   },
   "overrides": {
     "cuer": {
@@ -37,7 +37,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test:contracts": "node scripts/run-forge-test.mjs",
     "qa:live:direct": "node scripts/qa-live-direct.mjs",
     "qa:live:visual": "node scripts/qa-live-visual.mjs",

@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible OneLink product issue.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please include exact steps and screenshots when possible. Do not paste secrets, private keys, or wallet seed phrases.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Landing / marketing
+        - Create link
+        - Freelancer profile
+        - Checkout
+        - Receipt
+        - Dashboard
+        - Smart contract
+        - Supabase / API
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Screenshots, console output, transaction hash, or QA report link.
+    validations:
+      required: false

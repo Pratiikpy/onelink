@@ -17,7 +17,8 @@ codebase is intended for production use once mainnet support lands.
 
 **Please do not open a public GitHub issue for security findings.**
 
-Email security reports to **prtk8899@gmail.com** with:
+Use GitHub's private vulnerability reporting or open a private security advisory
+with the maintainers. Include:
 
 - A description of the vulnerability and the impacted surface.
 - Reproduction steps or a proof-of-concept.
