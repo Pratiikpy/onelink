@@ -10,7 +10,7 @@ export default function AppleIcon() {
         style={{
           width: "100%",
           height: "100%",
-          background: "#0A0A0C",
+          background: "#C9F267",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -22,12 +22,13 @@ export default function AppleIcon() {
             cy="18"
             r="13"
             fill="none"
-            stroke="#C9F267"
-            strokeWidth="2.2"
+            stroke="#0A0A0C"
+            strokeWidth="2.8"
             strokeLinecap="round"
             strokeDasharray="66 16"
             transform="rotate(-40 18 18)"
           />
+          <circle cx="18" cy="18" r="3.2" fill="#0A0A0C" />
         </svg>
       </div>
     ),

@@ -11,7 +11,7 @@ const appUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "OneLink Collect — One link. Supported USDC. Settled on Arc.",
+    default: "OneLink Collect — One link. USDC routes. Verified on Arc.",
     template: "%s · OneLink Collect",
   },
   description:
@@ -19,9 +19,12 @@ export const metadata: Metadata = {
   applicationName: "OneLink Collect",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
-    shortcut: "/icon.svg",
+    icon: [
+      { url: "/icon", type: "image/png", sizes: "64x64" },
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+    ],
+    apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+    shortcut: ["/icon", "/icon.svg"],
   },
   keywords: [
     "USDC",

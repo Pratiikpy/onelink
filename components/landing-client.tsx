@@ -9,8 +9,8 @@ import { HAS_CONTRACT } from "@/lib/contracts";
 export function LandingClient() {
   return (
     <div className="overflow-hidden pb-4">
-      <section className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10 xl:grid-cols-[minmax(0,1fr)_712px] xl:px-16">
-        <div className="min-w-0 space-y-7 pt-6 sm:space-y-8 sm:pt-16">
+      <section className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10 xl:grid-cols-[minmax(0,1fr)_712px] xl:items-start xl:px-16">
+        <div className="min-w-0 space-y-7 pt-3 sm:space-y-8 sm:pt-10">
           <span className="inline-flex items-center gap-3 rounded-full border border-lime/20 bg-lime/10 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-lime sm:px-5 sm:py-2.5 sm:text-[15px]">
             <span className="relative inline-flex size-6 items-center justify-center rounded-full bg-lime/25">
               <span className="size-3 rounded-full bg-lime" />
@@ -20,7 +20,7 @@ export function LandingClient() {
 
           <h1 className="max-w-[760px] text-balance text-[clamp(54px,7vw,136px)] font-medium leading-[0.92] tracking-[-0.04em]">
             <span className="block">One link.</span>
-            <span className="block">USDC routes.</span>
+            <span className="block">USDC.</span>
             <span className="block text-lime">Verified.</span>
           </h1>
 
@@ -38,18 +38,14 @@ export function LandingClient() {
             </Link>
             <a
               href="#how-it-works"
-              className="inline-flex h-[72px] w-full items-center justify-center rounded-[20px] border border-white/12 bg-white/5 px-8 text-center text-[25px] font-medium leading-tight tracking-tight text-white sm:h-[92px] sm:w-auto sm:min-w-[292px] sm:rounded-[24px] sm:px-10 sm:text-[31px]"
+              className="inline-flex h-[72px] w-full items-center justify-center whitespace-nowrap rounded-[20px] border border-white/12 bg-white/5 px-8 text-center text-[25px] font-medium leading-tight tracking-tight text-white sm:h-[92px] sm:w-auto sm:min-w-[300px] sm:rounded-[24px] sm:px-10 sm:text-[31px]"
             >
-              <span>
-                See how it
-                <br />
-                works
-              </span>
+              See how it works
             </a>
           </div>
         </div>
 
-        <article className="surface relative min-w-0 overflow-hidden rounded-[28px] p-6 sm:rounded-[44px] sm:p-12 xl:mt-40 xl:max-w-[712px] xl:translate-x-2">
+        <article className="surface relative min-w-0 overflow-hidden rounded-[28px] p-6 sm:rounded-[44px] sm:p-12 xl:mt-28 xl:max-w-[712px] xl:translate-x-2">
           <div className="flex items-center justify-between">
             <RingIcon className="h-10 w-10 text-lime" />
             <span className="sr-only">Illustrative invoice preview</span>
@@ -101,37 +97,39 @@ export function LandingClient() {
         </article>
       </section>
 
-      <section
-        className="mt-12 flex flex-col gap-6 border-y border-white/10 py-7 text-[16px] font-medium text-white/72 sm:mt-16 sm:text-[22px] xl:flex-row xl:items-center xl:justify-between xl:gap-10"
-      >
-        <p className="mono-label text-[14px]">
-          Proven bridge from
-          <br />
-          Base Sepolia · arc chain 5042002
-        </p>
+      <section className="mt-12 rounded-[26px] border border-white/10 bg-[#111215] p-4 sm:mt-16 sm:p-5 xl:mx-16">
+        <div className="grid gap-4 xl:grid-cols-[230px_minmax(0,1fr)_230px] xl:items-center">
+          <div>
+            <p className="mono-label text-[12px]">Supported route scope</p>
+            <p className="mt-2 text-[15px] font-medium text-white/58">Live-proven bridge: Base Sepolia to Arc</p>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-5 sm:gap-7 xl:flex-nowrap xl:gap-8">
-          <span className="inline-flex items-center gap-4">
-            <span className="size-5 rounded bg-[#1658f9] sm:size-8 sm:rounded-lg" />
-            Base
-          </span>
-          <span className="inline-flex items-center gap-4">
-            <span className="size-5 rounded bg-[#627eea] sm:size-8 sm:rounded-lg" />
-            Ethereum · beta
-          </span>
-          <span className="inline-flex items-center gap-4">
-            <span className="size-5 rounded bg-[#31a7f8] sm:size-8 sm:rounded-lg" />
-            Arbitrum · beta
-          </span>
-          <span className="inline-flex items-center gap-4">
-            <span className="size-5 rounded bg-[#8247e5] sm:size-8 sm:rounded-lg" />
-            Polygon · beta
-          </span>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              ["Base", "Live", "#1658f9"],
+              ["Ethereum", "Beta", "#627eea"],
+              ["Arbitrum", "Beta", "#31a7f8"],
+              ["Polygon", "Beta", "#8247e5"],
+            ].map(([chain, state, color]) => (
+              <div
+                key={chain}
+                className="rounded-[18px] border border-white/[0.08] bg-white/[0.035] px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="size-3.5 rounded" style={{ backgroundColor: color }} />
+                  <span className="text-[16px] font-medium text-white/82">{chain}</span>
+                </div>
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/38">{state}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mono-label text-[12px] xl:text-right">
+            Verified Arc receipt
+            <br />
+            No fiat rails
+          </p>
         </div>
-
-        <p className="mono-label text-right text-[14px]">
-          Base tested live · verified Arc receipt · 0 fiat ramps
-        </p>
       </section>
 
       <section id="how-it-works" className="py-20 sm:py-28 xl:px-16">

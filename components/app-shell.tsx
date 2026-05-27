@@ -12,6 +12,7 @@ const nav = [
   { href: "/create", label: "Create" },
   { href: "/dashboard", label: "Links" },
   { href: "/security", label: "Security" },
+  { href: "/whitepaper", label: "Whitepaper" },
 ];
 const mobileNav = [
   { href: "/create", label: "Create", Icon: FilePlus2 },

@@ -10,25 +10,26 @@ export default function Icon() {
         style={{
           width: "100%",
           height: "100%",
-          background: "#0A0A0C",
+          background: "#C9F267",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          borderRadius: 14,
+          borderRadius: 16,
         }}
       >
-        <svg width="40" height="40" viewBox="0 0 36 36">
+        <svg width="42" height="42" viewBox="0 0 36 36">
           <circle
             cx="18"
             cy="18"
             r="13"
             fill="none"
-            stroke="#C9F267"
-            strokeWidth="2.2"
+            stroke="#0A0A0C"
+            strokeWidth="2.8"
             strokeLinecap="round"
             strokeDasharray="66 16"
             transform="rotate(-40 18 18)"
           />
+          <circle cx="18" cy="18" r="3.2" fill="#0A0A0C" />
         </svg>
       </div>
     ),
