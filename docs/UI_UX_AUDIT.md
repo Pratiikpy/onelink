@@ -4,11 +4,11 @@ Audit date: 2026-05-27
 
 Live product: https://onelink-mauve-nu.vercel.app
 
-Verified deployment: `dpl_7UrkYtftTQkFXBj7ezi1XyznBV6s`
+Verified deployment: `dpl_9TkxVSw3xAiE9J9zX2EZP9UdoqBH`
 
 ## Verdict
 
-OneLink is presentation-ready for the current Arc Testnet hackathon scope. The product now has a consistent premium dark interface, mobile-safe navigation, honest trust copy, verified receipt surfaces, and live visual proof across the core public pages.
+OneLink is presentation-ready for the current Arc Testnet hackathon scope. The product now has a consistent premium dark interface, mobile-safe navigation, honest trust copy, verified receipt surfaces, a Linktree-style permanent profile page, and live visual proof across the core public pages.
 
 The app should not be described as mainnet-ready or "any blockchain" ready. The UI is intentionally scoped to verified Arc Testnet settlement and the proven Base Sepolia to Arc bridge path.
 
@@ -32,6 +32,8 @@ The app should not be described as mainnet-ready or "any blockchain" ready. The 
 | Checkout memo text could overflow on narrow cards when a payer opens a link with a long invoice memo. | Memo text now wraps with `break-words` and stable line height. |
 | Dashboard desktop table depended on a wide six-column layout, which made the page easier to clip on medium screens. | Dashboard now uses a more compact five-column table, places amount under the memo, and switches to card layout below `lg`. |
 | Hero line "Supported USDC" read awkwardly and was less precise than the actual product scope. | Hero copy now says "USDC routes" while the paragraph keeps the verified Arc/Base Sepolia scope explicit. |
+| Permanent profile page felt functional but not premium enough for a shareable freelancer page. | Profile pages now include avatar initials, display name, handle copy action, proof cards, route status, Gateway gating, amount presets, and memo presets. |
+| Gateway wording could imply a complete unified-balance checkout. | Gateway is now explicitly shown as hidden/gated until funded deposit, burn, and mint proof exists. |
 
 ## Verification
 
@@ -50,6 +52,7 @@ Live QA results:
 | Check | Result | Report |
 | --- | --- | --- |
 | Visual smoke across desktop and mobile pages | Pass | `docs/test-results/qa-live-visual/REPORT.md` |
+| Expanded profile visual QA at 390, 768, 1366, 1440, and 1920 px | Pass | `docs/test-results/qa-live-visual/REPORT.md` |
 | Verified creator cancellation and dashboard state | Pass | `docs/test-results/qa-live-cancel/REPORT.md` |
 
 Latest cancellation transaction:

@@ -54,9 +54,21 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
   </tr>
   <tr>
     <td width="50%">
+      <img src="./docs/screenshots/profile-desktop.png" alt="Permanent freelancer payment profile" />
+      <br />
+      <sub><b>Profile</b> - shareable freelancer page with presets, verified route scope, and copyable handle.</sub>
+    </td>
+    <td width="50%">
       <img src="./docs/screenshots/pay-unpaid-desktop.png" alt="Payment checkout" />
       <br />
       <sub><b>Checkout</b> - payer review and route selection.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="./docs/screenshots/profile-mobile.png" alt="Mobile freelancer payment profile" />
+      <br />
+      <sub><b>Mobile profile</b> - Linktree-style payment page optimized for small screens.</sub>
     </td>
     <td width="50%">
       <img src="./docs/screenshots/receipt-paid-desktop.png" alt="Verified receipt" />
@@ -83,8 +95,9 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
 | WalletConnect payment | Live-proven QR pairing and signed Arc settlement through the protocol harness. |
 | Base Sepolia to Arc bridge | Live-proven through Circle App Kit and CCTP. |
 | Permanent profile payment | Live-proven payer-initiated profile request and settlement. |
+| Circle Gateway unified balance | Not enabled in checkout until a funded deposit, burn, and mint flow is proven end to end. |
 | Creator cancellation | Live-proven server-verified cancellation after Arc transaction. |
-| Visual QA | Desktop and mobile smoke screenshots captured from production. |
+| Visual QA | Production screenshots captured at 390, 768, 1366, 1440, and 1920 pixel widths. |
 
 Detailed evidence is summarized in [docs/LAUNCH_READINESS.md](./docs/LAUNCH_READINESS.md).
 

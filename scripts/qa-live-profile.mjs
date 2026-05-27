@@ -90,7 +90,7 @@ async function main() {
   const profile = {
     handle,
     wallet: account.address,
-    displayName: `QA ${stamp}`,
+    displayName: "Studio Freelancer",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

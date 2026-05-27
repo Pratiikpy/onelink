@@ -4,7 +4,7 @@ Last verified: 2026-05-27
 
 Live product: https://onelink-mauve-nu.vercel.app
 
-Final verified Vercel deployment: `dpl_7UrkYtftTQkFXBj7ezi1XyznBV6s`
+Final verified Vercel deployment: `dpl_9TkxVSw3xAiE9J9zX2EZP9UdoqBH`
 
 ## Verdict
 
@@ -115,6 +115,11 @@ Screenshots and transaction reports were captured from the live public deploymen
 - `docs/test-results/qa-live-visual/desktop-paid-link.png`
 - `docs/test-results/qa-live-visual/desktop-receipt.png`
 - `docs/test-results/qa-live-visual/desktop-profile.png`
+- `docs/test-results/qa-live-visual/mobile-390-profile.png`
+- `docs/test-results/qa-live-visual/tablet-768-profile.png`
+- `docs/test-results/qa-live-visual/laptop-1366-profile.png`
+- `docs/test-results/qa-live-visual/desktop-1440-profile.png`
+- `docs/test-results/qa-live-visual/wide-1920-profile.png`
 - `docs/test-results/qa-live-visual/mobile-home.png`
 - `docs/test-results/qa-live-visual/mobile-create.png`
 - `docs/test-results/qa-live-visual/mobile-dashboard.png`
@@ -132,6 +137,8 @@ Screenshots and transaction reports were captured from the live public deploymen
 - `docs/test-results/qa-live-cancel/`
 - `docs/test-results/qa-live-failure-states/`
 - `docs/test-results/qa-live-walletconnect-modal/walletconnect-modal-mobile.png`
+
+Expanded responsive proof covers the landing and permanent profile pages at 390, 768, 1366, 1440, and 1920 pixel widths.
 
 ## Safe Product Claims
 

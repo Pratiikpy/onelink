@@ -63,6 +63,23 @@ async function main() {
   }
 
   try {
+    const viewportChecks = [
+      ["mobile-390", { ...devices["iPhone 13"], viewport: { width: 390, height: 844 } }],
+      ["tablet-768", { viewport: { width: 768, height: 1024 } }],
+      ["laptop-1366", { viewport: { width: 1366, height: 900 } }],
+      ["desktop-1440", { viewport: { width: 1440, height: 1100 } }],
+      ["wide-1920", { viewport: { width: 1920, height: 1080 } }],
+    ];
+
+    for (const [name, options] of viewportChecks) {
+      await runContext(name, options, [
+        { label: "home", url: liveUrl, assert: /Settlement live|USDC/i },
+        ...(profile?.profileUrl
+          ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|Send USDC/i }]
+          : []),
+      ]);
+    }
+
     await runContext(
       "desktop",
       { viewport: { width: 1440, height: 1100 } },
@@ -78,7 +95,7 @@ async function main() {
         { label: "not-found", url: `${liveUrl}/this-handle-does-not-exist-qa`, assert: /Link not found|Nothing at this link/i },
         { label: "paid-link", url: direct.paymentUrl, assert: /View verified receipt/i },
         { label: "receipt", url: direct.receiptUrl, assert: /Paid|Arcscan|Receipt/i },
-        ...(profile?.profileUrl ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Freelancer|USDC/i }] : []),
+        ...(profile?.profileUrl ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|USDC/i }] : []),
       ],
     );
     await runContext(
@@ -94,7 +111,7 @@ async function main() {
         { label: "terms", url: `${liveUrl}/terms`, assert: /Testnet software, not a financial service/i },
         { label: "not-found", url: `${liveUrl}/this-handle-does-not-exist-qa`, assert: /Link not found|Nothing at this link/i },
         { label: "receipt", url: direct.receiptUrl, assert: /Paid|Arcscan|Receipt/i },
-        ...(profile?.profileUrl ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|USDC/i }] : []),
+        ...(profile?.profileUrl ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|USDC/i }] : []),
       ],
     );
   } finally {
@@ -115,7 +132,7 @@ async function main() {
     "## Notes",
     "",
     "- Screenshots are captured from the live Vercel deployment.",
-    "- This verifies page render, responsive layout baseline, production settings, whitepaper availability, and paid receipt visibility.",
+    "- This verifies page render, responsive layout baseline, production settings, whitepaper availability, profile polish, paid receipt visibility, and home/profile behavior at 390, 768, 1366, 1440, and 1920 pixel widths.",
     "",
   ].join("\n");
   writeFileSync(resolve(OUT_DIR, "REPORT.md"), report);
