@@ -7,13 +7,13 @@ import { QRCodeSVG } from "qrcode.react";
 import { Card, Button, Pill } from "@/components/ui";
 import { explorerTx, isDemoTxHash } from "@/lib/arc";
 import type { PaymentLink } from "@/lib/payments";
-import { shortAddress, statusTone } from "@/lib/payments";
+import { paymentPath, receiptPath, shortAddress, statusTone } from "@/lib/payments";
 import { shareOrCopy, useCopy } from "@/lib/share";
 
 export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
   const paymentUrl = useMemo(() => {
-    if (typeof window === "undefined") return `/pay/${link.slug}`;
-    return `${window.location.origin}/pay/${link.slug}`;
+    if (typeof window === "undefined") return paymentPath(link.slug);
+    return `${window.location.origin}${paymentPath(link.slug)}`;
   }, [link.slug]);
   const { copied, copy } = useCopy();
 
@@ -96,7 +96,7 @@ export function PaymentSummaryCard({ link }: { link: PaymentLink }) {
           <Share2 className="size-4" />
           Share
         </Button>
-        <Link href={`/receipt/${link.id}`} className="w-full">
+        <Link href={receiptPath(link.id)} className="w-full">
           <Button type="button" variant="secondary" className="w-full">
             <ReceiptText className="size-4" />
             Receipt

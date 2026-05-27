@@ -14,7 +14,7 @@ import {
   ONELINK_CONTRACT_ADDRESS,
   oneLinkCollectAbi,
 } from "@/lib/contracts";
-import { amountToUnits, shortAddress, type PaymentLink } from "@/lib/payments";
+import { amountToUnits, paymentPath, receiptPath, shortAddress, type PaymentLink } from "@/lib/payments";
 import { shareOrCopy, useCopy } from "@/lib/share";
 import { confirmPaidSettlement, getPaymentLinkBySlug, updatePaymentStatus } from "@/lib/storage";
 
@@ -281,7 +281,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
   const missingDirect =
     hasDirectBalance && Number.isFinite(balanceNumber) ? Math.max(0, amountNumber - balanceNumber) : 0;
   const paymentUrl =
-    typeof window === "undefined" ? `/pay/${link.slug}` : `${window.location.origin}/pay/${link.slug}`;
+    typeof window === "undefined" ? paymentPath(link.slug) : `${window.location.origin}${paymentPath(link.slug)}`;
 
   async function sharePaymentLink(payment: PaymentLink) {
     await shareOrCopy({
@@ -375,7 +375,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
         <div className="mx-auto max-w-[342px]">
           {link.status === "paid" ? (
             <Link
-              href={`/receipt/${link.id}`}
+              href={receiptPath(link.id)}
               className="inline-flex h-[58px] w-full items-center justify-center rounded-[14px] bg-lime text-[16px] font-medium tracking-tight text-ink"
             >
               View verified receipt

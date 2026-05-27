@@ -7,7 +7,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { isAddress } from "viem";
 import { BadgeCheck, Copy, ExternalLink, LockKeyhole, ReceiptText, Route, ShieldCheck } from "lucide-react";
-import { makeContractLinkId, makeSlug, shortAddress, type PaymentLink } from "@/lib/payments";
+import { makeContractLinkId, makeSlug, paymentPath, shortAddress, type PaymentLink } from "@/lib/payments";
 import { getFreelancerProfile, type FreelancerProfile } from "@/lib/profiles";
 import { savePaymentLink } from "@/lib/storage";
 
@@ -79,7 +79,7 @@ export function ProfilePayClient({ handle }: { handle: string }) {
         updatedAt: now,
       };
       await savePaymentLink(payment);
-      router.push(`/pay/${slug}`);
+      router.push(paymentPath(slug));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start payment.");
     } finally {

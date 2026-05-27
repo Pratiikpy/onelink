@@ -8,7 +8,7 @@ import { getAddress, isAddress, type Address } from "viem";
 import { RingIcon } from "@/components/logo";
 import { ARC_CHAIN_ID } from "@/lib/arc";
 import { HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS, oneLinkCollectAbi } from "@/lib/contracts";
-import { amountToUnits, makeContractLinkId, makeSlug, shortAddress, type PaymentLink } from "@/lib/payments";
+import { amountToUnits, makeContractLinkId, makeSlug, paymentPath, shortAddress, type PaymentLink } from "@/lib/payments";
 import { normalizeHandle, profileClaimMessage, saveFreelancerProfile } from "@/lib/profiles";
 import { HAS_SHARED_STORAGE, savePaymentLink, saveVerifiedInvoiceLink } from "@/lib/storage";
 
@@ -188,7 +188,7 @@ export function CreateLinkForm() {
       } else {
         await savePaymentLink(link);
       }
-      router.push(`/pay/${slug}`);
+      router.push(paymentPath(slug));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create link.");
     } finally {

@@ -8,7 +8,7 @@ import { Check, Copy, ExternalLink, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { confirmCancelledPayment, listPaymentLinks } from "@/lib/storage";
 import type { PaymentLink, PaymentStatus } from "@/lib/payments";
-import { shortAddress } from "@/lib/payments";
+import { paymentPath, receiptPath, shortAddress } from "@/lib/payments";
 import { ARC_CHAIN_ID } from "@/lib/arc";
 import { ALLOW_DEMO_MODE, HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS, oneLinkCollectAbi } from "@/lib/contracts";
 
@@ -225,7 +225,7 @@ export function DashboardClient() {
   const hiddenLinkCount = Math.max(0, links.length - displayedLinks.length);
 
   async function copyPaymentLink(link: PaymentLink) {
-    const href = `${window.location.origin}/pay/${link.slug}`;
+    const href = `${window.location.origin}${paymentPath(link.slug)}`;
     await navigator.clipboard.writeText(href);
     setCopiedId(link.id);
     window.setTimeout(() => setCopiedId((current) => (current === link.id ? null : current)), 1600);
@@ -368,8 +368,8 @@ export function DashboardClient() {
                   {money(Number(link.amountUSDC))} USDC
                 </p>
               </div>
-              <Link href={`/pay/${link.slug}`} className="truncate font-mono text-[20px] text-white/45 hover:text-white">
-                {`/pay/${link.slug}`}
+              <Link href={paymentPath(link.slug)} className="truncate font-mono text-[20px] text-white/45 hover:text-white">
+                {paymentPath(link.slug)}
               </Link>
               <div>{statusChip(link.status)}</div>
               <p className="text-[20px] text-white/45">
@@ -385,7 +385,7 @@ export function DashboardClient() {
                   {copiedId === link.id ? <Check className="size-5 text-lime" /> : <Copy className="size-5" />}
                 </button>
                 <Link
-                  href={`/pay/${link.slug}`}
+                  href={paymentPath(link.slug)}
                   aria-label="Open payment link"
                   className="grid size-10 place-items-center rounded-xl border border-white/10 transition hover:border-lime/40 hover:text-lime"
                 >
@@ -393,7 +393,7 @@ export function DashboardClient() {
                 </Link>
                 {link.status === "paid" && (
                   <Link
-                    href={`/receipt/${link.id}`}
+                    href={receiptPath(link.id)}
                     className="rounded-xl border border-white/10 px-3 py-2 text-[13px] transition hover:border-lime/40 hover:text-lime"
                   >
                     Receipt
@@ -457,7 +457,7 @@ export function DashboardClient() {
                   {copiedId === link.id ? <Check className="size-5 text-lime" /> : <Copy className="size-5" />}
                 </button>
                 <Link
-                  href={link.status === "paid" ? `/receipt/${link.id}` : `/pay/${link.slug}`}
+                  href={link.status === "paid" ? receiptPath(link.id) : paymentPath(link.slug)}
                   className="inline-flex h-11 items-center rounded-xl border border-white/10 px-4 text-[14px] text-white/76"
                 >
                   {link.status === "paid" ? "Receipt" : "Open"}

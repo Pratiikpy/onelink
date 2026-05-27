@@ -48,6 +48,14 @@ export function makeContractLinkId(slug: string) {
   return keccak256(stringToBytes(`onelink:${slug}`));
 }
 
+export function paymentPath(slug: string) {
+  return `/pay/${encodeURIComponent(slug)}`;
+}
+
+export function receiptPath(id: string) {
+  return `/receipt/${encodeURIComponent(id)}`;
+}
+
 export function shortAddress(address?: string | null) {
   if (!address) return "Not connected";
   return `${address.slice(0, 6)}…${address.slice(-4)}`;

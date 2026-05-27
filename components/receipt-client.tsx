@@ -6,7 +6,7 @@ import { BadgeCheck, Check, Copy, ExternalLink, ReceiptText } from "lucide-react
 import { Button, Card, Pill } from "@/components/ui";
 import { ARC_EXPLORER_URL, explorerTx, isDemoTxHash } from "@/lib/arc";
 import type { PaymentLink } from "@/lib/payments";
-import { formatTimestamp, paymentMethodLabel, shortAddress, statusTone } from "@/lib/payments";
+import { formatTimestamp, paymentMethodLabel, receiptPath, shortAddress, statusTone } from "@/lib/payments";
 import { getPaymentLinkById } from "@/lib/storage";
 import { useCopy } from "@/lib/share";
 
@@ -56,7 +56,7 @@ export function ReceiptClient({ id }: { id: string }) {
   }
 
   const receiptUrl =
-    typeof window === "undefined" ? `/receipt/${link.id}` : `${window.location.origin}/receipt/${link.id}`;
+    typeof window === "undefined" ? receiptPath(link.id) : `${window.location.origin}${receiptPath(link.id)}`;
 
   return (
     <div className="mx-auto max-w-[720px] space-y-5 xl:px-16">
