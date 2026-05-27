@@ -1,10 +1,10 @@
 # OneLink Launch Readiness
 
-Last verified: 2026-05-26
+Last verified: 2026-05-27
 
 Live product: https://onelink-mauve-nu.vercel.app
 
-Final verified Vercel deployment: `dpl_7LtHeTz1cUxuePepXMiRnosY1WNX`
+Final verified Vercel deployment: `dpl_4jBvY2L229hbP1tikqx8DkYRQi1g`
 
 ## Verdict
 

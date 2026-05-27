@@ -314,7 +314,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
 
         <div>
           <p className="mono-label text-[10px]">Memo</p>
-          <p className="mt-[9px] whitespace-nowrap text-[16px] font-medium leading-none">{link.memo}</p>
+          <p className="mt-[9px] break-words text-[16px] font-medium leading-snug">{link.memo}</p>
         </div>
 
         <div className="surface rounded-[14px] px-[16px] py-[12px]">

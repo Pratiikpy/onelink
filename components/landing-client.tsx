@@ -20,7 +20,7 @@ export function LandingClient() {
 
           <h1 className="max-w-[760px] text-balance text-[clamp(54px,7vw,136px)] font-medium leading-[0.92] tracking-[-0.04em]">
             <span className="block">One link.</span>
-            <span className="block">Supported USDC.</span>
+            <span className="block">USDC routes.</span>
             <span className="block text-lime">Verified.</span>
           </h1>
 

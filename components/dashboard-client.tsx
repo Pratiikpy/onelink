@@ -338,10 +338,9 @@ export function DashboardClient() {
         </article>
       </div>
 
-      <section className="surface hidden max-w-full overflow-x-auto rounded-[24px] p-0 md:block">
-        <div className="min-w-[1380px]">
-        <div className="grid grid-cols-[190px_minmax(270px,1fr)_minmax(315px,1fr)_190px_180px_220px] border-b border-white/10 px-8 py-7 text-[13px]">
-          <p className="mono-label">Amount</p>
+      <section className="surface hidden max-w-full overflow-x-auto rounded-[24px] p-0 lg:block">
+        <div className="min-w-[1120px]">
+        <div className="grid grid-cols-[minmax(260px,1.15fr)_minmax(300px,1fr)_150px_150px_180px] border-b border-white/10 px-8 py-7 text-[13px]">
           <p className="mono-label">Memo</p>
           <p className="mono-label">Link</p>
           <p className="mono-label">Status</p>
@@ -361,12 +360,14 @@ export function DashboardClient() {
           {displayedLinks.map((link) => (
             <div
               key={link.id}
-              className="grid grid-cols-[190px_minmax(270px,1fr)_minmax(315px,1fr)_190px_180px_220px] items-center gap-4 px-8 py-6"
+              className="grid grid-cols-[minmax(260px,1.15fr)_minmax(300px,1fr)_150px_150px_180px] items-center gap-4 px-8 py-6"
             >
-              <div className="whitespace-nowrap text-[23px] font-medium leading-none">
-                {money(Number(link.amountUSDC))} <span className="text-[18px] text-white/34">USDC</span>
+              <div className="min-w-0">
+                <p className="truncate text-[22px]">{link.memo}</p>
+                <p className="mt-1 whitespace-nowrap text-[15px] font-medium text-white/38">
+                  {money(Number(link.amountUSDC))} USDC
+                </p>
               </div>
-              <p className="truncate text-[22px]">{link.memo}</p>
               <Link href={`/pay/${link.slug}`} className="truncate font-mono text-[20px] text-white/45 hover:text-white">
                 {`/pay/${link.slug}`}
               </Link>
@@ -426,7 +427,7 @@ export function DashboardClient() {
         </div>
       </section>
 
-      <section className="space-y-3 md:hidden">
+      <section className="space-y-3 lg:hidden">
         {loadError && <div className="surface rounded-[22px] px-5 py-6 text-[#ffc5c5]">{loadError}</div>}
         {!loadError && links.length === 0 && (
           <div className="surface rounded-[22px] px-5 py-8 text-[20px] text-white/58">
