@@ -26,7 +26,7 @@ make this visually unmistakable.
    npm run lint
    npm run typecheck
    npm run build
-   forge test
+   npm run test:contracts
    ```
    All four must be green. The same gates run in CI on every push and PR
    (`.github/workflows/ci.yml`).
