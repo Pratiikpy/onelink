@@ -12,7 +12,7 @@ Reviewed: 2026-05-27
 
 ## Verification Evidence
 
-- Verified production deployment: `dpl_FYHUN3ihrwfCJvYQqeBzhM9MMErY`.
+- Verified production deployment: `dpl_CtLD6WwCrF99XN3W1dEoSR3RhN7i`.
 - `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`, and
   `npm run test:contracts` passed after the overrides.
 - `npm run qa:live:visual` and `npm run qa:live:walletconnect-modal` passed on
