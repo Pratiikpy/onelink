@@ -52,6 +52,7 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
 | [`docs/PRD.md`](./docs/PRD.md) | Product requirements and end-to-end behavior definition. |
 | [`supabase/schema.sql`](./supabase/schema.sql) | Database schema, RLS policies, and immutability trigger. |
 | [`contracts/src/OneLinkCollect.sol`](./contracts/src/OneLinkCollect.sol) | Arc Testnet settlement contract used by verified receipts. |
+| [`SECURITY.md`](./SECURITY.md) | Private vulnerability-reporting policy and supported security scope. |
 
 ---
 

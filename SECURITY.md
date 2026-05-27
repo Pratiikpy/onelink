@@ -24,6 +24,9 @@ with the maintainers. Include:
 - Reproduction steps or a proof-of-concept.
 - Your name / handle for credit, if you'd like.
 
+The public repository also enables GitHub secret scanning, push protection,
+Dependabot security updates, and CodeQL scanning for JavaScript/TypeScript.
+
 We will acknowledge receipt within **72 hours** and provide a remediation
 timeline within **7 days**. For high-severity issues we will work with you on
 a coordinated disclosure window before publishing the fix.
