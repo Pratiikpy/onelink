@@ -1,6 +1,6 @@
 # OneLink Launch Readiness
 
-Generated: 2026-05-26
+Last verified: 2026-05-26
 
 Live product: https://onelink-mauve-nu.vercel.app
 
@@ -17,30 +17,30 @@ OneLink is ready for a professional Arc Testnet hackathon demo in the tested sco
 - Direct Arc payment, WalletConnect signed payment, permanent profile payment, and Base Sepolia to Arc bridge payment are all proven on the live public deployment.
 - Visual, failure-state, modal, browser-wallet, profile, cancellation, bridge, and transaction-level reports are captured under `docs/test-results/`.
 
-This is not a mainnet readiness claim. It is not an "any blockchain" claim. Solana and Circle Gateway checkout are not implemented/proven in the launch scope.
+This is not a mainnet readiness claim, and it is not an "any blockchain" claim. Solana and Circle Gateway checkout are outside the verified launch scope.
 
 ## Tested Scope
 
 | Area | Status | Evidence |
 | --- | --- | --- |
-| Lint | green | `npm run lint` |
-| Static TypeScript | green | `npm run typecheck` |
-| Production build | green | `npm run build` |
-| Solidity contract tests | green | `npm run test:contracts` — 27 passed |
-| Supabase migrations | green | `initial_onelink_schema`, `tighten_payment_rls_and_function_search_path`, `require_verified_payment_cancellation`, `require_verified_invoice_creation` |
-| Supabase security advisors | green | 0 lints |
-| Verified invoice creation | green | `docs/test-results/qa-live-direct/REPORT.md` proves forged anonymous invoice rejected and live `/api/payments/create` accepted verified Arc creation |
-| Browser UI direct payment | green | `docs/test-results/qa-live-browser-wallet/REPORT.md` |
-| Arc direct transaction proof | green | `docs/test-results/qa-live-direct/REPORT.md` |
-| WalletConnect QR modal | green | `docs/test-results/qa-live-walletconnect-modal/REPORT.md` |
-| WalletConnect signed Arc payment | green | `docs/test-results/qa-live-walletconnect-payment/REPORT.md` |
-| Base Sepolia -> Arc bridge UI | green | `docs/test-results/qa-live-bridge-payment-ui/REPORT.md` |
-| Permanent profile handle | green | `docs/test-results/qa-live-profile/REPORT.md` |
-| Permanent profile payment | green | `docs/test-results/qa-live-profile-payment/REPORT.md` |
-| Verified creator cancellation | green | `docs/test-results/qa-live-cancel/REPORT.md` |
-| Failure and recovery states | green | `docs/test-results/qa-live-failure-states/REPORT.md` |
-| Live visual smoke | green | `docs/test-results/qa-live-visual/REPORT.md` |
-| Production dependency audit | residual risk | `npm audit --omit=dev --json`: 39 moderate, 0 high, 0 critical; available fixes are major package changes or unsafe downgrades |
+| Lint | Pass | `npm run lint` |
+| Static TypeScript | Pass | `npm run typecheck` |
+| Production build | Pass | `npm run build` |
+| Solidity contract tests | Pass | `npm run test:contracts` — 27 passed |
+| Supabase migrations | Pass | `initial_onelink_schema`, `tighten_payment_rls_and_function_search_path`, `require_verified_payment_cancellation`, `require_verified_invoice_creation` |
+| Supabase security advisors | Pass | 0 security lints |
+| Verified invoice creation | Pass | `docs/test-results/qa-live-direct/REPORT.md` proves forged anonymous invoice rejection and live `/api/payments/create` acceptance of verified Arc creation |
+| Browser UI direct payment | Pass | `docs/test-results/qa-live-browser-wallet/REPORT.md` |
+| Arc direct transaction proof | Pass | `docs/test-results/qa-live-direct/REPORT.md` |
+| WalletConnect QR modal | Pass | `docs/test-results/qa-live-walletconnect-modal/REPORT.md` |
+| WalletConnect signed Arc payment | Pass | `docs/test-results/qa-live-walletconnect-payment/REPORT.md` |
+| Base Sepolia -> Arc bridge UI | Pass | `docs/test-results/qa-live-bridge-payment-ui/REPORT.md` |
+| Permanent profile handle | Pass | `docs/test-results/qa-live-profile/REPORT.md` |
+| Permanent profile payment | Pass | `docs/test-results/qa-live-profile-payment/REPORT.md` |
+| Verified creator cancellation | Pass | `docs/test-results/qa-live-cancel/REPORT.md` |
+| Failure and recovery states | Pass | `docs/test-results/qa-live-failure-states/REPORT.md` |
+| Live visual smoke | Pass | `docs/test-results/qa-live-visual/REPORT.md` |
+| Production dependency audit | Documented risk | `npm audit --omit=dev --json`: 39 moderate, 0 high, 0 critical; available fixes require major package changes or incompatible downgrades |
 
 ## Live Transaction Proof
 
@@ -159,12 +159,12 @@ Gateway checkout is disabled in production until a funded Circle Gateway deposit
 
 | Area | Current truth |
 | --- | --- |
-| Mainnet | Not in scope; testnet only. |
+| Mainnet | Not in scope for this submission; testnet only. |
 | Solana | Not implemented. |
 | Gateway | Checkout is feature-gated off; no funded Gateway balance proof has been run. |
-| Additional bridge sources | Base Sepolia is launch-proven. Ethereum Sepolia, Arbitrum Sepolia, and Polygon Amoy remain implemented/beta options until each gets the same proof standard. |
+| Additional bridge sources | Base Sepolia is launch-proven. Ethereum Sepolia, Arbitrum Sepolia, and Polygon Amoy remain beta options until each receives the same proof standard. |
 | Browser wallet automation | RainbowKit/EIP-1193 UI creation and settlement and WalletConnect protocol signing are proven. A named third-party wallet application's own popup/mobile presentation is not part of the automated claim. |
-| Dependency advisories | `npm audit --omit=dev` reports moderate advisories in wallet/Circle/Next transitive packages. Available automated fixes require major package changes or unsafe downgrades, so they are documented rather than forced during hackathon launch. |
+| Dependency advisories | `npm audit --omit=dev` reports moderate advisories in wallet/Circle/Next transitive packages. Available automated fixes require major package changes or incompatible downgrades, so they are documented rather than forced during hackathon launch. |
 
 ## Reproduce
 
