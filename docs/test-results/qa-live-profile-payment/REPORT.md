@@ -25,4 +25,3 @@ Status: green
 - `payment-before-settlement.png`
 - `payment-paid-after-refresh.png`
 - `receipt.png`
-- `videos/`

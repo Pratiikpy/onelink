@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import { chromium, devices } from "@playwright/test";
 
 const DIRECT_RESULT = resolve("docs", "test-results", "qa-live-direct", "result.json");
@@ -37,7 +37,7 @@ async function assertText(page, pattern, label) {
 }
 
 function rel(path) {
-  return path.replaceAll("\\", "/");
+  return relative(process.cwd(), path).replaceAll("\\", "/");
 }
 
 async function main() {
@@ -51,7 +51,6 @@ async function main() {
   async function runContext(name, options, pages) {
     const context = await browser.newContext({
       ...options,
-      recordVideo: { dir: resolve(OUT_DIR, "videos"), size: options.viewport ?? { width: 1280, height: 800 } },
     });
     const page = await context.newPage();
     for (const item of pages) {
@@ -68,10 +67,11 @@ async function main() {
       "desktop",
       { viewport: { width: 1440, height: 1100 } },
       [
-        { label: "home", url: liveUrl, assert: /Settlement live|Supported USDC/i },
+        { label: "home", url: liveUrl, assert: /Settlement live|USDC routes/i },
         { label: "create", url: `${liveUrl}/create`, assert: /Connect wallet|Create a payment link/i },
         { label: "dashboard", url: `${liveUrl}/dashboard`, assert: /Connect to see your payment links/i },
         { label: "security", url: `${liveUrl}/security`, assert: /Verification before claims|What has been proven live/i },
+        { label: "whitepaper", url: `${liveUrl}/whitepaper`, assert: /Product whitepaper|Circle CCTP/i },
         { label: "privacy", url: `${liveUrl}/privacy`, assert: /Public payment links require deliberate sharing/i },
         { label: "terms", url: `${liveUrl}/terms`, assert: /Testnet software, not a financial service/i },
         { label: "settings", url: `${liveUrl}/settings`, assert: /Ready|Configured/i },
@@ -85,10 +85,11 @@ async function main() {
       "mobile",
       { ...devices["iPhone 13"], viewport: { width: 390, height: 844 } },
       [
-        { label: "home", url: liveUrl, assert: /Settlement live|Supported USDC/i },
+        { label: "home", url: liveUrl, assert: /Settlement live|USDC routes/i },
         { label: "create", url: `${liveUrl}/create`, assert: /Connect wallet|Create a payment link/i },
         { label: "dashboard", url: `${liveUrl}/dashboard`, assert: /Connect to see your payment links/i },
         { label: "security", url: `${liveUrl}/security`, assert: /Verification before claims|What has been proven live/i },
+        { label: "whitepaper", url: `${liveUrl}/whitepaper`, assert: /Product whitepaper|Circle CCTP/i },
         { label: "privacy", url: `${liveUrl}/privacy`, assert: /Public payment links require deliberate sharing/i },
         { label: "terms", url: `${liveUrl}/terms`, assert: /Testnet software, not a financial service/i },
         { label: "not-found", url: `${liveUrl}/this-handle-does-not-exist-qa`, assert: /Link not found|Nothing at this link/i },
@@ -114,8 +115,7 @@ async function main() {
     "## Notes",
     "",
     "- Screenshots are captured from the live Vercel deployment.",
-    "- This verifies page render, responsive layout baseline, production settings, and paid receipt visibility.",
-    "- Wallet-popup video automation is still separate from this visual smoke.",
+    "- This verifies page render, responsive layout baseline, production settings, whitepaper availability, and paid receipt visibility.",
     "",
   ].join("\n");
   writeFileSync(resolve(OUT_DIR, "REPORT.md"), report);

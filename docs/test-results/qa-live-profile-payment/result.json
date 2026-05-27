@@ -4,7 +4,7 @@
   "profileUrl": "https://onelink-mauve-nu.vercel.app/qa-20260526152342",
   "paymentUrl": "https://onelink-mauve-nu.vercel.app/pay/qa-20260526152342-profile-payment-qa-0-02-p2qOc9",
   "receiptUrl": "https://onelink-mauve-nu.vercel.app/receipt/985e30c5-9d0a-407c-bba5-30c64a11feb3",
-  "recipient": "0x8fD0be3b709827535e1d690C17a7e51f577cEcdB",
+  "recipient": "0x8fD0...EcdB",
   "payer": "0xf6F0888C3FBF62aFeb4c1cC929fE1C782D09B00a",
   "amountUSDC": "0.02",
   "approveHash": "0x16e5edd13d707b606536717d97ae202eadef3ec8eaf9d1570a4be8266553c040",

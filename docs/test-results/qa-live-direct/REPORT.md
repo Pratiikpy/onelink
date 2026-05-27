@@ -18,7 +18,7 @@ Status: green
 
 ## Wallets
 
-- Creator/recipient: `0x8fD0be3b709827535e1d690C17a7e51f577cEcdB`
+- Creator/recipient: `0x8fD0...EcdB`
 - Payer: `0xf6F0888C3FBF62aFeb4c1cC929fE1C782D09B00a`
 - Amount: `0.25 USDC`
 

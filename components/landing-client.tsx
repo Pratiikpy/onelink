@@ -202,10 +202,10 @@ export function LandingClient() {
             </div>
           ))}
           <Link
-            href="/security"
+            href="/whitepaper"
             className="mt-7 inline-flex items-center gap-2 text-[15px] font-medium text-white/72 transition hover:text-white"
           >
-            View testnet safety and proof scope
+            Read the technical whitepaper
             <ArrowUpRight className="size-4" />
           </Link>
         </div>

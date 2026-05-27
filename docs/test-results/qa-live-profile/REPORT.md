@@ -3,7 +3,7 @@
 Generated: 2026-05-26T15:23:45.215Z
 Status: green
 Handle: `/qa-20260526152342`
-Wallet: `0x8fD0be3b709827535e1d690C17a7e51f577cEcdB`
+Wallet: `0x8fD0...EcdB`
 Profile URL: https://onelink-mauve-nu.vercel.app/qa-20260526152342
 
 ## Flow Proven

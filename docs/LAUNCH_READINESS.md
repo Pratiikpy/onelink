@@ -4,7 +4,7 @@ Last verified: 2026-05-27
 
 Live product: https://onelink-mauve-nu.vercel.app
 
-Final verified Vercel deployment: `dpl_4jBvY2L229hbP1tikqx8DkYRQi1g`
+Final verified Vercel deployment: `dpl_5doefr7VZKH7Gjmxk5pHrdSRfPK2`
 
 ## Verdict
 
@@ -101,12 +101,13 @@ This is not a mainnet readiness claim, and it is not an "any blockchain" claim. 
 
 ## Visual Proof
 
-Screenshots and videos were captured from the live public deployment.
+Screenshots and transaction reports were captured from the live public deployment.
 
 - `docs/test-results/qa-live-visual/desktop-home.png`
 - `docs/test-results/qa-live-visual/desktop-create.png`
 - `docs/test-results/qa-live-visual/desktop-dashboard.png`
 - `docs/test-results/qa-live-visual/desktop-security.png`
+- `docs/test-results/qa-live-visual/desktop-whitepaper.png`
 - `docs/test-results/qa-live-visual/desktop-privacy.png`
 - `docs/test-results/qa-live-visual/desktop-terms.png`
 - `docs/test-results/qa-live-visual/desktop-settings.png`
@@ -118,6 +119,7 @@ Screenshots and videos were captured from the live public deployment.
 - `docs/test-results/qa-live-visual/mobile-create.png`
 - `docs/test-results/qa-live-visual/mobile-dashboard.png`
 - `docs/test-results/qa-live-visual/mobile-security.png`
+- `docs/test-results/qa-live-visual/mobile-whitepaper.png`
 - `docs/test-results/qa-live-visual/mobile-privacy.png`
 - `docs/test-results/qa-live-visual/mobile-terms.png`
 - `docs/test-results/qa-live-visual/mobile-not-found.png`

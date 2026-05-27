@@ -23,11 +23,10 @@ Status: green
 
 ## Artifacts
 
-- C:/Users/prate/onelink/docs/test-results/qa-live-walletconnect-payment/walletconnect-qr-modal.png
-- C:/Users/prate/onelink/docs/test-results/qa-live-walletconnect-payment/walletconnect-connected.png
-- C:/Users/prate/onelink/docs/test-results/qa-live-walletconnect-payment/walletconnect-paid-after-refresh.png
-- C:/Users/prate/onelink/docs/test-results/qa-live-walletconnect-payment/receipt.png
-- C:/Users/prate/onelink/docs/test-results/qa-live-walletconnect-payment/videos/
+- docs/test-results/qa-live-walletconnect-payment/walletconnect-qr-modal.png
+- docs/test-results/qa-live-walletconnect-payment/walletconnect-connected.png
+- docs/test-results/qa-live-walletconnect-payment/walletconnect-paid-after-refresh.png
+- docs/test-results/qa-live-walletconnect-payment/receipt.png
 
 ## Scope Note
 

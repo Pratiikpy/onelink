@@ -19,11 +19,10 @@ Status: green
 
 ## Artifacts
 
-- C:/Users/prate/onelink/docs/test-results/qa-live-browser-wallet/creator-created-link.png
-- C:/Users/prate/onelink/docs/test-results/qa-live-browser-wallet/payer-before-payment.png
-- C:/Users/prate/onelink/docs/test-results/qa-live-browser-wallet/payer-paid-after-refresh.png
-- C:/Users/prate/onelink/docs/test-results/qa-live-browser-wallet/receipt.png
-- C:/Users/prate/onelink/docs/test-results/qa-live-browser-wallet/videos/
+- docs/test-results/qa-live-browser-wallet/creator-created-link.png
+- docs/test-results/qa-live-browser-wallet/payer-before-payment.png
+- docs/test-results/qa-live-browser-wallet/payer-paid-after-refresh.png
+- docs/test-results/qa-live-browser-wallet/receipt.png
 
 ## Scope Note
 

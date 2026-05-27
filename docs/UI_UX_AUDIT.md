@@ -4,7 +4,7 @@ Audit date: 2026-05-27
 
 Live product: https://onelink-mauve-nu.vercel.app
 
-Verified deployment: `dpl_4jBvY2L229hbP1tikqx8DkYRQi1g`
+Verified deployment: `dpl_5doefr7VZKH7Gjmxk5pHrdSRfPK2`
 
 ## Verdict
 
@@ -67,4 +67,3 @@ These are not UI bugs; they are honest product-scope limits:
 | Circle Gateway unified-balance checkout | Disabled until the funded Gateway flow is separately proven end to end. |
 | Fiat/card payment | Not supported. |
 | Third-party wallet popup visual QA | Browser wallet and WalletConnect protocol flows are automated; named third-party app-specific popup skins are not a product claim. |
-

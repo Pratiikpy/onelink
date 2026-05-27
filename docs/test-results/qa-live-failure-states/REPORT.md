@@ -19,7 +19,6 @@ Status: green
 - `expired-link.png`
 - `insufficient-funds.png`
 - `rejected-wallet-action.png`
-- `videos/`
 
 ## Scope Note
 

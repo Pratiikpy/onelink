@@ -21,6 +21,9 @@ export function Footer() {
           <Link href="/security" className="font-medium text-white/65 transition hover:text-white">
             Security
           </Link>
+          <Link href="/whitepaper" className="font-medium text-white/65 transition hover:text-white">
+            Whitepaper
+          </Link>
           <Link href="/privacy" className="font-medium text-white/65 transition hover:text-white">
             Privacy
           </Link>

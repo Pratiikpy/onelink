@@ -17,3 +17,7 @@ tsconfig.tsbuildinfo
 .claude
 .playwright-mcp
 tmp-ui-check/
+
+# Local Playwright/QA video captures
+docs/test-results/**/videos/
+*.webm

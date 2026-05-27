@@ -307,7 +307,7 @@ export function CreateLinkForm() {
             <input
               value={handle}
               onChange={(event) => setHandle(normalizeHandle(event.target.value))}
-              placeholder="prateek"
+              placeholder="designer"
               className="h-[72px] w-full rounded-[20px] border border-white/10 bg-[#1A1A1E] px-5 text-[18px] font-medium text-snow outline-none sm:h-[88px] sm:rounded-[24px] sm:px-8 sm:text-[24px]"
             />
             {handle && (

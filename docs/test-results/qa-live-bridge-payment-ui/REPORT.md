@@ -9,7 +9,7 @@ Status: green
 | Step | Result | Evidence |
 | --- | --- | --- |
 | Verified invoice prepared on Arc | green | [createLink](https://testnet.arcscan.app/tx/0x8e73b5abf2277a3104603c78137cbda58a172cb80540e6e48dfd79305a08ae48) accepted by live API |
-| Live UI selected Bridge route | green | C:/Users/prate/onelink/docs/test-results/qa-live-bridge-payment-ui/bridge-route-selected.png |
+| Live UI selected Bridge route | green | docs/test-results/qa-live-bridge-payment-ui/bridge-route-selected.png |
 | Base USDC approval | green | [0x27d13cda...](https://sepolia.basescan.org/tx/0x27d13cda517743534fe8c455ae9f5805d9ebb8fae6ff1154b459ffed343c8e46) |
 | Base CCTP burn | green | [0x051298e4...](https://sepolia.basescan.org/tx/0x051298e44c02b47ddc99b708bd3060c9287bba6cc130444219b3197b7630a9db) |
 | Arc CCTP mint | green | [0x76312604...](https://testnet.arcscan.app/tx/0x7631260432ac0e65428f7286bae6ee1b3a2e6a5c2e86079154027ced0e97f79d) |
