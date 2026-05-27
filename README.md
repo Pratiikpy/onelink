@@ -10,7 +10,7 @@ A premium testnet payment-link product for freelancers: create one shareable lin
 [![License: MIT](https://img.shields.io/badge/license-MIT-c9f267.svg)](./LICENSE)
 [![Arc Testnet](https://img.shields.io/badge/Arc-Testnet-c9f267.svg)](https://testnet.arcscan.app)
 
-[**Open live app**](https://onelink-mauve-nu.vercel.app) · [**Read whitepaper**](https://onelink-mauve-nu.vercel.app/whitepaper) · [**Launch readiness**](./docs/LAUNCH_READINESS.md)
+[**Open live app**](https://onelink-mauve-nu.vercel.app) · [**Pitch deck**](https://onelink-mauve-nu.vercel.app/pitch) · [**Read whitepaper**](https://onelink-mauve-nu.vercel.app/whitepaper) · [**Launch readiness**](./docs/LAUNCH_READINESS.md)
 
 <br />
 
@@ -49,6 +49,7 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
 | [`docs/LAUNCH_READINESS.md`](./docs/LAUNCH_READINESS.md) | Live deployment evidence, transaction hashes, screenshots, and QA matrix. |
 | [`docs/UI_UX_AUDIT.md`](./docs/UI_UX_AUDIT.md) | Final visual audit, responsive checks, and remaining non-UI product limits. |
 | [`docs/AI_BUILD_PROCESS.md`](./docs/AI_BUILD_PROCESS.md) | How Codex, MCP tools, local skills, and evidence-first QA were used. |
+| [`docs/pitch/PITCH_DECK_BRIEF.md`](./docs/pitch/PITCH_DECK_BRIEF.md) | Slide narrative, copy, and design direction for the required pitch deck. |
 | [`docs/PRD.md`](./docs/PRD.md) | Product requirements and end-to-end behavior definition. |
 | [`supabase/schema.sql`](./supabase/schema.sql) | Database schema, RLS policies, and immutability trigger. |
 | [`contracts/src/OneLinkCollect.sol`](./contracts/src/OneLinkCollect.sol) | Arc Testnet settlement contract used by verified receipts. |

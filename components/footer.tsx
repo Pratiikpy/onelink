@@ -24,6 +24,9 @@ export function Footer() {
           <Link href="/whitepaper" className="font-medium text-white/65 transition hover:text-white">
             Whitepaper
           </Link>
+          <Link href="/pitch" className="font-medium text-white/65 transition hover:text-white">
+            Pitch
+          </Link>
           <Link href="/privacy" className="font-medium text-white/65 transition hover:text-white">
             Privacy
           </Link>
