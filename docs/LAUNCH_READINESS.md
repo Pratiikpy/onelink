@@ -4,7 +4,7 @@ Last verified: 2026-05-27
 
 Live product: https://onelink-mauve-nu.vercel.app
 
-Final verified Vercel deployment: `dpl_9TkxVSw3xAiE9J9zX2EZP9UdoqBH`
+Final verified Vercel deployment: `dpl_HfcrX3Pc19xSDcfWLtvvDqzKcUMh`
 
 ## Verdict
 

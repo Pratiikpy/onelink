@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -64,7 +64,7 @@ function required(name) {
 }
 
 function rel(path) {
-  return path.replaceAll("\\", "/");
+  return relative(process.cwd(), path).replaceAll("\\", "/");
 }
 
 async function createWalletContext(browser, role, account, publicClient) {

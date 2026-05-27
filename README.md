@@ -53,6 +53,7 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
 | [`supabase/schema.sql`](./supabase/schema.sql) | Database schema, RLS policies, and immutability trigger. |
 | [`contracts/src/OneLinkCollect.sol`](./contracts/src/OneLinkCollect.sol) | Arc Testnet settlement contract used by verified receipts. |
 | [`SECURITY.md`](./SECURITY.md) | Private vulnerability-reporting policy and supported security scope. |
+| [`docs/SECURITY_REVIEW.md`](./docs/SECURITY_REVIEW.md) | Dependency alert disposition and enabled GitHub security controls. |
 
 ---
 
