@@ -54,6 +54,7 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
 | [`contracts/src/OneLinkCollect.sol`](./contracts/src/OneLinkCollect.sol) | Arc Testnet settlement contract used by verified receipts. |
 | [`SECURITY.md`](./SECURITY.md) | Private vulnerability-reporting policy and supported security scope. |
 | [`docs/SECURITY_REVIEW.md`](./docs/SECURITY_REVIEW.md) | Dependency alert disposition and enabled GitHub security controls. |
+| [`SUPPORT.md`](./SUPPORT.md) | Support boundaries, public issue guidance, and security-report routing. |
 
 ---
 

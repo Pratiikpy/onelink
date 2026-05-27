@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Support policy
+    url: https://github.com/Pratiikpy/onelink/blob/main/SUPPORT.md
+    about: Read what belongs in public issues and what is out of scope.
   - name: Security disclosure
     url: https://github.com/Pratiikpy/onelink/security/advisories/new
     about: Report vulnerabilities privately through GitHub Security Advisories.
