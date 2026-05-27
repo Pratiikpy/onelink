@@ -12,13 +12,15 @@ Reviewed: 2026-05-27
 
 ## Verification Evidence
 
-- Verified production deployment: `dpl_HfcrX3Pc19xSDcfWLtvvDqzKcUMh`.
+- Verified production deployment: `dpl_FYHUN3ihrwfCJvYQqeBzhM9MMErY`.
 - `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`, and
   `npm run test:contracts` passed after the overrides.
 - `npm run qa:live:visual` and `npm run qa:live:walletconnect-modal` passed on
   the deployed app.
 - A fresh signed WalletConnect settlement passed on Arc Testnet:
-  [payLink transaction](https://testnet.arcscan.app/tx/0xe6ca95231e6bd7da97749397ee18c2d80385d7b64c1ff68a6de8020406931623).
+  [payLink transaction](https://testnet.arcscan.app/tx/0x911565693a254c25aeb3bf87e2bf5e3ba5dec697f659cb898434536b1d40140b).
+- CodeQL passed after dynamic payment and receipt route segments were URL-encoded;
+  GitHub reports zero open code-scanning alerts.
 
 ## Policy
 

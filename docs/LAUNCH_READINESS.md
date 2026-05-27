@@ -4,7 +4,7 @@ Last verified: 2026-05-27
 
 Live product: https://onelink-mauve-nu.vercel.app
 
-Final verified Vercel deployment: `dpl_HfcrX3Pc19xSDcfWLtvvDqzKcUMh`
+Final verified Vercel deployment: `dpl_FYHUN3ihrwfCJvYQqeBzhM9MMErY`
 
 ## Verdict
 
@@ -40,7 +40,8 @@ This is not a mainnet readiness claim, and it is not an "any blockchain" claim. 
 | Verified creator cancellation | Pass | `docs/test-results/qa-live-cancel/REPORT.md` |
 | Failure and recovery states | Pass | `docs/test-results/qa-live-failure-states/REPORT.md` |
 | Live visual smoke | Pass | `docs/test-results/qa-live-visual/REPORT.md` |
-| Production dependency audit | Documented risk | `npm audit --omit=dev --json`: 39 moderate, 0 high, 0 critical; available fixes require major package changes or incompatible downgrades |
+| Production dependency audit | Documented risk | `ws` and `uuid` advisories patched; remaining Next.js-bundled `postcss` moderate risk is assessed in `docs/SECURITY_REVIEW.md`; 0 high/critical alerts |
+| Code scanning | Pass | CodeQL passed after dynamic route hardening; 0 open code-scanning alerts |
 
 ## Live Transaction Proof
 
@@ -64,11 +65,11 @@ This is not a mainnet readiness claim, and it is not an "any blockchain" claim. 
 
 ### WalletConnect Signed Payment
 
-- Payment URL: https://onelink-mauve-nu.vercel.app/pay/walletconnect-qa-20260526152410
-- Receipt URL: https://onelink-mauve-nu.vercel.app/receipt/6bd595fa-a022-4191-9920-096b552a1b30
-- Arc invoice creation: https://testnet.arcscan.app/tx/0x7a8aad7f31368f9078cd74f7d949af26a6f4b75d5ec00e4dd4794788df874613
-- Arc approval request: https://testnet.arcscan.app/tx/0x8a7a5883eb2f987649dfb3ce68ab58843414fef3fad0a8355c22fbf1dd5f9e97
-- Arc payment request: https://testnet.arcscan.app/tx/0xc99f174e07c2329d0eb25e6aea4cde078d4812146452acb8c7b8c5d3cc038ae2
+- Payment URL: https://onelink-mauve-nu.vercel.app/pay/walletconnect-qa-20260527071521
+- Receipt URL: https://onelink-mauve-nu.vercel.app/receipt/8af89e4d-5edd-4ac6-a45d-69754acf9fd6
+- Arc invoice creation: https://testnet.arcscan.app/tx/0xb155eff41250959d9f8988579b7e9a8b46db97369b212945a7281c8ed8ee99ba
+- Arc approval request: https://testnet.arcscan.app/tx/0x88a1da38ae7e8afcb659e61b64d3046e52e07fc8e038fac0ac5fc2362e2bf466
+- Arc payment request: https://testnet.arcscan.app/tx/0x911565693a254c25aeb3bf87e2bf5e3ba5dec697f659cb898434536b1d40140b
 - Proof: production QR decoded, WalletKit peer paired, signed payment persisted after refresh.
 
 ### Base Sepolia -> Arc Bridge Payment
@@ -85,11 +86,11 @@ This is not a mainnet readiness claim, and it is not an "any blockchain" claim. 
 
 ### Permanent Profile Payment
 
-- Profile URL: https://onelink-mauve-nu.vercel.app/qa-20260526152342
-- Payment URL: https://onelink-mauve-nu.vercel.app/pay/qa-20260526152342-profile-payment-qa-0-02-p2qOc9
-- Receipt URL: https://onelink-mauve-nu.vercel.app/receipt/985e30c5-9d0a-407c-bba5-30c64a11feb3
-- Arc approval: https://testnet.arcscan.app/tx/0x16e5edd13d707b606536717d97ae202eadef3ec8eaf9d1570a4be8266553c040
-- Arc profile settlement: https://testnet.arcscan.app/tx/0xfd017a9849687a854d3d45bc6e558abed8da2f63069ed7c712073a69c42d1047
+- Profile URL: https://onelink-mauve-nu.vercel.app/qa-20260527071615
+- Payment URL: https://onelink-mauve-nu.vercel.app/pay/qa-20260527071615-profile-payment-qa-0-02-wVjYm_
+- Receipt URL: https://onelink-mauve-nu.vercel.app/receipt/9b9d87fd-5d79-4499-be6d-d371555828a7
+- Arc approval: https://testnet.arcscan.app/tx/0x0ac40ec22f3bfc083ce63fa6deb17f88fe44136d9663e0ccba54d09083f46434
+- Arc profile settlement: https://testnet.arcscan.app/tx/0x710dab9607e10bff1ed14ec28cc08a39b63a37ffddb22d9517c9ef65c7bc8d43
 - Proof: wallet-signed handle claim persisted, profile payment settled, receipt persisted after refresh.
 
 ### Verified Creator Cancellation
@@ -173,7 +174,7 @@ Gateway checkout is disabled in production until a funded Circle Gateway deposit
 | Gateway | Checkout is feature-gated off; no funded Gateway balance proof has been run. |
 | Additional bridge sources | Base Sepolia is launch-proven. Ethereum Sepolia, Arbitrum Sepolia, and Polygon Amoy remain beta options until each receives the same proof standard. |
 | Browser wallet automation | RainbowKit/EIP-1193 UI creation and settlement and WalletConnect protocol signing are proven. A named third-party wallet application's own popup/mobile presentation is not part of the automated claim. |
-| Dependency advisories | `npm audit --omit=dev` reports moderate advisories in wallet/Circle/Next transitive packages. Available automated fixes require major package changes or incompatible downgrades, so they are documented rather than forced during hackathon launch. |
+| Dependency advisories | Patched vulnerable `ws` and `uuid` paths. One moderate `postcss` advisory bundled by supported Next.js releases is documented as accepted upstream risk; no high or critical dependency alert is accepted. |
 
 ## Reproduce
 
