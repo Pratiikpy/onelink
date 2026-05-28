@@ -457,7 +457,7 @@ async function main() {
       throw new Error(`${error instanceof Error ? error.message : String(error)}\n\nPage body:\n${body}`);
     }
     await page.reload({ waitUntil: "networkidle", timeout: 60_000 });
-    await assertBody(page, /View verified receipt/i, "gateway paid refresh");
+    await assertBody(page, /View receipt|View verified receipt/i, "gateway paid refresh");
     await page.screenshot({ path: resolve(OUT_DIR, "gateway-paid.png"), fullPage: true });
     const { data, error } = await supabase.from("payment_links").select("*").eq("id", id).single();
     if (error || data?.status !== "paid" || data?.payment_method !== "unified-balance" || !data.tx_hash) {

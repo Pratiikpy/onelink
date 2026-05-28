@@ -210,7 +210,7 @@ async function main() {
     await payPage.getByText("Paid", { exact: true }).waitFor({ timeout: 180_000 });
     await payPage.reload({ waitUntil: "networkidle", timeout: 60_000 });
     await assertBody(payPage, /Paid/i, "persisted paid page after refresh");
-    await payPage.getByRole("link", { name: /View verified receipt/i }).waitFor({ timeout: 30_000 });
+    await payPage.getByRole("link", { name: /View receipt|View verified receipt/i }).waitFor({ timeout: 30_000 });
     await payPage.screenshot({ path: resolve(OUT_DIR, "payer-paid-after-refresh.png"), fullPage: true });
 
     const { data: paid, error: paidError } = await supabase.from("payment_links").select("*").eq("id", link.id).single();

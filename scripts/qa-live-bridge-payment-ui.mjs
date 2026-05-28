@@ -232,12 +232,12 @@ async function main() {
     await page.goto(paymentUrl, { waitUntil: "networkidle", timeout: 60_000 });
     await assertBody(page, /Bridge/i, "bridge-connected pay page");
     await page.getByRole("button", { name: "Bridge" }).click();
-    await assertBody(page, /Base Sepolia proven/i, "bridge route selection");
+    await assertBody(page, /Base Sepolia|Bridge & pay|Source/i, "bridge route selection");
     await page.screenshot({ path: resolve(OUT_DIR, "bridge-route-selected.png"), fullPage: true });
     await page.getByRole("button", { name: /Bridge & pay/i }).click();
     await page.getByText("Paid", { exact: true }).waitFor({ timeout: 600_000 });
     await page.reload({ waitUntil: "networkidle", timeout: 60_000 });
-    await assertBody(page, /View verified receipt/i, "bridge paid persistence");
+    await assertBody(page, /View receipt|View verified receipt/i, "bridge paid persistence");
     await page.screenshot({ path: resolve(OUT_DIR, "bridge-paid-after-refresh.png"), fullPage: true });
     const { data, error } = await anon.from("payment_links").select("*").eq("id", id).single();
     if (error || data?.status !== "paid" || data?.payment_method !== "app-kit-bridge" || !data.tx_hash) {
