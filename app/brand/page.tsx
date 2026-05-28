@@ -406,16 +406,23 @@ function ColorCard({
   swatchClass: string;
   dark?: boolean;
 }) {
+  const isHairline = token === "hairline";
   return (
     <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
-      <div className={`grid h-20 place-items-center ${swatchClass}`}>
-        <span
-          className={`font-mono text-[10px] uppercase tracking-[0.18em] ${
-            dark ? "text-background" : "text-muted-foreground"
-          }`}
-        >
-          {token}
-        </span>
+      <div
+        className={`grid h-20 place-items-center ${isHairline ? "bg-muted/40" : swatchClass}`}
+      >
+        {isHairline ? (
+          <div className="h-px w-3/4 bg-foreground/[0.08]" aria-hidden />
+        ) : (
+          <span
+            className={`font-mono text-[10px] uppercase tracking-[0.18em] ${
+              dark ? "text-background" : "text-muted-foreground"
+            }`}
+          >
+            {token}
+          </span>
+        )}
       </div>
       <div className="space-y-1 p-4 text-xs">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">

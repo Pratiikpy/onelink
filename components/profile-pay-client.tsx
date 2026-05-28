@@ -259,6 +259,7 @@ export function ProfilePayClient({ handle }: { handle: string }) {
                 onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
                 placeholder="0"
                 inputMode="decimal"
+                autoFocus
                 className="w-full bg-transparent font-display text-5xl font-semibold tracking-[-0.04em] tabular-nums outline-none"
               />
               <span className="font-mono text-sm text-muted-foreground">USDC</span>

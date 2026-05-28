@@ -132,9 +132,9 @@ export function ReceiptClient({ id }: { id: string }) {
             )}
           </div>
 
-          <p className="mt-7 font-display text-[64px] font-semibold leading-none tracking-[-0.045em] tabular-nums">
-            {formatUSDC(link.amountUSDC)}
-            <span className="ml-1.5 text-base font-medium text-muted-foreground">USDC</span>
+          <p className="mt-7 flex items-baseline gap-2 font-display text-[64px] font-semibold leading-none tracking-[-0.045em] tabular-nums">
+            <span>{formatUSDC(link.amountUSDC)}</span>
+            <span className="text-lg font-medium tracking-tight text-muted-foreground">USDC</span>
           </p>
           <p className="mt-2 text-sm text-muted-foreground break-words">{link.memo}</p>
 
@@ -195,17 +195,19 @@ export function ReceiptClient({ id }: { id: string }) {
             />
           </div>
 
-          <div className="mt-6 inline-flex w-full items-center justify-between gap-3 rounded-md border border-success/20 bg-success/[0.06] p-3 text-xs">
+          <div className="mt-6 flex w-full flex-col gap-2 rounded-md border border-success/20 bg-success/[0.06] p-3 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <span className="inline-flex items-center gap-2 text-success">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              {verified
-                ? "Server-verified against PaymentCompleted event"
-                : demo
-                ? "Demo state — no on-chain proof"
-                : "Awaiting verified Arc event"}
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+              <span>
+                {verified
+                  ? "Server-verified against PaymentCompleted event"
+                  : demo
+                  ? "Demo state — no on-chain proof"
+                  : "Awaiting verified Arc event"}
+              </span>
             </span>
             <ProofDrawer link={link}>
-              <button className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-2 hover:underline">
+              <button className="inline-flex items-center gap-1 self-start font-medium text-foreground underline-offset-2 hover:underline sm:self-auto">
                 View proof <ArrowRight className="h-3 w-3" />
               </button>
             </ProofDrawer>
