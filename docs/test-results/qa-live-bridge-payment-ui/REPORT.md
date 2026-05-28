@@ -1,6 +1,6 @@
 # OneLink Live QA - Browser Bridge Payment Flow
 
-Generated: 2026-05-26T15:30:17.671Z
+Generated: 2026-05-28T06:09:01.878Z
 Base URL: https://onelink-mauve-nu.vercel.app
 Status: green
 
@@ -8,17 +8,17 @@ Status: green
 
 | Step | Result | Evidence |
 | --- | --- | --- |
-| Verified invoice prepared on Arc | green | [createLink](https://testnet.arcscan.app/tx/0x8e73b5abf2277a3104603c78137cbda58a172cb80540e6e48dfd79305a08ae48) accepted by live API |
+| Verified invoice prepared on Arc | green | [createLink](https://testnet.arcscan.app/tx/0x2fb14c650f08b7b1c597ca73d34146479df4ee9993c362f0f5d6e477d13a298b) accepted by live API |
 | Live UI selected Bridge route | green | docs/test-results/qa-live-bridge-payment-ui/bridge-route-selected.png |
-| Base USDC approval | green | [0x27d13cda...](https://sepolia.basescan.org/tx/0x27d13cda517743534fe8c455ae9f5805d9ebb8fae6ff1154b459ffed343c8e46) |
-| Base CCTP burn | green | [0x051298e4...](https://sepolia.basescan.org/tx/0x051298e44c02b47ddc99b708bd3060c9287bba6cc130444219b3197b7630a9db) |
-| Arc CCTP mint | green | [0x76312604...](https://testnet.arcscan.app/tx/0x7631260432ac0e65428f7286bae6ee1b3a2e6a5c2e86079154027ced0e97f79d) |
-| Arc USDC approval | green | [0xc691611d...](https://testnet.arcscan.app/tx/0xc691611d560a299107443cac76d6165c451428200ffda81b116e766b45c120bb) |
-| Arc invoice settlement | green | [0xc5ac72e5...](https://testnet.arcscan.app/tx/0xc5ac72e58a77fd48c9f6781031557fbd63cc6c7556876f25b1bb218aea240ee3) |
+| Base USDC approval | green | [0x5e102b06...](https://sepolia.basescan.org/tx/0x5e102b063bca052d180930a8eee54e9ee08c5ea3918f66c6a378756f2eecdd67) |
+| Base CCTP burn | green | [0xcc8c6dd5...](https://sepolia.basescan.org/tx/0xcc8c6dd560d307676286f530d0022618057875e09044ab060b7b286824d16955) |
+| Arc CCTP mint | green | [0xab3c28d8...](https://testnet.arcscan.app/tx/0xab3c28d84f87c6f84174af1cf237d8eb7d3325372689d6fc746f73c5bb666cc9) |
+| Arc USDC approval | green | [0x2421d5e0...](https://testnet.arcscan.app/tx/0x2421d5e01f83023f7ca7393d53a1253cc23c11a0f1ff470ba1b2b971fd5fc9de) |
+| Arc invoice settlement | green | [0x4d462fb2...](https://testnet.arcscan.app/tx/0x4d462fb27219863c7d773657f1cdfab84fe7b05cefccc11afdc0c0ba8f03af3b) |
 | Server reconciliation and refresh | green | Persisted paid receipt after UI bridge route |
 
-- Payment: https://onelink-mauve-nu.vercel.app/pay/bridge-ui-qa-20260526152945
-- Receipt: https://onelink-mauve-nu.vercel.app/receipt/03648af0-6f4d-4ccd-930f-5feb527f5999
+- Payment: https://onelink-mauve-nu.vercel.app/pay/bridge-ui-qa-20260528060818
+- Receipt: https://onelink-mauve-nu.vercel.app/receipt/66a322d0-89b2-4e82-a15e-607a4a424764
 
 ## Scope Note
 
