@@ -20,7 +20,7 @@ export default function BrandPage() {
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
             Brand kit · v1
           </p>
-          <h1 className="mt-6 font-display text-5xl font-semibold tracking-[-0.04em] md:text-[64px] md:leading-[1.05]">
+          <h1 className="mt-6 font-display text-5xl font-semibold tracking-[-0.04em] md:text-[64px] md:leading-[1.08]">
             The OneLink design system.
           </h1>
           <p className="mt-7 max-w-2xl text-pretty text-[17px] leading-relaxed text-muted-foreground">

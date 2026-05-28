@@ -20,7 +20,7 @@ export default function WhitepaperPage() {
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
             Whitepaper · v1
           </p>
-          <h1 className="mt-6 font-display text-4xl font-semibold tracking-[-0.035em] md:text-[56px] md:leading-[1.05]">
+          <h1 className="mt-6 font-display text-4xl font-semibold tracking-[-0.035em] md:text-[56px] md:leading-[1.08]">
             One link for USDC payments.
             <br />
             Verified on Arc.
