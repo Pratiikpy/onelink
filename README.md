@@ -109,6 +109,13 @@ For the full evidence bundle (transaction hashes, screenshots, QA matrix), see [
       <sub><b>Checkout</b> · Arc pre-flight, route picker, and live CCTP timeline.</sub>
     </td>
   </tr>
+</table>
+
+<p align="center">
+  <sub>Mobile, tablet, and deeper screen-by-screen QA live in <a href="./docs/LAUNCH_READINESS.md">launch readiness</a> and the reports under <a href="./docs/test-results/">docs/test-results</a>.</sub>
+</p>
+
+<table>
   <tr>
     <td width="50%">
       <img src="./docs/screenshots/profile-mobile.png" alt="Mobile profile" />
