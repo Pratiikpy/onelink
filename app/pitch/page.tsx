@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
+  ArrowRight,
   ArrowUpRight,
   Check,
   Layers,
   Lock,
   Send,
+  ShieldCheck,
   Sparkles,
+  Terminal,
   X,
   Zap,
 } from "lucide-react";
@@ -39,7 +42,7 @@ export default function PitchPage() {
 
       <main className="mx-auto max-w-5xl px-6 py-20 md:py-28">
         {/* 01 · Problem */}
-        <Slide eyebrow="Slide 01 · Problem">
+        <Slide eyebrow="Slide 01 · Problem" number="01 / 12">
           <Headline>
             Stablecoins are global. Freelancer payments still aren&rsquo;t.
           </Headline>
@@ -48,127 +51,148 @@ export default function PitchPage() {
             wallets, networks, gas, and address formats. The asset works.
             The experience doesn&rsquo;t.
           </Body>
-          <BulletGrid
-            items={[
+          <div className="mt-9 grid gap-3 md:grid-cols-2">
+            {[
               "Different wallets per chain",
               "Wrong-network sends",
               "No verifiable proof of payment",
               "No professional shareable surface",
-            ]}
-          />
+            ].map((it, i) => (
+              <div
+                key={it}
+                className="flex items-center gap-3 rounded-xl border border-hairline bg-surface p-4"
+              >
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-muted font-mono text-[11px] tabular-nums text-muted-foreground">
+                  0{i + 1}
+                </span>
+                <span className="text-sm font-medium tracking-tight text-foreground/85 line-through decoration-destructive/40 decoration-2 underline-offset-2">
+                  {it}
+                </span>
+              </div>
+            ))}
+          </div>
         </Slide>
 
-        {/* 02 · The Wedge */}
+        {/* 02 · The Wedge — HERO TREATMENT */}
         <SlideDivider />
-        <Slide eyebrow="Slide 02 · The wedge">
-          <Headline>
-            On Arc, USDC <em className="not-italic text-muted-foreground/60">is</em>{" "}
-            the gas.
-          </Headline>
-          <Body>
-            One balance pays the invoice and the network fee. No ETH-for-gas
-            dance, no &ldquo;please bridge first,&rdquo; no second token. The
-            payer holds USDC, signs once, lands on Arc with sub-second
-            finality.
-          </Body>
-          <CardGrid>
-            <BigCard
-              kicker="USDC-native settlement"
-              title="One token. Zero detours."
-              body="Arc treats USDC as native gas, so the payer never needs a second asset to clear an invoice."
-            />
-            <BigCard
-              kicker="Sub-second finality"
-              title="Receipt lands in seconds."
-              body="Deterministic finality on Arc means the verified receipt drops as soon as the tx is mined."
-            />
-          </CardGrid>
+        <Slide eyebrow="Slide 02 · The wedge" number="02 / 12">
+          <div className="relative overflow-hidden rounded-3xl border border-hairline bg-surface p-8 md:p-12">
+            <div className="pointer-events-none absolute inset-0 dot-bg [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+            <div className="relative">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success/[0.08] px-2.5 py-1 text-[11px] font-medium text-success">
+                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-dot" />
+                Live on Arc Testnet
+              </span>
+              <h2 className="mt-6 font-display text-[44px] font-semibold leading-[1.05] tracking-[-0.04em] md:text-[88px]">
+                USDC <span className="text-muted-foreground/50">is</span> the
+                gas.
+              </h2>
+              <p className="mt-7 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                One balance pays the invoice and the network fee. No
+                ETH-for-gas dance, no &ldquo;please bridge first,&rdquo; no
+                second token. The payer holds USDC, signs once, lands on Arc
+                with sub-second finality.
+              </p>
+              <div className="mt-9 grid gap-3 sm:grid-cols-3">
+                <KeyStat k="Native gas" v="USDC" />
+                <KeyStat k="ETH required" v="0" />
+                <KeyStat k="Settlement finality" v="Sub-second" />
+              </div>
+            </div>
+          </div>
         </Slide>
 
         {/* 03 · Why now */}
         <SlideDivider />
-        <Slide eyebrow="Slide 03 · Why now">
+        <Slide eyebrow="Slide 03 · Why now" number="03 / 12">
           <Headline>The primitives finally line up.</Headline>
           <Body>
-            Arc Testnet launched. Circle CCTP is mature and covers the chains
-            freelancers actually use. Stablecoin freelancing is finally
-            tractable as a product, not just a thread on Twitter.
+            Arc Testnet launched. Circle CCTP is mature. Stablecoin
+            freelancing is finally tractable as a product, not just a thread
+            on Twitter.
           </Body>
-          <Timeline
-            items={[
-              {
-                k: "Settlement",
-                v: "Arc Testnet brings USDC-native gas with deterministic finality.",
-              },
-              {
-                k: "Routing",
-                v: "Circle CCTP delivers retry-safe burn-and-mint between every supported chain.",
-              },
-              {
-                k: "Distribution",
-                v: "Freelance work is global; bank rails aren&rsquo;t. The wedge is wide-open.",
-              },
-            ]}
-          />
+          <div className="mt-8 grid gap-3 md:grid-cols-3">
+            <PillarCard
+              kicker="Settlement"
+              title="Arc Testnet"
+              body="USDC-native gas with deterministic finality."
+            />
+            <PillarCard
+              kicker="Routing"
+              title="Circle CCTP"
+              body="Retry-safe burn-and-mint between every supported chain."
+            />
+            <PillarCard
+              kicker="Distribution"
+              title="Freelance work is global"
+              body="Bank rails aren&rsquo;t. The wedge is wide-open."
+            />
+          </div>
         </Slide>
 
         {/* 04 · Solution */}
         <SlideDivider />
-        <Slide eyebrow="Slide 04 · Solution">
+        <Slide eyebrow="Slide 04 · Solution" number="04 / 12">
           <Headline>One link, three surfaces, one source of truth.</Headline>
           <Body>
             OneLink replaces chain confusion with a single professional
             payment identity. Profile, invoice, or receipt &mdash; every
             surface points back to the same Arc contract.
           </Body>
-          <CardGrid cols={3}>
-            <SurfaceCard
-              kicker="Profile"
+          <div className="mt-8 grid gap-3 md:grid-cols-3">
+            <SurfaceMock
+              tag="Profile"
               path="/{handle}"
-              body="Permanent payer-initiated page. Pick amount, memo, route."
+              title="Studio Freelancer"
+              detail="Permanent payer-initiated page"
+              accent="@qa-202605…"
             />
-            <SurfaceCard
-              kicker="Invoice"
+            <SurfaceMock
+              tag="Invoice"
               path="/pay/[slug]"
-              body="One-time link with locked amount, memo, and expiry."
+              title="0.25 USDC"
+              detail="One-time link · locked amount + memo"
+              accent="Branding sprint Q2"
             />
-            <SurfaceCard
-              kicker="Receipt"
+            <SurfaceMock
+              tag="Receipt"
               path="/receipt/[id]"
-              body="Verified Arc settlement &mdash; the contract is the truth."
+              title="Paid · verified on Arc"
+              detail="Server-verified · Arcscan-anchored"
+              accent={shortHash(directHash)}
             />
-          </CardGrid>
+          </div>
         </Slide>
 
-        {/* 05 · Demo flow */}
+        {/* 05 · Demo flow — HORIZONTAL TRACK */}
         <SlideDivider />
-        <Slide eyebrow="Slide 05 · Demo flow">
+        <Slide eyebrow="Slide 05 · Demo flow" number="05 / 12">
           <Headline>Create &rarr; Pay &rarr; Settle &rarr; Receipt.</Headline>
           <Body>
             Four moments. Each one is a real screen on the live deployment,
             and each one is verified on Arc before state changes.
           </Body>
-          <FlowSteps
+          <FlowTrack
             steps={[
               {
-                n: "01",
                 k: "Create",
-                v: "Creator signs the invoice on Arc. Server verifies the PaymentLinkCreated event before persisting.",
+                v: "Creator signs invoice on Arc.",
+                tag: "PaymentLinkCreated event",
               },
               {
-                n: "02",
                 k: "Pay",
-                v: "Payer opens the link, picks Arc-direct or Base&rarr;Arc CCTP bridge, signs once.",
+                v: "Payer picks Arc-direct or CCTP bridge.",
+                tag: "Single signature",
               },
               {
-                n: "03",
                 k: "Settle",
-                v: "Server watches Arc for the matching transfer; only writes paid after on-chain confirmation.",
+                v: "Server verifies on-chain transfer.",
+                tag: "Contract is the truth",
               },
               {
-                n: "04",
                 k: "Receipt",
-                v: "Verified Arcscan transaction, server-verified flag, full proof drawer for re-checking.",
+                v: "Verified Arcscan tx, server-verified flag.",
+                tag: "Ready in seconds",
               },
             ]}
           />
@@ -176,9 +200,9 @@ export default function PitchPage() {
 
         {/* 06 · Stack */}
         <SlideDivider />
-        <Slide eyebrow="Slide 06 · Stack">
+        <Slide eyebrow="Slide 06 · Stack" number="06 / 12">
           <Headline>Three primitives, no detours.</Headline>
-          <CardGrid cols={3}>
+          <div className="mt-8 grid gap-3 md:grid-cols-3">
             <PrimitiveCard
               icon={<Zap className="h-4 w-4" />}
               kicker="Arc Testnet"
@@ -197,33 +221,85 @@ export default function PitchPage() {
               title="Browser asks. API verifies."
               body="The browser cannot mark paid. Only verified Arc events flip terminal state."
             />
-          </CardGrid>
+          </div>
+          <div className="mt-7 rounded-2xl border border-hairline bg-muted/30 p-5">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              How it stitches together
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2 font-mono text-xs sm:gap-3">
+              <PipelineNode>Payer wallet</PipelineNode>
+              <PipelineArrow />
+              <PipelineNode>USDC on source</PipelineNode>
+              <PipelineArrow />
+              <PipelineNode tone="accent">CCTP burn / mint</PipelineNode>
+              <PipelineArrow />
+              <PipelineNode tone="accent">Arc settlement</PipelineNode>
+              <PipelineArrow />
+              <PipelineNode tone="success">Verified receipt</PipelineNode>
+            </div>
+          </div>
         </Slide>
 
-        {/* 07 · Proof */}
+        {/* 07 · Proof — BIG METRICS + MOCK ARCSCAN */}
         <SlideDivider />
-        <Slide eyebrow="Slide 07 · Proof">
+        <Slide eyebrow="Slide 07 · Proof" number="07 / 12">
           <Headline>Every claim has a hash you can re-check.</Headline>
           <Body>
             Public Vercel deployment. Public test artifacts. Public on-chain
             settlement. Nothing in this product is mocked.
           </Body>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <ProofMetric value="27 / 27" label="Forge tests passing" />
-            <ProofMetric value="4" label="Routes proven live" />
-            <ProofMetric value="0" label="Open security alerts" />
-            <ProofMetric value="5 viewports" label="Visual QA coverage" />
+            <BigMetric value="27/27" label="Forge tests" />
+            <BigMetric value="4" label="Routes proven live" />
+            <BigMetric value="0" label="Open security alerts" />
+            <BigMetric value="5×" label="Viewport QA coverage" />
           </div>
-          <div className="mt-6 rounded-2xl border border-hairline bg-surface p-5">
+
+          {/* Mock Arcscan-style card */}
+          <div className="mt-7 rounded-2xl border border-hairline bg-surface p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-success text-success-foreground">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                </span>
+                <p className="text-sm font-medium tracking-tight text-success">
+                  Verified on Arc
+                </p>
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Arcscan
+              </span>
+            </div>
+            <p className="mt-5 flex items-baseline gap-2 font-display text-4xl font-semibold leading-none tracking-[-0.035em] tabular-nums">
+              <span>0.25</span>
+              <span className="text-base font-medium tracking-tight text-muted-foreground">
+                USDC
+              </span>
+            </p>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Direct Arc payment · server-verified
+            </p>
+            <div className="mt-5 grid gap-2 border-t border-hairline pt-4 text-sm">
+              <KV k="Method" v="Direct on Arc" />
+              <KV k="Source" v="ARC_TESTNET" />
+              <KV k="Tx hash" v={shortHash(directHash)} mono />
+            </div>
+            <a
+              href={`${ARC_EXPLORER_URL}/tx/${directHash}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+            >
+              Open on testnet.arcscan.app <ArrowUpRight className="h-3 w-3" />
+            </a>
+          </div>
+
+          {/* Other live tx hashes */}
+          <div className="mt-4 rounded-xl border border-hairline bg-surface p-5">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Real Arcscan tx hashes
+              Other live-proven routes
             </p>
             <ul className="mt-4 space-y-3 text-sm">
-              <ProofTx
-                label="Direct Arc payment"
-                hash={directHash}
-                href={`${ARC_EXPLORER_URL}/tx/${directHash}`}
-              />
               <ProofTx
                 label="Base &rarr; Arc bridge reconciliation"
                 hash={bridgeHash}
@@ -256,53 +332,98 @@ export default function PitchPage() {
           </div>
         </Slide>
 
-        {/* 08 · Built with Codex */}
+        {/* 08 · Built with Codex — CODE BLOCK + DAY STRIP */}
         <SlideDivider />
-        <Slide eyebrow="Slide 08 · Built with Codex">
+        <Slide eyebrow="Slide 08 · Built with Codex" number="08 / 12">
           <Headline>One builder. One week. Codex everywhere.</Headline>
           <Body>
             OneLink&rsquo;s shippable surface area was built with Codex CLI
             inside a 7-day sprint. Not narrated &mdash; actually used to
             scaffold, refactor, and verify every layer of the product.
           </Body>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            <CodexCard
-              kicker="Workflow"
-              title="/goal-driven sprints"
-              body="Each PR opened with a /goal that locked scope and acceptance criteria before any code was written."
+
+          {/* Code-block hero */}
+          <div className="mt-8 overflow-hidden rounded-2xl border border-hairline bg-foreground text-background">
+            <div className="flex items-center justify-between border-b border-background/10 px-5 py-3">
+              <div className="flex items-center gap-2 text-[11px] font-medium tracking-tight">
+                <Terminal className="h-3.5 w-3.5" />
+                <span className="font-mono">codex</span>
+                <span className="text-background/50">·</span>
+                <span className="text-background/60">day 03</span>
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-background/40">
+                7-day sprint
+              </span>
+            </div>
+            <pre className="overflow-x-auto px-5 py-5 font-mono text-[12.5px] leading-relaxed">
+{`/goal port the Lovable design system end-to-end.
+        keep all backend wiring (wagmi, Arc, CCTP, Supabase).
+        replace black/lime brand with Apple-minimal light theme.
+        ship 9 \`components/onelink/*\` primitives and 13 shadcn ui parts.
+        verify lint, typecheck, build green before merging.
+
+→ feat/lovable-design-port
+→ 50 files, +6,500 lines
+→ 27/27 forge tests · CI green · merged as #17`}
+            </pre>
+          </div>
+
+          {/* Day-by-day strip */}
+          <div className="mt-7 grid gap-3 md:grid-cols-5">
+            <DayStripCard
+              day="MON"
+              label="Day 01"
+              title="Lovable port lands"
+              meta="PR #17 · ~6,500 lines"
             />
-            <CodexCard
-              kicker="Automation"
-              title="MCP-connected toolchain"
-              body="Live integrations with Arc, Circle, Supabase, Notion, Vercel, Playwright, and the Rabby wallet harness."
+            <DayStripCard
+              day="TUE"
+              label="Day 02"
+              title="Brand polish"
+              meta="PR #18 · favicon, OG, Rainbow theme"
             />
-            <CodexCard
-              kicker="Loop"
-              title="Iterative PR + test cycle"
-              body="Every change shipped behind a feature branch with lint, typecheck, build, and Foundry gates."
+            <DayStripCard
+              day="WED"
+              label="Day 03"
+              title="a11y + brand kit"
+              meta="PRs #19, #21 · /brand page"
             />
-            <CodexCard
-              kicker="Evidence"
-              title="Codex-driven QA scripts"
-              body="Live-network Playwright sweeps capture real tx hashes; visual QA across five viewports."
+            <DayStripCard
+              day="THU"
+              label="Day 04"
+              title="Audit + polish"
+              meta="PRs #23, #24 · 7 medium fixes"
+            />
+            <DayStripCard
+              day="FRI"
+              label="Day 05"
+              title="Pitch rewrite"
+              meta="PR #25 · launch prep"
+              active
             />
           </div>
-          <div className="mt-6 flex flex-wrap gap-2 text-[11px] font-medium text-muted-foreground">
-            <Tag>9 PRs · 4 days</Tag>
-            <Tag>Lovable design port</Tag>
-            <Tag>Server-verified state</Tag>
-            <Tag>27 Foundry tests</Tag>
-            <Tag>Live QA on every flow</Tag>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-2">
+            <CodexCard
+              kicker="MCP toolchain"
+              title="Arc · Circle · Supabase · Notion · Vercel · Playwright · Rabby"
+              body="Live integrations let Codex test on real chains, real RPCs, and real wallet harnesses without leaving the loop."
+            />
+            <CodexCard
+              kicker="Evidence-first QA"
+              title="Codex-driven Playwright sweeps"
+              body="Live-network scripts capture real tx hashes; visual QA across five viewports. Every claim links to an artifact."
+            />
           </div>
         </Slide>
 
         {/* 09 · Audience */}
         <SlideDivider />
-        <Slide eyebrow="Slide 09 · Audience">
+        <Slide eyebrow="Slide 09 · Audience" number="09 / 12">
           <Headline>
             Built for the people USDC is already winning over.
           </Headline>
-          <CardGrid cols={2}>
+          <div className="mt-8 grid gap-3 md:grid-cols-2">
             <AudienceCard
               who="Web3-native freelancers"
               why="Already paid in USDC. Tired of route fragmentation."
@@ -319,104 +440,138 @@ export default function PitchPage() {
               who="Small agencies"
               why="Per-project invoices with verifiable on-chain receipts."
             />
-          </CardGrid>
-        </Slide>
-
-        {/* 10 · Scope honesty */}
-        <SlideDivider />
-        <Slide eyebrow="Slide 10 · Scope honesty">
-          <Headline>What we ship vs what we don&rsquo;t.</Headline>
-          <Body>
-            We don&rsquo;t ship what we can&rsquo;t prove. Every row below is
-            visible inside the live product and the README so judges and
-            users see the same truth.
-          </Body>
-          <div className="mt-8 grid gap-3 md:grid-cols-2">
-            <ScopeRow
-              status="live"
-              label="Arc Testnet · USDC-native settlement"
-            />
-            <ScopeRow status="live" label="Base Sepolia &rarr; Arc via CCTP" />
-            <ScopeRow status="live" label="Profile + invoice + receipt surfaces" />
-            <ScopeRow status="live" label="Server-verified terminal state" />
-            <ScopeRow status="gated" label="Circle Gateway unified balance" />
-            <ScopeRow status="out" label="Mainnet" />
-            <ScopeRow status="out" label="Solana" />
-            <ScopeRow status="out" label="Fiat / cards" />
           </div>
         </Slide>
 
-        {/* 11 · Roadmap */}
+        {/* 10 · Scope honesty — TWO COLUMN */}
         <SlideDivider />
-        <Slide eyebrow="Slide 11 · Roadmap">
+        <Slide eyebrow="Slide 10 · Scope honesty" number="10 / 12">
+          <Headline>What we ship vs what we don&rsquo;t.</Headline>
+          <Body>
+            We don&rsquo;t ship what we can&rsquo;t prove. Same truth in the
+            live product, README, and pitch.
+          </Body>
+          <div className="mt-8 grid gap-3 md:grid-cols-2">
+            {/* Ship */}
+            <div className="rounded-2xl border border-success/15 bg-success/[0.04] p-6">
+              <div className="flex items-center gap-2">
+                <span className="grid h-7 w-7 place-items-center rounded-md bg-success text-success-foreground">
+                  <Check className="h-4 w-4" />
+                </span>
+                <p className="font-display text-base font-semibold tracking-tight text-success">
+                  Live & proven
+                </p>
+              </div>
+              <ul className="mt-5 space-y-2 text-sm">
+                <ScopeLine status="ok" label="Arc Testnet · USDC-native settlement" />
+                <ScopeLine status="ok" label="Base Sepolia &rarr; Arc via CCTP" />
+                <ScopeLine status="ok" label="Profile + invoice + receipt surfaces" />
+                <ScopeLine status="ok" label="Server-verified terminal state" />
+              </ul>
+            </div>
+            {/* Don't ship */}
+            <div className="rounded-2xl border border-hairline bg-muted/40 p-6">
+              <div className="flex items-center gap-2">
+                <span className="grid h-7 w-7 place-items-center rounded-md bg-muted text-muted-foreground">
+                  <X className="h-4 w-4" />
+                </span>
+                <p className="font-display text-base font-semibold tracking-tight text-muted-foreground">
+                  Out of scope (today)
+                </p>
+              </div>
+              <ul className="mt-5 space-y-2 text-sm">
+                <ScopeLine
+                  status="gated"
+                  label="Circle Gateway unified balance"
+                />
+                <ScopeLine status="off" label="Mainnet" />
+                <ScopeLine status="off" label="Solana" />
+                <ScopeLine status="off" label="Fiat / cards" />
+              </ul>
+            </div>
+          </div>
+        </Slide>
+
+        {/* 11 · Roadmap — TIMELINE TRACK */}
+        <SlideDivider />
+        <Slide eyebrow="Slide 11 · Roadmap" number="11 / 12">
           <Headline>Testnet today. Mainnet next.</Headline>
           <Body>
             The work after the hackathon is unblocking the rails we already
             built &mdash; not adding new theatre.
           </Body>
-          <div className="mt-7 grid gap-3 md:grid-cols-3">
-            <RoadmapCard
-              when="Now"
-              title="Arc Testnet"
-              body="Direct + CCTP bridge live. Profile, invoice, receipt, dashboard, settings shipped."
+          <div className="relative mt-10">
+            <div
+              className="absolute left-0 right-0 top-[18px] h-px bg-hairline md:block"
+              aria-hidden
             />
-            <RoadmapCard
-              when="Next"
-              title="Mainnet pilot"
-              body="Closed-cohort mainnet rollout once Gateway funded-flow proof and final security review land."
-            />
-            <RoadmapCard
-              when="After"
-              title="Marketplace + agents"
-              body="Profile-driven shopping, scheduled invoices, and AI agents that close the loop end to end."
-            />
+            <div className="relative grid gap-6 md:grid-cols-3">
+              <TimelinePoint
+                when="Now"
+                title="Arc Testnet"
+                body="Direct + CCTP bridge live. Profile, invoice, receipt, dashboard, settings shipped."
+                state="active"
+              />
+              <TimelinePoint
+                when="Next"
+                title="Mainnet pilot"
+                body="Closed-cohort rollout once Gateway funded-flow proof + final security review land."
+                state="upcoming"
+              />
+              <TimelinePoint
+                when="After"
+                title="Marketplace + agents"
+                body="Profile-driven shopping, scheduled invoices, AI agents that close the loop end to end."
+                state="future"
+              />
+            </div>
           </div>
         </Slide>
 
         {/* 12 · CTA */}
         <SlideDivider />
         <Reveal>
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-              Slide 12 · The ask
-            </p>
-            <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-0.035em] md:text-[52px] md:leading-[1.08]">
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            Slide 12 · The ask
+          </p>
+          <div className="mx-auto mt-5 max-w-3xl text-center">
+            <h2 className="font-display text-4xl font-semibold tracking-[-0.035em] md:text-[64px] md:leading-[1.05]">
               Try it. Break it. Tell us what you see.
             </h2>
-            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+            <p className="mt-7 text-lg leading-relaxed text-muted-foreground">
               The fastest way to understand OneLink is to send 0.25 testnet
               USDC and watch the receipt land on Arcscan.
             </p>
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <Link
+            <div className="mt-9 grid gap-3 sm:grid-cols-3">
+              <CtaButton
                 href="/create"
-                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full bg-foreground px-5 text-sm font-medium text-background transition-transform duration-200 hover:-translate-y-px"
-              >
-                <Send className="h-4 w-4" /> Send 0.25 testnet USDC
-              </Link>
-              <Link
+                tone="primary"
+                icon={<Send className="h-4 w-4" />}
+                label="Send 0.25 testnet USDC"
+              />
+              <CtaButton
                 href="https://github.com/Pratiikpy/onelink#visual-walkthrough"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full border border-hairline bg-surface px-5 text-sm font-medium hover:bg-muted"
-              >
-                <Sparkles className="h-4 w-4" /> Watch 90-second demo
-              </Link>
-              <Link
+                tone="ghost"
+                external
+                icon={<Sparkles className="h-4 w-4" />}
+                label="Watch 90-second demo"
+              />
+              <CtaButton
                 href="https://github.com/Pratiikpy/onelink/blob/main/docs/LAUNCH_READINESS.md"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full border border-hairline bg-surface px-5 text-sm font-medium hover:bg-muted"
-              >
-                Read launch proof <ArrowUpRight className="h-4 w-4" />
-              </Link>
+                tone="ghost"
+                external
+                icon={<ArrowUpRight className="h-4 w-4" />}
+                label="Read launch proof"
+              />
             </div>
-            <p className="mt-7 text-xs text-muted-foreground">
-              <Link href="/" className="underline-offset-2 hover:underline">
-                onelink-mauve-nu.vercel.app
-              </Link>{" "}
-              · Built in 7 days with Codex CLI.
-            </p>
+            <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface px-3.5 py-1.5 text-[11px] font-medium text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-dot" />
+              <span>onelink-mauve-nu.vercel.app</span>
+              <span className="text-muted-foreground/50">·</span>
+              <span>0 alerts</span>
+              <span className="text-muted-foreground/50">·</span>
+              <span>Built in 7 days with Codex CLI</span>
+            </div>
           </div>
         </Reveal>
       </main>
@@ -426,20 +581,27 @@ export default function PitchPage() {
   );
 }
 
-/* ---------- helpers ---------- */
+/* ---------- atoms ---------- */
 
 function Slide({
   eyebrow,
+  number,
   children,
 }: {
   eyebrow: string;
+  number: string;
   children: React.ReactNode;
 }) {
   return (
     <Reveal as="section">
-      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-        {eyebrow}
-      </p>
+      <div className="flex items-center justify-between gap-4">
+        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+          {eyebrow}
+        </p>
+        <p className="font-mono text-[10px] tabular-nums tracking-[0.2em] text-muted-foreground/60">
+          {number}
+        </p>
+      </div>
       {children}
     </Reveal>
   );
@@ -461,38 +623,20 @@ function Body({ children }: { children: React.ReactNode }) {
   );
 }
 
-function BulletGrid({ items }: { items: string[] }) {
+function KeyStat({ k, v }: { k: string; v: string }) {
   return (
-    <ul className="mt-7 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
-      {items.map((it) => (
-        <li key={it} className="flex items-start gap-2">
-          <span className="mt-2 inline-block h-1 w-1 shrink-0 rounded-full bg-muted-foreground/60" />
-          <span>{it}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function CardGrid({
-  children,
-  cols = 2,
-}: {
-  children: React.ReactNode;
-  cols?: 2 | 3;
-}) {
-  return (
-    <div
-      className={`mt-8 grid gap-3 ${
-        cols === 3 ? "md:grid-cols-3" : "md:grid-cols-2"
-      }`}
-    >
-      {children}
+    <div className="rounded-xl border border-hairline bg-background/60 p-4 backdrop-blur">
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        {k}
+      </p>
+      <p className="mt-2 font-display text-2xl font-semibold tracking-tight">
+        {v}
+      </p>
     </div>
   );
 }
 
-function BigCard({
+function PillarCard({
   kicker,
   title,
   body,
@@ -506,30 +650,89 @@ function BigCard({
       <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         {kicker}
       </p>
-      <p className="mt-3 font-display text-xl font-semibold tracking-tight">
+      <p className="mt-3 font-display text-lg font-semibold tracking-tight">
         {title}
       </p>
-      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+      <p
+        className="mt-2 text-sm text-muted-foreground"
+        dangerouslySetInnerHTML={{ __html: body }}
+      />
     </div>
   );
 }
 
-function SurfaceCard({
-  kicker,
+function SurfaceMock({
+  tag,
   path,
-  body,
+  title,
+  detail,
+  accent,
 }: {
-  kicker: string;
+  tag: string;
   path: string;
-  body: string;
+  title: string;
+  detail: string;
+  accent: string;
 }) {
   return (
-    <div className="rounded-2xl border border-hairline bg-surface p-5">
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        {kicker}
-      </p>
-      <p className="mt-3 font-mono text-[13px]">{path}</p>
-      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-surface">
+      <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          {tag}
+        </span>
+        <span className="font-mono text-[10px] text-muted-foreground/70">
+          {path}
+        </span>
+      </div>
+      <div className="p-5">
+        <p className="font-display text-base font-semibold tracking-tight">
+          {title}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+        <p className="mt-4 font-mono text-[11px] text-muted-foreground/80">
+          {accent}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function FlowTrack({
+  steps,
+}: {
+  steps: { k: string; v: string; tag: string }[];
+}) {
+  return (
+    <div className="mt-9 grid gap-3 md:grid-cols-4">
+      {steps.map(({ k, v, tag }, i) => (
+        <div key={k} className="relative">
+          <div className="rounded-2xl border border-hairline bg-surface p-5">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Step {String(i + 1).padStart(2, "0")}
+              </span>
+              <span className="font-mono text-[10px] text-muted-foreground/60">
+                {String(i + 1)}/4
+              </span>
+            </div>
+            <p className="mt-4 font-display text-lg font-semibold tracking-tight">
+              {k}
+            </p>
+            <p className="mt-1.5 text-sm text-muted-foreground">{v}</p>
+            <p className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-hairline bg-background px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              {tag}
+            </p>
+          </div>
+          {i < steps.length - 1 && (
+            <div
+              className="absolute -right-3 top-1/2 hidden -translate-y-1/2 md:block"
+              aria-hidden
+            >
+              <ArrowRight className="h-4 w-4 text-muted-foreground/50" />
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -547,7 +750,7 @@ function PrimitiveCard({
 }) {
   return (
     <div className="rounded-2xl border border-hairline bg-surface p-6">
-      <div className="flex items-center gap-2 text-foreground">
+      <div className="flex items-center gap-2">
         <span className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-background">
           {icon}
         </span>
@@ -555,71 +758,70 @@ function PrimitiveCard({
           {kicker}
         </span>
       </div>
-      <p className="mt-4 font-display text-base font-semibold tracking-tight">
-        {title}
-      </p>
-      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+      <p
+        className="mt-4 font-display text-base font-semibold tracking-tight"
+        dangerouslySetInnerHTML={{ __html: title }}
+      />
+      <p
+        className="mt-2 text-sm text-muted-foreground"
+        dangerouslySetInnerHTML={{ __html: body }}
+      />
     </div>
   );
 }
 
-function Timeline({ items }: { items: { k: string; v: string }[] }) {
-  return (
-    <div className="mt-8 grid gap-3 md:grid-cols-3">
-      {items.map(({ k, v }) => (
-        <div
-          key={k}
-          className="rounded-2xl border border-hairline bg-surface p-5"
-        >
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {k}
-          </p>
-          <p
-            className="mt-3 text-sm leading-relaxed text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: v }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function FlowSteps({
-  steps,
+function PipelineNode({
+  children,
+  tone = "default",
 }: {
-  steps: { n: string; k: string; v: string }[];
+  children: React.ReactNode;
+  tone?: "default" | "accent" | "success";
 }) {
+  const cls =
+    tone === "success"
+      ? "border-success/20 bg-success/[0.08] text-success"
+      : tone === "accent"
+      ? "border-foreground/15 bg-background text-foreground"
+      : "border-hairline bg-background text-muted-foreground";
   return (
-    <ol className="mt-8 grid gap-3 md:grid-cols-2">
-      {steps.map(({ n, k, v }) => (
-        <li
-          key={n}
-          className="rounded-2xl border border-hairline bg-surface p-5"
-        >
-          <div className="flex items-baseline gap-3">
-            <span className="font-mono text-[12px] tabular-nums text-muted-foreground/80">
-              {n}
-            </span>
-            <span className="font-display text-base font-semibold tracking-tight">
-              {k}
-            </span>
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">{v}</p>
-        </li>
-      ))}
-    </ol>
+    <span
+      className={`inline-flex items-center rounded-full border px-3 py-1.5 ${cls}`}
+    >
+      {children}
+    </span>
   );
 }
 
-function ProofMetric({ value, label }: { value: string; label: string }) {
+function PipelineArrow() {
+  return <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />;
+}
+
+function BigMetric({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-2xl border border-hairline bg-surface p-5">
-      <p className="font-display text-3xl font-semibold tracking-tight tabular-nums">
+    <div className="rounded-2xl border border-hairline bg-surface p-6">
+      <p className="font-display text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums md:text-[56px]">
         {value}
       </p>
-      <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
+    </div>
+  );
+}
+
+function KV({
+  k,
+  v,
+  mono,
+}: {
+  k: string;
+  v: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-muted-foreground">{k}</span>
+      <span className={mono ? "font-mono text-xs" : "font-medium"}>{v}</span>
     </div>
   );
 }
@@ -651,6 +853,47 @@ function ProofTx({
   );
 }
 
+function DayStripCard({
+  day,
+  label,
+  title,
+  meta,
+  active,
+}: {
+  day: string;
+  label: string;
+  title: string;
+  meta: string;
+  active?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-xl border bg-surface p-4 ${
+        active ? "border-foreground/40" : "border-hairline"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <span
+          className={`font-mono text-[10px] uppercase tracking-[0.2em] ${
+            active ? "text-foreground" : "text-muted-foreground"
+          }`}
+        >
+          {day}
+        </span>
+        <span className="font-mono text-[10px] tabular-nums text-muted-foreground/60">
+          {label}
+        </span>
+      </div>
+      <p className="mt-3 font-display text-sm font-semibold tracking-tight">
+        {title}
+      </p>
+      <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+        {meta}
+      </p>
+    </div>
+  );
+}
+
 function CodexCard({
   kicker,
   title,
@@ -673,14 +916,6 @@ function CodexCard({
   );
 }
 
-function Tag({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="rounded-full border border-hairline bg-surface px-3 py-1">
-      {children}
-    </span>
-  );
-}
-
 function AudienceCard({ who, why }: { who: string; why: string }) {
   return (
     <div className="rounded-2xl border border-hairline bg-surface p-5">
@@ -692,67 +927,111 @@ function AudienceCard({ who, why }: { who: string; why: string }) {
   );
 }
 
-function ScopeRow({
+function ScopeLine({
   status,
   label,
 }: {
-  status: "live" | "gated" | "out";
+  status: "ok" | "gated" | "off";
   label: string;
 }) {
   const meta =
-    status === "live"
+    status === "ok"
       ? {
-          icon: <Check className="h-3.5 w-3.5" />,
-          tone: "border-success/20 bg-success/[0.08] text-success",
-          tag: "Live",
+          icon: <Check className="h-3.5 w-3.5 text-success" />,
+          tone: "text-foreground",
         }
       : status === "gated"
       ? {
-          icon: <Lock className="h-3.5 w-3.5" />,
-          tone:
-            "border-warning/30 bg-warning/[0.08] text-warning-foreground",
-          tag: "Gated",
+          icon: <Lock className="h-3.5 w-3.5 text-warning-foreground" />,
+          tone: "text-foreground/80",
         }
       : {
-          icon: <X className="h-3.5 w-3.5" />,
-          tone: "border-hairline bg-muted/40 text-muted-foreground",
-          tag: "Out of scope",
+          icon: <X className="h-3.5 w-3.5 text-muted-foreground/60" />,
+          tone: "text-muted-foreground line-through decoration-muted-foreground/30",
         };
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-hairline bg-surface px-4 py-3 text-sm">
+    <li className="flex items-center gap-2.5">
+      <span className="grid h-5 w-5 shrink-0 place-items-center">
+        {meta.icon}
+      </span>
       <span
-        className="text-foreground/90"
+        className={meta.tone}
         dangerouslySetInnerHTML={{ __html: label }}
       />
-      <span
-        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${meta.tone}`}
-      >
-        {meta.icon}
-        {meta.tag}
-      </span>
-    </div>
+    </li>
   );
 }
 
-function RoadmapCard({
+function TimelinePoint({
   when,
   title,
   body,
+  state,
 }: {
   when: string;
   title: string;
   body: string;
+  state: "active" | "upcoming" | "future";
 }) {
+  const dotCls =
+    state === "active"
+      ? "bg-foreground border-foreground"
+      : state === "upcoming"
+      ? "bg-background border-foreground/40"
+      : "bg-background border-hairline";
+  const pillCls =
+    state === "active"
+      ? "border-foreground/40 bg-foreground text-background"
+      : "border-hairline bg-surface text-muted-foreground";
   return (
-    <div className="rounded-2xl border border-hairline bg-surface p-6">
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="flex flex-col items-center text-center">
+      <span
+        className={`relative z-10 grid h-9 w-9 place-items-center rounded-full border-2 ${dotCls}`}
+      >
+        {state === "active" && (
+          <span className="h-1.5 w-1.5 rounded-full bg-background" />
+        )}
+      </span>
+      <span
+        className={`mt-4 inline-flex rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] ${pillCls}`}
+      >
         {when}
-      </p>
+      </span>
       <p className="mt-3 font-display text-lg font-semibold tracking-tight">
         {title}
       </p>
-      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+      <p className="mt-2 max-w-xs text-sm text-muted-foreground">{body}</p>
     </div>
+  );
+}
+
+function CtaButton({
+  href,
+  label,
+  icon,
+  tone,
+  external,
+}: {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  tone: "primary" | "ghost";
+  external?: boolean;
+}) {
+  const cls =
+    tone === "primary"
+      ? "bg-foreground text-background hover:-translate-y-px"
+      : "border border-hairline bg-surface hover:bg-muted";
+  const Comp: typeof Link = Link;
+  return (
+    <Comp
+      href={href}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noreferrer" : undefined}
+      className={`inline-flex h-12 items-center justify-center gap-1.5 rounded-full px-5 text-sm font-medium transition-transform duration-200 ${cls}`}
+    >
+      {icon} {label}
+    </Comp>
   );
 }
 
