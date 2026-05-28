@@ -268,11 +268,11 @@ async function main() {
       connected,
       new Promise((_, reject) => setTimeout(() => reject(new Error("WalletConnect approval timed out.")), 45_000)),
     ]);
-    await page.getByRole("button", { name: /Pay on Arc/i }).waitFor({ timeout: 45_000 });
-    await assertBody(page, /Pay on Arc|Connected:/i, "WalletConnect connected payment page");
+    await page.getByRole("button", { name: /Pay.*on Arc/i }).waitFor({ timeout: 45_000 });
+    await assertBody(page, /Pay.*on Arc|Connected:/i, "WalletConnect connected payment page");
     await page.waitForFunction(() => !document.body.innerText.includes("Need "), { timeout: 30_000 });
     await page.screenshot({ path: resolve(OUT_DIR, "walletconnect-connected.png"), fullPage: true });
-    await page.getByRole("button", { name: /Pay on Arc/i }).click();
+    await page.getByRole("button", { name: /Pay.*on Arc/i }).click();
     await page.getByText("Paid", { exact: true }).waitFor({ timeout: 180_000 });
     await page.reload({ waitUntil: "networkidle", timeout: 60_000 });
     await assertBody(page, /View verified receipt/i, "WalletConnect paid page after refresh");

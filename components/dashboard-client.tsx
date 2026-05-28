@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { AppNav } from "@/components/onelink/nav";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { StatusBadge } from "@/components/onelink/status-badge";
 import {
   DropdownMenu,
@@ -53,6 +54,11 @@ export function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabFilter>("all");
   const [q, setQ] = useState("");
+  // Cancel confirmation: track which link is pending cancellation and whether
+  // the on-chain cancel transaction is in flight. Without an explicit confirm
+  // step, an accidental click in the row dropdown costs gas and is irreversible.
+  const [pendingCancel, setPendingCancel] = useState<PaymentLink | null>(null);
+  const [cancelBusy, setCancelBusy] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,21 +131,23 @@ export function DashboardClient() {
 
   async function cancelLink(link: PaymentLink) {
     if (!address) return;
-    if (!HAS_CONTRACT) {
-      const updated = await updatePaymentStatus(link.id, "cancelled", {
-        payerWallet: undefined,
-        paymentMethod: link.paymentMethod,
-        sourceChain: link.sourceChain,
-      });
-      if (updated) setLinks((cur) => cur.map((x) => (x.id === updated.id ? updated : x)));
-      toast.success("Demo: link marked cancelled");
-      return;
-    }
-    if (!arcClient) {
-      toast.error("Arc RPC client unavailable");
-      return;
-    }
+    setCancelBusy(true);
     try {
+      if (!HAS_CONTRACT) {
+        const updated = await updatePaymentStatus(link.id, "cancelled", {
+          payerWallet: undefined,
+          paymentMethod: link.paymentMethod,
+          sourceChain: link.sourceChain,
+        });
+        if (updated) setLinks((cur) => cur.map((x) => (x.id === updated.id ? updated : x)));
+        toast.success("Demo: link marked cancelled");
+        setPendingCancel(null);
+        return;
+      }
+      if (!arcClient) {
+        toast.error("Arc RPC client unavailable");
+        return;
+      }
       const txHash = await writeContractAsync({
         address: ONELINK_CONTRACT_ADDRESS,
         abi: oneLinkCollectAbi,
@@ -151,8 +159,11 @@ export function DashboardClient() {
       const updated = await confirmCancelledPayment(link.id, txHash);
       if (updated) setLinks((cur) => cur.map((x) => (x.id === updated.id ? updated : x)));
       toast.success("Link cancelled on Arc");
+      setPendingCancel(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Cancel failed");
+    } finally {
+      setCancelBusy(false);
     }
   }
 
@@ -338,7 +349,7 @@ export function DashboardClient() {
                           {l.status === "unpaid" && (
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
-                              onClick={() => cancelLink(l)}
+                              onClick={() => setPendingCancel(l)}
                             >
                               Cancel link
                             </DropdownMenuItem>
@@ -353,6 +364,25 @@ export function DashboardClient() {
           </div>
         )}
       </main>
+      <ConfirmDialog
+        open={pendingCancel !== null}
+        title="Cancel this payment link?"
+        body={
+          pendingCancel
+            ? `This will publish a cancelLink transaction on Arc Testnet for "${pendingCancel.memo}". The link will stop accepting payments and the action cannot be reversed. Gas is paid in USDC.`
+            : ""
+        }
+        confirmLabel="Cancel link on Arc"
+        cancelLabel="Keep link active"
+        tone="danger"
+        busy={cancelBusy}
+        onConfirm={() => {
+          if (pendingCancel) cancelLink(pendingCancel);
+        }}
+        onCancel={() => {
+          if (!cancelBusy) setPendingCancel(null);
+        }}
+      />
     </div>
   );
 }

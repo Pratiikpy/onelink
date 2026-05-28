@@ -78,6 +78,7 @@ export function MarketingNav() {
               { href: "/whitepaper", label: "Whitepaper" },
               { href: "/security", label: "Security" },
               { href: "/pitch", label: "Pitch" },
+              { href: "/brand", label: "Brand kit" },
               { href: "/dashboard", label: "Open app" },
             ]}
           />
@@ -125,6 +126,11 @@ export function MarketingFooter() {
             <li>
               <Link href="/whitepaper" className="hover:text-foreground">
                 Whitepaper
+              </Link>
+            </li>
+            <li>
+              <Link href="/brand" className="hover:text-foreground">
+                Brand kit
               </Link>
             </li>
           </ul>

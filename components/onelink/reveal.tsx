@@ -22,6 +22,15 @@ export function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Respect users who request reduced motion: show immediately, skip the
+    // fade-in animation entirely.
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setShown(true);
+      return;
+    }
     if (typeof IntersectionObserver === "undefined") {
       setShown(true);
       return;
