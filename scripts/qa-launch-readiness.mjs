@@ -141,10 +141,15 @@ async function testRoute(context, route, viewport, results) {
     // benign — same URL as the page. Real failures are different URLs or
     // GETs that didn't return.
     const errText = req.failure()?.errorText || "";
+    const url = req.url();
     const isPrefetchAbort =
       req.method() === "HEAD" && errText.includes("ERR_ABORTED");
-    if (isPrefetchAbort) return;
-    failedRequests.push(`${req.method()} ${req.url()} :: ${errText}`);
+    // Next.js App Router prefetches /receipt/[id]?_rsc=… and /pay/[slug]?_rsc=…
+    // on link hover; the browser cancels them on page unload. Not a real fail.
+    const isRscPrefetchAbort =
+      errText.includes("ERR_ABORTED") && /\?_rsc=/.test(url);
+    if (isPrefetchAbort || isRscPrefetchAbort) return;
+    failedRequests.push(`${req.method()} ${url} :: ${errText}`);
   });
 
   let status = "green";
