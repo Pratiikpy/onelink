@@ -18,10 +18,10 @@ export const ARC_CHAIN = defineChain({
 // Source chains from which a payer can bridge USDC into Arc via Circle CCTP.
 // Arc itself is the destination, not a source.
 export const SUPPORTED_SOURCE_CHAINS = [
-  { id: 84532, appKitName: "Base_Sepolia", label: "Base Sepolia", gateway: true },
-  { id: 11155111, appKitName: "Ethereum_Sepolia", label: "Ethereum Sepolia", gateway: true },
-  { id: 421614, appKitName: "Arbitrum_Sepolia", label: "Arbitrum Sepolia", gateway: true },
-  { id: 80002, appKitName: "Polygon_Amoy_Testnet", label: "Polygon Amoy", gateway: false },
+  { id: 84532, appKitName: "Base_Sepolia", label: "Base Sepolia" },
+  { id: 11155111, appKitName: "Ethereum_Sepolia", label: "Ethereum Sepolia" },
+  { id: 421614, appKitName: "Arbitrum_Sepolia", label: "Arbitrum Sepolia" },
+  { id: 80002, appKitName: "Polygon_Amoy_Testnet", label: "Polygon Amoy" },
 ] as const;
 
 export type SourceChain = (typeof SUPPORTED_SOURCE_CHAINS)[number];
