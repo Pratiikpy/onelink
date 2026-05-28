@@ -21,7 +21,7 @@ export default function PitchPage() {
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
             Slide 01 · Problem
           </p>
-          <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.035em] md:text-[64px] md:leading-[1.05]">
+          <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.035em] md:text-[64px] md:leading-[1.08]">
             Freelancer payments break at the chain step.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
@@ -82,6 +82,18 @@ export default function PitchPage() {
           <h2 className="mt-5 font-display text-4xl font-semibold tracking-[-0.035em] md:text-[56px]">
             Built on Arc and Circle, with proof-first engineering.
           </h2>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["Live-tested on Arc Testnet", "WalletConnect", "CCTP Base → Arc", "0 open alerts"].map(
+              (chip) => (
+                <span
+                  key={chip}
+                  className="rounded-full border border-hairline bg-surface px-3 py-1 text-[11px] font-medium tracking-wide text-muted-foreground"
+                >
+                  {chip}
+                </span>
+              ),
+            )}
+          </div>
           <div className="mt-7 grid gap-3 md:grid-cols-2">
             {[
               ["Settlement", `Arc Testnet · chain ${ARC_CHAIN_ID} · USDC native gas`],

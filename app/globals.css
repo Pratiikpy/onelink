@@ -70,8 +70,12 @@ h2 { letter-spacing: -0.03em; }
   .snap-x-cards { scroll-snap-type: x mandatory; scrollbar-width: none; }
   .snap-x-cards::-webkit-scrollbar { display: none; }
   .snap-x-cards > * { scroll-snap-align: start; }
-  .text-display-1 { font-size: clamp(2.5rem, 11vw, 5.5rem); line-height: 1; letter-spacing: -0.04em; }
-  .text-display-2 { font-size: clamp(2rem, 7vw, 2.75rem); line-height: 1.05; letter-spacing: -0.035em; }
+  /* Display tokens — leading kept loose enough to clear descenders on multi-line. */
+  .text-display-1 { font-size: clamp(2.5rem, 11vw, 5.5rem); line-height: 1.05; letter-spacing: -0.04em; }
+  .text-display-2 { font-size: clamp(2rem, 7vw, 2.75rem); line-height: 1.1; letter-spacing: -0.035em; }
+  /* Safe default leading on display headings so multi-line never has y/p collision.
+     Single-line metric uses (amounts, count-up) opt out with explicit leading-none. */
+  h1, h2, h3 { line-height: 1.1; }
   .link-underline { background-image: linear-gradient(currentColor, currentColor); background-size: 0 1px; background-position: 0 100%; background-repeat: no-repeat; transition: background-size 240ms cubic-bezier(0.22,1,0.36,1); }
   .link-underline:hover { background-size: 100% 1px; }
 
