@@ -38,6 +38,15 @@ export function CountUp({
       };
       requestAnimationFrame(tick);
     };
+    // Reduced-motion: skip the count animation, render the final value.
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      startedRef.current = true;
+      setN(value);
+      return;
+    }
     if (typeof IntersectionObserver === "undefined") {
       run();
       return;
