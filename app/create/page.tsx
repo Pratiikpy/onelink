@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/app-shell";
 import { CreateLinkForm } from "@/components/create-link-form";
 
 export const metadata: Metadata = {
@@ -8,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function CreatePage() {
-  return (
-    <AppShell>
-      <CreateLinkForm />
-    </AppShell>
-  );
+  return <CreateLinkForm />;
 }

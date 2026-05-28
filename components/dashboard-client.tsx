@@ -2,507 +2,434 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useAccount, useWriteContract, usePublicClient } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useChainId, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
-import { Check, Copy, ExternalLink, Trash2 } from "lucide-react";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { confirmCancelledPayment, listPaymentLinks } from "@/lib/storage";
-import type { PaymentLink, PaymentStatus } from "@/lib/payments";
-import { paymentPath, receiptPath, shortAddress } from "@/lib/payments";
+import { toast } from "sonner";
+import {
+  Copy,
+  ExternalLink,
+  MoreHorizontal,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
+
+import { AppNav } from "@/components/onelink/nav";
+import { StatusBadge } from "@/components/onelink/status-badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ARC_CHAIN_ID } from "@/lib/arc";
-import { ALLOW_DEMO_MODE, HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS, oneLinkCollectAbi } from "@/lib/contracts";
+import {
+  HAS_CONTRACT,
+  ONELINK_CONTRACT_ADDRESS,
+  oneLinkCollectAbi,
+} from "@/lib/contracts";
+import {
+  paymentPath,
+  receiptPath,
+  type PaymentLink,
+  type PaymentStatus,
+} from "@/lib/payments";
+import {
+  confirmCancelledPayment,
+  listPaymentLinks,
+  updatePaymentStatus,
+} from "@/lib/storage";
+import { formatUSDC, relativeTime, truncateAddr } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
-const demoHash = (n: string) => (`0x${n.repeat(64)}` as `0x${string}`);
-
-function makeDemoLinks(owner: `0x${string}`): PaymentLink[] {
-  const now = Date.now();
-  return [
-    {
-      id: "demo-1",
-      slug: "9c3af80e",
-      creatorWallet: owner,
-      recipientWallet: owner,
-      amountUSDC: "250.00",
-      memo: "Branding work · invoice #0042",
-      status: "paid",
-      expiresAt: null,
-      contractLinkId: demoHash("1"),
-      createdAt: new Date(now - 6 * 3600 * 1000).toISOString(),
-      updatedAt: new Date(now - 6 * 3600 * 1000).toISOString(),
-    },
-    {
-      id: "demo-2",
-      slug: "4d12a7c1",
-      creatorWallet: owner,
-      recipientWallet: owner,
-      amountUSDC: "1200.00",
-      memo: "Q1 retainer · final",
-      status: "unpaid",
-      expiresAt: new Date(now + 7 * 86400000).toISOString(),
-      contractLinkId: demoHash("2"),
-      createdAt: new Date(now - 2 * 3600 * 1000).toISOString(),
-      updatedAt: new Date(now - 2 * 3600 * 1000).toISOString(),
-    },
-    {
-      id: "demo-3",
-      slug: "b7f02e89",
-      creatorWallet: owner,
-      recipientWallet: owner,
-      amountUSDC: "85.00",
-      memo: "Landing-page review",
-      status: "paid",
-      expiresAt: null,
-      contractLinkId: demoHash("3"),
-      createdAt: new Date(now - 86400000).toISOString(),
-      updatedAt: new Date(now - 86400000).toISOString(),
-    },
-    {
-      id: "demo-4",
-      slug: "aa9c1f5b",
-      creatorWallet: owner,
-      recipientWallet: owner,
-      amountUSDC: "450.00",
-      memo: "Logo + system · K. Mori",
-      status: "processing",
-      expiresAt: new Date(now + 5 * 86400000).toISOString(),
-      contractLinkId: demoHash("4"),
-      createdAt: new Date(now - 5 * 60000).toISOString(),
-      updatedAt: new Date(now - 5 * 60000).toISOString(),
-    },
-    {
-      id: "demo-5",
-      slug: "02e6d4aa",
-      creatorWallet: owner,
-      recipientWallet: owner,
-      amountUSDC: "60.00",
-      memo: "Coffee chat consult",
-      status: "expired",
-      expiresAt: new Date(now - 5 * 86400000).toISOString(),
-      contractLinkId: demoHash("5"),
-      createdAt: new Date(now - 5 * 86400000).toISOString(),
-      updatedAt: new Date(now - 5 * 86400000).toISOString(),
-    },
-    {
-      id: "demo-6",
-      slug: "6e1a8c30",
-      creatorWallet: owner,
-      recipientWallet: owner,
-      amountUSDC: "320.00",
-      memo: "Beta access · cohort 02",
-      status: "paid",
-      expiresAt: null,
-      contractLinkId: demoHash("6"),
-      createdAt: new Date(now - 3 * 86400000).toISOString(),
-      updatedAt: new Date(now - 3 * 86400000).toISOString(),
-    },
-    {
-      id: "demo-7",
-      slug: "f6c3321a",
-      creatorWallet: owner,
-      recipientWallet: owner,
-      amountUSDC: "1200.00",
-      memo: "Enterprise migration · phase 01",
-      status: "paid",
-      expiresAt: null,
-      contractLinkId: demoHash("7"),
-      createdAt: new Date(now - 10 * 86400000).toISOString(),
-      updatedAt: new Date(now - 8 * 86400000).toISOString(),
-    },
-  ];
-}
-
-function statusChip(status: PaymentStatus) {
-  const map: Record<PaymentStatus, { dot: string; text: string; ring: string }> = {
-    paid: { dot: "bg-lime", text: "text-lime", ring: "border-lime/20 bg-lime/10" },
-    unpaid: { dot: "bg-white/65", text: "text-white", ring: "border-white/[0.08] bg-white/[0.04]" },
-    processing: { dot: "bg-amber", text: "text-amber", ring: "border-amber/25 bg-amber/12" },
-    failed: { dot: "bg-danger", text: "text-danger", ring: "border-danger/25 bg-danger/12" },
-    expired: { dot: "bg-white/42", text: "text-white/60", ring: "border-white/[0.08] bg-white/[0.04]" },
-    cancelled: { dot: "bg-white/42", text: "text-white/60", ring: "border-white/[0.08] bg-white/[0.04]" },
-  };
-  const tone = map[status];
-  return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full border px-5 py-2 text-[20px] font-semibold ${tone.text} ${tone.ring}`}
-    >
-      <span className={`size-3.5 rounded-full ${tone.dot}`} />
-      {status[0]?.toUpperCase() + status.slice(1)}
-    </span>
-  );
-}
-
-function prettyTime(input: string) {
-  const d = new Date(input).getTime();
-  if (!Number.isFinite(d)) return "—";
-  const diff = Date.now() - d;
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${Math.max(1, minutes)}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 3) return `${hours}h ago`;
-  const now = new Date();
-  const date = new Date(input);
-  const sameDay = date.toDateString() === now.toDateString();
-  if (sameDay) {
-    const hh = date.getHours().toString().padStart(2, "0");
-    const mm = date.getMinutes().toString().padStart(2, "0");
-    return `Today, ${hh}:${mm}`;
-  }
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days}d ago`;
-  return new Date(input).toLocaleDateString();
-}
-
-function money(value: number) {
-  return value.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-function visibleCreatorLinks(links: PaymentLink[]) {
-  return links.filter((link) => link.settlementMode !== "profile" || link.status === "paid");
-}
-
-const RECENT_LINK_LIMIT = 12;
+type TabFilter = "all" | PaymentStatus;
 
 export function DashboardClient() {
   const { address, isConnected } = useAccount();
-  const chainId = useChainId();
-  const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
   const arcClient = usePublicClient({ chainId: ARC_CHAIN_ID });
+
   const [links, setLinks] = useState<PaymentLink[]>([]);
-  const [loadError, setLoadError] = useState("");
-  const [actionError, setActionError] = useState("");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [cancelTarget, setCancelTarget] = useState<PaymentLink | null>(null);
-  const [cancelBusy, setCancelBusy] = useState(false);
-  const [showAllLinks, setShowAllLinks] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<TabFilter>("all");
+  const [q, setQ] = useState("");
 
   useEffect(() => {
-    async function load() {
-      setLoadError("");
-      const demoCreator = (address ?? "0x7a2f0000000000000000000000000000000091c4") as `0x${string}`;
-      if (!isConnected) {
-        setLinks(ALLOW_DEMO_MODE ? makeDemoLinks(demoCreator) : []);
-        return;
-      }
-
-      try {
-        const existing = visibleCreatorLinks(await listPaymentLinks(address));
-        if (existing.length > 0) {
-          setLinks(existing);
-          return;
-        }
-
-        setLinks(ALLOW_DEMO_MODE ? makeDemoLinks(demoCreator) : []);
-      } catch (err) {
-        setLinks([]);
-        setLoadError(err instanceof Error ? err.message : "Could not load payment links.");
-      }
+    let cancelled = false;
+    if (!address) {
+      setLinks([]);
+      setLoading(false);
+      return;
     }
-    load();
-  }, [address, isConnected]);
+    setLoading(true);
+    listPaymentLinks(address)
+      .then((rows) => {
+        if (!cancelled) setLinks(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setLinks([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [address]);
 
-  const collected = useMemo(
-    () => links.filter((link) => link.status === "paid").reduce((sum, link) => sum + Number(link.amountUSDC), 0),
-    [links],
-  );
-  const outstanding = useMemo(
-    () => links.filter((link) => link.status === "unpaid").reduce((sum, link) => sum + Number(link.amountUSDC), 0),
-    [links],
-  );
-  const inflight = useMemo(
-    () => links.filter((link) => link.status === "processing").reduce((sum, link) => sum + Number(link.amountUSDC), 0),
-    [links],
-  );
+  const visible = useMemo(() => {
+    let r = links;
+    if (tab !== "all") r = r.filter((l) => l.status === tab);
+    if (q) {
+      const lower = q.toLowerCase();
+      r = r.filter(
+        (l) => l.memo.toLowerCase().includes(lower) || l.slug.includes(lower),
+      );
+    }
+    return r;
+  }, [links, tab, q]);
 
-  const settledCount = links.filter((link) => link.status === "paid").length;
-  const payRate = links.length === 0 ? 0 : Math.round((settledCount / links.length) * 100);
-  const needsConnection = !isConnected && !ALLOW_DEMO_MODE;
-  const displayedLinks = showAllLinks ? links : links.slice(0, RECENT_LINK_LIMIT);
-  const hiddenLinkCount = Math.max(0, links.length - displayedLinks.length);
+  const kpis = useMemo(() => {
+    const totalSettled = links
+      .filter((l) => l.status === "paid")
+      .reduce((s, l) => s + Number(l.amountUSDC || 0), 0);
+    const open = links.filter((l) => l.status === "unpaid" || l.status === "processing").length;
+    const paidThisMonth = links.filter((l) => {
+      if (l.status !== "paid") return false;
+      const d = new Date(l.updatedAt);
+      const now = new Date();
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    }).length;
 
-  async function copyPaymentLink(link: PaymentLink) {
-    const href = `${window.location.origin}${paymentPath(link.slug)}`;
-    await navigator.clipboard.writeText(href);
-    setCopiedId(link.id);
-    window.setTimeout(() => setCopiedId((current) => (current === link.id ? null : current)), 1600);
+    // Sparkline: last 14 days, count of paid links per day.
+    const days = 14;
+    const counts = Array.from({ length: days }, () => 0);
+    const todayUtc = new Date();
+    for (const l of links) {
+      if (l.status !== "paid") continue;
+      const d = new Date(l.updatedAt);
+      const diff = Math.floor(
+        (todayUtc.getTime() - d.getTime()) / (24 * 60 * 60 * 1000),
+      );
+      if (diff >= 0 && diff < days) counts[days - 1 - diff] += 1;
+    }
+    return { totalSettled, open, paidThisMonth, sparkline: counts };
+  }, [links]);
+
+  async function copyLink(slug: string) {
+    if (typeof window === "undefined") return;
+    const url = `${window.location.origin}${paymentPath(slug)}`;
+    await navigator.clipboard.writeText(url);
+    toast.success("Link copied");
   }
 
-  async function cancelPaymentLink() {
-    if (!cancelTarget || !address) return;
-    setActionError("");
-    setCancelBusy(true);
-    try {
-      let txHash: `0x${string}` | undefined;
-      if (HAS_CONTRACT) {
-        if (!arcClient) throw new Error("Arc RPC client is not available.");
-        if (chainId !== ARC_CHAIN_ID) await switchChainAsync({ chainId: ARC_CHAIN_ID });
-        txHash = await writeContractAsync({
-          address: ONELINK_CONTRACT_ADDRESS,
-          abi: oneLinkCollectAbi,
-          functionName: "cancelLink",
-          args: [cancelTarget.contractLinkId],
-        });
-        const receipt = await arcClient.waitForTransactionReceipt({ hash: txHash });
-        if (receipt.status !== "success") throw new Error("Arc cancellation transaction failed.");
-      }
-      const cancelled = await confirmCancelledPayment(cancelTarget.id, txHash);
-      if (!cancelled) throw new Error("Could not reload the cancelled payment link.");
-      setLinks((existing) => existing.map((link) => (link.id === cancelled.id ? cancelled : link)));
-      setCancelTarget(null);
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Could not cancel this payment link.");
-    } finally {
-      setCancelBusy(false);
+  async function cancelLink(link: PaymentLink) {
+    if (!address) return;
+    if (!HAS_CONTRACT) {
+      const updated = await updatePaymentStatus(link.id, "cancelled", {
+        payerWallet: undefined,
+        paymentMethod: link.paymentMethod,
+        sourceChain: link.sourceChain,
+      });
+      if (updated) setLinks((cur) => cur.map((x) => (x.id === updated.id ? updated : x)));
+      toast.success("Demo: link marked cancelled");
+      return;
     }
+    if (!arcClient) {
+      toast.error("Arc RPC client unavailable");
+      return;
+    }
+    try {
+      const txHash = await writeContractAsync({
+        address: ONELINK_CONTRACT_ADDRESS,
+        abi: oneLinkCollectAbi,
+        functionName: "cancelLink",
+        args: [link.contractLinkId],
+      });
+      const receipt = await arcClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") throw new Error("Arc cancel transaction failed");
+      const updated = await confirmCancelledPayment(link.id, txHash);
+      if (updated) setLinks((cur) => cur.map((x) => (x.id === updated.id ? updated : x)));
+      toast.success("Link cancelled on Arc");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Cancel failed");
+    }
+  }
+
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-background page-in">
+        <AppNav />
+        <main className="mx-auto max-w-md px-6 py-24 text-center">
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            Dashboard
+          </p>
+          <h1 className="mt-5 font-display text-3xl font-semibold tracking-[-0.03em]">
+            Connect your wallet to see your links
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            OneLink reads from Supabase scoped to your wallet — no account needed.
+          </p>
+          <div className="mt-7 flex justify-center">
+            <ConnectButton.Custom>
+              {({ openConnectModal }) => (
+                <button
+                  type="button"
+                  onClick={openConnectModal}
+                  className="inline-flex h-10 items-center rounded-md bg-foreground px-5 text-sm font-medium text-background"
+                >
+                  Connect wallet
+                </button>
+              )}
+            </ConnectButton.Custom>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
-    <div className="-mt-4 min-w-0 max-w-full space-y-8 overflow-hidden pb-8 sm:space-y-10">
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <p className="mono-label text-[15px]">Links · last 30 days</p>
-          <h1 className="mt-4 text-[48px] font-medium tracking-[-0.035em] sm:text-[62px]">Your links</h1>
+    <div className="min-h-screen bg-background page-in">
+      <AppNav />
+      <main className="mx-auto max-w-7xl px-6 py-12">
+        {/* Header */}
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+              Overview
+            </p>
+            <h1 className="mt-3 font-display text-3xl font-semibold tracking-[-0.03em] md:text-[40px]">
+              Payment links
+            </h1>
+            {address && (
+              <p className="mt-1 font-mono text-xs text-muted-foreground">
+                {truncateAddr(address)}
+              </p>
+            )}
+          </div>
+          <Link
+            href="/create"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-foreground px-4 text-sm font-medium text-background transition-transform hover:-translate-y-px"
+          >
+            <Plus className="h-4 w-4" /> New link
+          </Link>
         </div>
-        <Link
-          href="/create"
-          className="mb-1 inline-flex h-[64px] min-w-[150px] items-center justify-center rounded-[18px] bg-lime px-7 text-[21px] font-medium tracking-tight text-ink sm:h-[78px] sm:min-w-[190px] sm:rounded-[20px] sm:px-9 sm:text-[26px]"
-        >
-          + New link
-        </Link>
-      </div>
 
-      {needsConnection ? (
-        <section className="surface relative overflow-hidden rounded-[30px] px-7 py-12 sm:px-12 sm:py-16">
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_right,rgba(201,242,103,0.16),transparent_68%)]" />
-          <p className="mono-label text-[13px]">Wallet workspace</p>
-          <h2 className="relative mt-5 max-w-[680px] text-[40px] font-medium leading-[1.05] tracking-[-0.035em] sm:text-[56px]">
-            Connect to see your payment links
-          </h2>
-          <p className="relative mt-5 max-w-[600px] text-[18px] leading-7 text-white/55 sm:text-[22px]">
-            Connect the creator wallet to load its collected balance, outstanding invoices, and
-            verified receipts in this view.
-          </p>
-          <ConnectButton.Custom>
-            {({ openConnectModal }) => (
+        {/* KPIs */}
+        <div className="mt-10 grid grid-cols-2 divide-x divide-hairline border-y border-hairline lg:grid-cols-4">
+          <Kpi
+            label="Total settled"
+            value={`$${formatUSDC(kpis.totalSettled)}`}
+            sub="USDC, all-time"
+            sparkline={kpis.sparkline}
+          />
+          <Kpi label="Open links" value={String(kpis.open)} sub="Unpaid + processing" />
+          <Kpi label="Paid this month" value={String(kpis.paidThisMonth)} sub="Last 30 days" />
+          <Kpi
+            label="Total links"
+            value={String(links.length)}
+            sub="Created by you"
+          />
+        </div>
+
+        {/* Tabs + search */}
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-b border-hairline pb-3">
+          <div className="flex items-center gap-1 overflow-x-auto">
+            {(["all", "unpaid", "paid", "cancelled", "expired"] as TabFilter[]).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTab(t)}
+                className={cn(
+                  "relative rounded-md px-3 py-1.5 text-sm capitalize transition-colors",
+                  tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t}
+                {tab === t && (
+                  <span className="absolute -bottom-[13px] left-3 right-3 h-px bg-foreground" />
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="relative w-full max-w-xs">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search memo or slug"
+              className="h-9 w-full rounded-md border border-hairline bg-surface pl-8 pr-3 text-sm outline-none focus:border-foreground/40"
+            />
+            {q && (
               <button
                 type="button"
-                onClick={openConnectModal}
-                className="relative mt-9 inline-flex h-[64px] items-center justify-center rounded-[19px] bg-lime px-8 text-[21px] font-medium text-ink sm:h-[72px] sm:px-10 sm:text-[23px]"
+                onClick={() => setQ("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                Connect wallet
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
-          </ConnectButton.Custom>
-        </section>
-      ) : (
-        <>
-      {actionError && (
-        <div className="rounded-[18px] border border-danger/30 bg-danger/10 px-5 py-4 text-[16px] text-[#ffc5c5]">
-          {actionError}
-        </div>
-      )}
-      <div className="grid gap-6 xl:grid-cols-4">
-        <article className="surface relative h-[176px] overflow-hidden rounded-[22px] p-6 sm:h-[208px] sm:rounded-[24px] sm:p-7">
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_right,rgba(201,242,103,0.26),transparent_72%)]" />
-          <p className="mono-label text-[13px]">Collected</p>
-          <p className="mt-5 text-[42px] font-medium tracking-tight text-lime sm:mt-6 sm:text-[52px]">${money(collected)}</p>
-          <p className="mt-2 text-[18px] text-white/58 sm:text-[22px]">Across {settledCount} links · Arc</p>
-        </article>
-
-        <article className="surface h-[176px] rounded-[22px] p-6 sm:h-[208px] sm:rounded-[24px] sm:p-7">
-          <p className="mono-label text-[13px]">Outstanding</p>
-          <p className="mt-5 text-[42px] font-medium tracking-tight sm:mt-6 sm:text-[52px]">${money(outstanding)}</p>
-          <p className="mt-2 text-[18px] text-white/58 sm:text-[22px]">
-            {links.filter((link) => link.status === "unpaid").length} link unpaid
-          </p>
-        </article>
-
-        <article className="surface h-[176px] rounded-[22px] p-6 sm:h-[208px] sm:rounded-[24px] sm:p-7">
-          <p className="mono-label text-[13px]">In flight</p>
-          <p className="mt-5 text-[42px] font-medium tracking-tight sm:mt-6 sm:text-[52px]">${money(inflight)}</p>
-          <p className="mt-2 text-[18px] text-white/58 sm:text-[22px]">
-            {links.filter((link) => link.status === "processing").length} processing
-          </p>
-        </article>
-
-        <article className="surface h-[176px] rounded-[22px] p-6 sm:h-[208px] sm:rounded-[24px] sm:p-7">
-          <p className="mono-label text-[13px]">Pay rate</p>
-          <p className="mt-5 text-[42px] font-medium tracking-tight sm:mt-6 sm:text-[52px]">{payRate}%</p>
-          <p className="mt-2 text-[18px] text-white/58 sm:text-[22px]">
-            {settledCount} of {links.length} settled
-          </p>
-        </article>
-      </div>
-
-      <section className="surface hidden max-w-full overflow-x-auto rounded-[24px] p-0 lg:block">
-        <div className="min-w-[1120px]">
-        <div className="grid grid-cols-[minmax(260px,1.15fr)_minmax(300px,1fr)_150px_150px_180px] border-b border-white/10 px-8 py-7 text-[13px]">
-          <p className="mono-label">Memo</p>
-          <p className="mono-label">Link</p>
-          <p className="mono-label">Status</p>
-          <p className="mono-label">Updated</p>
-          <p className="mono-label">Actions</p>
+          </div>
         </div>
 
-        <div className="divide-y divide-white/10">
-          {loadError && (
-            <div className="px-10 py-8 text-[22px] text-[#ffc5c5]">{loadError}</div>
-          )}
-
-          {!loadError && links.length === 0 && (
-            <div className="px-6 py-10 text-[34px] text-white/58">No links yet. Create your first one.</div>
-          )}
-
-          {displayedLinks.map((link) => (
-            <div
-              key={link.id}
-              className="grid grid-cols-[minmax(260px,1.15fr)_minmax(300px,1fr)_150px_150px_180px] items-center gap-4 px-8 py-6"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-[22px]">{link.memo}</p>
-                <p className="mt-1 whitespace-nowrap text-[15px] font-medium text-white/38">
-                  {money(Number(link.amountUSDC))} USDC
-                </p>
-              </div>
-              <Link href={paymentPath(link.slug)} className="truncate font-mono text-[20px] text-white/45 hover:text-white">
-                {paymentPath(link.slug)}
-              </Link>
-              <div>{statusChip(link.status)}</div>
-              <p className="text-[20px] text-white/45">
-                {prettyTime(link.updatedAt)}
-              </p>
-              <div className="flex items-center gap-2 text-white/55">
-                <button
-                  type="button"
-                  onClick={() => copyPaymentLink(link)}
-                  aria-label="Copy payment link"
-                  className="grid size-10 place-items-center rounded-xl border border-white/10 transition hover:border-lime/40 hover:text-lime"
-                >
-                  {copiedId === link.id ? <Check className="size-5 text-lime" /> : <Copy className="size-5" />}
-                </button>
-                <Link
-                  href={paymentPath(link.slug)}
-                  aria-label="Open payment link"
-                  className="grid size-10 place-items-center rounded-xl border border-white/10 transition hover:border-lime/40 hover:text-lime"
-                >
-                  <ExternalLink className="size-5" />
-                </Link>
-                {link.status === "paid" && (
-                  <Link
-                    href={receiptPath(link.id)}
-                    className="rounded-xl border border-white/10 px-3 py-2 text-[13px] transition hover:border-lime/40 hover:text-lime"
-                  >
-                    Receipt
-                  </Link>
-                )}
-                {link.status === "unpaid" && link.settlementMode !== "profile" && (
-                  <button
-                    type="button"
-                    onClick={() => setCancelTarget(link)}
-                    aria-label="Cancel payment link"
-                    className="grid size-10 place-items-center rounded-xl border border-white/10 transition hover:border-danger/40 hover:text-danger"
-                  >
-                    <Trash2 className="size-5" />
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-        {links.length > RECENT_LINK_LIMIT && (
-          <div className="flex items-center justify-end border-t border-white/10 px-8 py-5">
-            <button
-              type="button"
-              onClick={() => setShowAllLinks((value) => !value)}
-              className="rounded-xl border border-white/10 px-4 py-2 text-[15px] text-white/70 transition hover:border-lime/40 hover:text-lime"
-            >
-              {showAllLinks ? "Show less" : `Show all ${hiddenLinkCount} more`}
-            </button>
+        {/* Table */}
+        {loading ? (
+          <div className="mt-6 space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-14 rounded-md border border-hairline bg-surface shimmer" />
+            ))}
+          </div>
+        ) : visible.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="mt-6 overflow-hidden rounded-xl border border-hairline bg-surface">
+            <table className="w-full text-sm">
+              <thead className="border-b border-hairline bg-muted/40">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  <th className="px-4 py-3 font-medium">Memo</th>
+                  <th className="px-4 py-3 text-right font-medium">Amount</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">Payer</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">Created</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-hairline">
+                {visible.map((l) => (
+                  <tr key={l.id} className="group transition-colors hover:bg-muted/30">
+                    <td className="max-w-[16rem] px-4 py-4">
+                      <p className="truncate font-medium">{l.memo}</p>
+                      <p className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">
+                        /{l.slug}
+                      </p>
+                    </td>
+                    <td className="px-4 py-4 text-right font-mono tabular-nums">
+                      {formatUSDC(l.amountUSDC)}{" "}
+                      <span className="text-muted-foreground">USDC</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <StatusBadge status={l.status} />
+                    </td>
+                    <td className="hidden px-4 py-4 font-mono text-xs text-muted-foreground md:table-cell">
+                      {l.payerWallet ? truncateAddr(l.payerWallet) : "—"}
+                    </td>
+                    <td className="hidden px-4 py-4 text-xs text-muted-foreground md:table-cell">
+                      {relativeTime(l.createdAt)}
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="rounded-md p-1.5 text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem onClick={() => copyLink(l.slug)}>
+                            <Copy className="mr-2 h-3.5 w-3.5" /> Copy link
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={paymentPath(l.slug)}>
+                              <ExternalLink className="mr-2 h-3.5 w-3.5" /> Open pay page
+                            </Link>
+                          </DropdownMenuItem>
+                          {l.status === "paid" && (
+                            <DropdownMenuItem asChild>
+                              <Link href={receiptPath(l.id)}>View receipt</Link>
+                            </DropdownMenuItem>
+                          )}
+                          {l.status === "unpaid" && (
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => cancelLink(l)}
+                            >
+                              Cancel link
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-        </div>
-      </section>
+      </main>
+    </div>
+  );
+}
 
-      <section className="space-y-3 lg:hidden">
-        {loadError && <div className="surface rounded-[22px] px-5 py-6 text-[#ffc5c5]">{loadError}</div>}
-        {!loadError && links.length === 0 && (
-          <div className="surface rounded-[22px] px-5 py-8 text-[20px] text-white/58">
-            No links yet. Create your first one.
-          </div>
-        )}
-        {displayedLinks.map((link) => (
-          <article key={link.id} className="surface space-y-5 rounded-[22px] p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[26px] font-medium tracking-tight">{money(Number(link.amountUSDC))} <span className="text-[14px] text-white/42">USDC</span></p>
-                <p className="mt-2 text-[16px] text-white/70">{link.memo}</p>
-              </div>
-              <div className="[&>span]:px-3 [&>span]:py-2 [&>span]:text-[13px] [&_span_span]:size-2">
-                {statusChip(link.status)}
-              </div>
-            </div>
-            <div className="flex items-center justify-between border-t border-white/10 pt-4">
-              <p className="text-[14px] text-white/45">{prettyTime(link.updatedAt)}</p>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => copyPaymentLink(link)}
-                  aria-label="Copy payment link"
-                  className="grid size-11 place-items-center rounded-xl border border-white/10 text-white/62"
-                >
-                  {copiedId === link.id ? <Check className="size-5 text-lime" /> : <Copy className="size-5" />}
-                </button>
-                <Link
-                  href={link.status === "paid" ? receiptPath(link.id) : paymentPath(link.slug)}
-                  className="inline-flex h-11 items-center rounded-xl border border-white/10 px-4 text-[14px] text-white/76"
-                >
-                  {link.status === "paid" ? "Receipt" : "Open"}
-                </Link>
-                {link.status === "unpaid" && link.settlementMode !== "profile" && (
-                  <button
-                    type="button"
-                    onClick={() => setCancelTarget(link)}
-                    className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/10 px-4 text-[14px] text-white/62"
-                  >
-                    <Trash2 className="size-4" />
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </div>
-          </article>
-        ))}
-        {links.length > RECENT_LINK_LIMIT && (
-          <button
-            type="button"
-            onClick={() => setShowAllLinks((value) => !value)}
-            className="surface w-full rounded-[18px] px-5 py-4 text-[15px] text-white/70"
-          >
-            {showAllLinks ? "Show less" : `Show ${hiddenLinkCount} older links`}
-          </button>
-        )}
-      </section>
-
-      <p className="text-[19px] text-white/45 sm:text-[28px]">
-        {isConnected ? `Signed in as ${shortAddress(address)}` : "Preview data - demo mode explicitly enabled"}
+function Kpi({
+  label,
+  value,
+  sub,
+  sparkline,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  sparkline?: number[];
+}) {
+  return (
+    <div className="px-6 py-6">
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
       </p>
-        </>
-      )}
-      <ConfirmDialog
-        open={!!cancelTarget}
-        title="Cancel payment link?"
-        body="This signs an Arc Testnet transaction and permanently stops payment on this invoice. This action cannot be undone."
-        confirmLabel="Cancel link"
-        busy={cancelBusy}
-        onConfirm={cancelPaymentLink}
-        onCancel={() => {
-          if (!cancelBusy) setCancelTarget(null);
-        }}
+      <p className="mt-2 font-display text-[28px] font-semibold tracking-[-0.03em] tabular-nums">
+        {value}
+      </p>
+      <div className="mt-3 flex items-end justify-between gap-2">
+        <p className="text-[11px] text-muted-foreground">{sub}</p>
+        {sparkline && <Sparkline data={sparkline} />}
+      </div>
+    </div>
+  );
+}
+
+function Sparkline({ data }: { data: number[] }) {
+  if (data.length === 0) return null;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const w = 72;
+  const h = 22;
+  const points = data.map((v, i) => {
+    const x = (i / Math.max(1, data.length - 1)) * w;
+    const y = h - ((v - min) / Math.max(1, max - min)) * h;
+    return [x, y] as const;
+  });
+  const path = points
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(" ");
+  const last = points[points.length - 1];
+  return (
+    <svg width={w} height={h} className="text-foreground/80">
+      <path
+        d={path}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
+      <circle cx={last[0]} cy={last[1]} r="1.75" fill="currentColor" />
+    </svg>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="mt-10 rounded-2xl border border-dashed border-hairline bg-surface px-6 py-16 text-center">
+      <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-hairline">
+        <Plus className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight">No links yet</h3>
+      <p className="mt-1.5 text-sm text-muted-foreground">
+        Create your first USDC payment link in under 30 seconds.
+      </p>
+      <Link
+        href="/create"
+        className="mt-6 inline-flex h-10 items-center gap-1.5 rounded-md bg-foreground px-4 text-sm font-medium text-background"
+      >
+        <Plus className="h-4 w-4" /> Create a link
+      </Link>
     </div>
   );
 }

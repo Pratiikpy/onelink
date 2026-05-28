@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { AlertTriangle, X } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 type Props = {
   open: boolean;
   title: string;
@@ -49,33 +51,34 @@ export function ConfirmDialog({
     <dialog
       ref={ref}
       aria-labelledby="confirm-dialog-title"
-      className="w-full max-w-md rounded-[28px] border border-white/12 bg-panel/95 p-0 text-white shadow-glow backdrop:bg-black/72 backdrop:backdrop-blur-md"
+      className="w-full max-w-md rounded-2xl border border-hairline bg-surface p-0 text-foreground shadow-lg backdrop:bg-foreground/40 backdrop:backdrop-blur-md"
     >
       <div className="p-6">
         <div className="flex items-start gap-4">
           <div
-            className={`grid size-12 shrink-0 place-items-center rounded-2xl border ${
+            className={cn(
+              "grid h-12 w-12 shrink-0 place-items-center rounded-2xl border",
               tone === "danger"
-                ? "border-red-300/30 bg-red-300/10 text-red-200"
-                : "border-lime/30 bg-lime/10 text-lime"
-            }`}
+                ? "border-destructive/30 bg-destructive/10 text-destructive"
+                : "border-success/30 bg-success/10 text-success",
+            )}
           >
-            <AlertTriangle className="size-5" />
+            <AlertTriangle className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 id="confirm-dialog-title" className="text-xl font-black tracking-tight text-white">
+            <h2 id="confirm-dialog-title" className="font-display text-xl font-semibold tracking-tight">
               {title}
             </h2>
-            <p className="mt-2 text-sm font-medium leading-6 text-white/65">{body}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p>
           </div>
           <button
             type="button"
             aria-label="Close dialog"
             disabled={busy}
             onClick={onCancel}
-            className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/55 transition hover:bg-white/10 hover:text-white disabled:opacity-40"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-hairline bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-40"
           >
-            <X className="size-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -84,7 +87,7 @@ export function ConfirmDialog({
             type="button"
             disabled={busy}
             onClick={onCancel}
-            className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/12 bg-white/5 text-sm font-bold text-white transition hover:bg-white/10 disabled:opacity-45"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-hairline bg-background text-sm font-medium transition hover:bg-muted disabled:opacity-45"
           >
             {cancelLabel}
           </button>
@@ -92,11 +95,12 @@ export function ConfirmDialog({
             type="button"
             disabled={busy}
             onClick={onConfirm}
-            className={`inline-flex h-12 items-center justify-center rounded-2xl text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-45 ${
+            className={cn(
+              "inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
               tone === "danger"
-                ? "bg-red-400 text-ink hover:bg-red-300"
-                : "bg-lime text-ink shadow-glow hover:bg-[#d9fa7b]"
-            }`}
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : "bg-foreground text-background hover:opacity-90",
+            )}
           >
             {busy ? "Working…" : confirmLabel}
           </button>

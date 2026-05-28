@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/app-shell";
 import { PayLinkClient } from "@/components/pay-link-client";
 
 export const metadata: Metadata = {
@@ -8,12 +7,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function PayPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PayPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
-
-  return (
-    <AppShell mode="pay">
-      <PayLinkClient slug={slug} />
-    </AppShell>
-  );
+  return <PayLinkClient slug={slug} />;
 }

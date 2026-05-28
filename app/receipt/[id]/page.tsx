@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/app-shell";
 import { ReceiptClient } from "@/components/receipt-client";
 
 export const metadata: Metadata = {
@@ -8,12 +7,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ReceiptPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
-
-  return (
-    <AppShell>
-      <ReceiptClient id={id} />
-    </AppShell>
-  );
+  return <ReceiptClient id={id} />;
 }

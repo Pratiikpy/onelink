@@ -1,175 +1,330 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { CheckCircle2, ExternalLink, ShieldCheck, XCircle } from "lucide-react";
-import { Card, Pill } from "@/components/ui";
+import { toast } from "sonner";
+
+import { AppNav } from "@/components/onelink/nav";
+import { ARC_CHAIN_ID, ARC_RPC_URL, ARC_USDC_ADDRESS } from "@/lib/arc";
+import { ALLOW_DEMO_MODE, HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS } from "@/lib/contracts";
+import { ENABLE_GATEWAY_ROUTE } from "@/lib/circle-payments";
 import {
-  ARC_CHAIN_ID,
-  ARC_EXPLORER_URL,
-  ARC_FAUCET_URL,
-  ARC_RPC_URL,
-  ARC_USDC_ADDRESS,
-} from "@/lib/arc";
-import {
-  ALLOW_DEMO_MODE,
-  HAS_CONTRACT,
-  ONELINK_CONTRACT_ADDRESS,
-  PLATFORM_FEE_BPS,
-} from "@/lib/contracts";
+  getFreelancerProfile,
+  normalizeHandle,
+  saveFreelancerProfile,
+  type FreelancerProfile,
+} from "@/lib/profiles";
+import { truncateAddr } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
-type Status = { label: string; ok: boolean; detail: string };
-
-function envStatuses(): Status[] {
-  const wc = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const publicDeploy = appUrl?.startsWith("https://") ?? false;
-
-  return [
-    {
-      label: "OneLinkCollect contract",
-      ok: HAS_CONTRACT || (!publicDeploy && ALLOW_DEMO_MODE),
-      detail: HAS_CONTRACT
-        ? "Configured — on-chain settlement enabled."
-        : ALLOW_DEMO_MODE
-          ? "Demo mode explicitly enabled. Do not use this setting for a production launch."
-          : "Not set — deploy and set NEXT_PUBLIC_ONELINK_CONTRACT_ADDRESS before public launch.",
-    },
-    {
-      label: "Supabase (cross-device links)",
-      ok: !!(supabaseUrl && supabaseKey),
-      detail:
-        supabaseUrl && supabaseKey
-          ? "Configured — links persist across devices."
-          : "Not set — falling back to localStorage. Payers can't load links the creator made elsewhere.",
-    },
-    {
-      label: "WalletConnect / Reown project ID",
-      ok: !!(wc && wc !== "onelink-demo") || (!publicDeploy && ALLOW_DEMO_MODE),
-      detail:
-        wc && wc !== "onelink-demo"
-          ? "Configured — mobile wallet QR connect available."
-          : ALLOW_DEMO_MODE
-            ? "Demo mode explicitly enabled. WalletConnect uses a placeholder project ID."
-            : "Not set — mobile WalletConnect flow will fail. Get one (free) at cloud.reown.com.",
-    },
-    {
-      label: "Public app URL",
-      ok: !!(appUrl && !appUrl.includes("localhost")),
-      detail:
-        appUrl && !appUrl.includes("localhost")
-          ? `Configured — ${appUrl}`
-          : "Localhost only. Set NEXT_PUBLIC_APP_URL to the deployed domain for share/OG links.",
-    },
-  ];
-}
+type Tab = "profile" | "wallet" | "network" | "danger";
 
 export function SettingsClient() {
-  const statuses = envStatuses();
-  const allGreen = statuses.every((s) => s.ok);
+  const { address, isConnected } = useAccount();
+  const [tab, setTab] = useState<Tab>("profile");
+  const [profile, setProfile] = useState<FreelancerProfile | null>(null);
+  const [handle, setHandle] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!address) return;
+    let cancelled = false;
+    // Try to read an existing profile by handle prefix derived from address (last 6 chars).
+    const guess = normalizeHandle(`${address.slice(2, 8)}`);
+    if (!guess) return;
+    getFreelancerProfile(guess)
+      .then((p) => {
+        if (cancelled || !p) return;
+        if (p.wallet.toLowerCase() !== address.toLowerCase()) return;
+        setProfile(p);
+        setHandle(p.handle);
+        setDisplayName(p.displayName ?? "");
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [address]);
+
+  async function saveProfile() {
+    if (!address) return;
+    const normalized = normalizeHandle(handle);
+    if (!normalized) {
+      toast.error("Handle is required (a-z, 0-9, dashes)");
+      return;
+    }
+    setBusy(true);
+    try {
+      const now = new Date().toISOString();
+      const next: FreelancerProfile = {
+        handle: normalized,
+        displayName: displayName.trim() || normalized,
+        wallet: address,
+        createdAt: profile?.createdAt ?? now,
+        updatedAt: now,
+      };
+      await saveFreelancerProfile(next);
+      setProfile(next);
+      toast.success("Profile saved (local)");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save profile");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <div className="mx-auto max-w-[1120px] space-y-8 pb-8 xl:px-16">
-      <div>
-        <Pill className="font-mono uppercase tracking-[0.18em] text-lime">
-          <ShieldCheck className="size-3.5" />
-          Testnet configuration
-        </Pill>
-        <h1 className="mt-5 text-[64px] font-medium leading-none tracking-[-0.04em]">Launch settings</h1>
-        <p className="mt-4 max-w-[680px] text-[24px] leading-[1.35] text-white/52">
-          Verify production-critical values before sharing payment links publicly.
+    <div className="min-h-screen bg-background page-in">
+      <AppNav />
+      <main className="mx-auto max-w-4xl px-6 py-12">
+        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+          Settings
         </p>
-      </div>
+        <h1 className="mt-3 font-display text-3xl font-semibold tracking-[-0.03em] md:text-[40px]">
+          Account
+        </h1>
 
-      <Card className="space-y-5 rounded-[30px] p-8">
-        <div className="flex items-center justify-between gap-3">
-          <p className="mono-label text-[13px]">
-            Environment health
-          </p>
-          <Pill className={allGreen ? "text-lime" : "text-amber"}>
-            {allGreen ? "Ready" : "Action needed"}
-          </Pill>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {statuses.map((s) => (
-            <div
-              key={s.label}
-              className="flex items-start gap-3 rounded-[22px] border border-white/8 bg-white/[0.03] p-4"
-            >
-              {s.ok ? (
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-lime" />
-              ) : (
-                <XCircle className="mt-0.5 size-5 shrink-0 text-amber" />
-              )}
-              <div>
-                <p className="text-[18px] font-semibold text-white/85">{s.label}</p>
-                <p className="mt-1 text-[14px] font-medium leading-5 text-white/50">{s.detail}</p>
+        <div className="mt-10 grid gap-10 md:grid-cols-[180px_1fr]">
+          <nav className="flex flex-row gap-1 overflow-x-auto md:flex-col">
+            {(
+              [
+                ["profile", "Profile"],
+                ["wallet", "Wallet"],
+                ["network", "Network"],
+                ["danger", "Danger zone"],
+              ] as const
+            ).map(([k, l]) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setTab(k)}
+                className={cn(
+                  "relative rounded-md px-3 py-2 text-left text-sm transition-colors",
+                  tab === k ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {tab === k && (
+                  <span className="absolute left-0 top-1/2 hidden h-4 w-[2px] -translate-y-1/2 rounded-full bg-foreground md:block" />
+                )}
+                {l}
+              </button>
+            ))}
+          </nav>
+
+          <div className="rounded-2xl border border-hairline bg-surface p-7">
+            {tab === "profile" && (
+              <div className="space-y-5">
+                <Section
+                  title="Profile"
+                  desc="Your public freelancer handle at /<your-handle>."
+                />
+                {!isConnected ? (
+                  <div className="rounded-md border border-hairline bg-background p-4 text-sm text-muted-foreground">
+                    Connect a wallet to claim a handle.
+                    <ConnectButton.Custom>
+                      {({ openConnectModal }) => (
+                        <button
+                          type="button"
+                          onClick={openConnectModal}
+                          className="mt-3 inline-flex h-9 items-center rounded-md bg-foreground px-4 text-xs font-medium text-background"
+                        >
+                          Connect wallet
+                        </button>
+                      )}
+                    </ConnectButton.Custom>
+                  </div>
+                ) : (
+                  <>
+                    <FieldRow label="Display name" value={displayName} onChange={setDisplayName} />
+                    <FieldRow
+                      label="Handle"
+                      value={handle}
+                      onChange={(v) => setHandle(v.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                      prefix="onelink.app/"
+                      mono
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Saved locally for this session. A signed handle claim flow will land in a
+                      future build for cross-device persistence.
+                    </p>
+                    <div className="flex justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={saveProfile}
+                        disabled={busy}
+                        className="inline-flex h-9 items-center rounded-md bg-foreground px-4 text-sm font-medium text-background disabled:opacity-50"
+                      >
+                        {busy ? "Saving…" : "Save changes"}
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+            )}
 
-      <Card className="rounded-[30px] p-8">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="mono-label text-[13px]">Wallet</p>
-            <p className="mt-2 text-[28px] font-medium">External wallets first</p>
+            {tab === "wallet" && (
+              <div className="space-y-5">
+                <Section
+                  title="Connected wallet"
+                  desc="Used for sign-in and as the default link recipient."
+                />
+                {!isConnected ? (
+                  <ConnectButton />
+                ) : (
+                  <div className="flex items-center justify-between rounded-md border border-hairline bg-background p-4">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="h-8 w-8 rounded-full"
+                        style={{
+                          background:
+                            "conic-gradient(from 200deg, oklch(0.16 0.004 260), oklch(0.42 0.06 158), oklch(0.16 0.004 260))",
+                        }}
+                      />
+                      <div>
+                        <p className="text-sm font-medium">Connected</p>
+                        <p className="font-mono text-[11px] text-muted-foreground">{address}</p>
+                      </div>
+                    </div>
+                    <span className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs">
+                      {truncateAddr(address)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tab === "network" && (
+              <div className="space-y-5">
+                <Section
+                  title="Network"
+                  desc="OneLink settles on Arc Testnet. Bridge route uses Circle CCTP from Base Sepolia."
+                />
+                <KV k="Chain" v="Arc Testnet" />
+                <KV k="Chain ID" v={String(ARC_CHAIN_ID)} mono />
+                <KV k="RPC" v={ARC_RPC_URL} mono />
+                <KV k="USDC" v={ARC_USDC_ADDRESS} mono />
+                <KV k="OneLinkCollect" v={ONELINK_CONTRACT_ADDRESS} mono />
+                <KV
+                  k="Has contract"
+                  v={HAS_CONTRACT ? "Yes" : "No · demo mode"}
+                />
+                <KV
+                  k="Allow demo in prod"
+                  v={ALLOW_DEMO_MODE ? "Yes" : "No"}
+                />
+                <KV
+                  k="Gateway route"
+                  v={ENABLE_GATEWAY_ROUTE ? "Enabled" : "Gated · awaiting funded proof"}
+                />
+              </div>
+            )}
+
+            {tab === "danger" && (
+              <div className="space-y-5">
+                <Section title="Danger zone" desc="Irreversible actions. Be careful." />
+                <DangerRow
+                  title="Clear local demo data"
+                  desc="Wipe local demo links and receipts from this browser only."
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      localStorage.removeItem("onelink:payment-links");
+                      localStorage.removeItem("onelink:profiles");
+                      toast.success("Local demo data cleared");
+                    }
+                  }}
+                  cta="Clear"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Disconnect your wallet from your wallet app — OneLink does not store sessions.
+                </p>
+              </div>
+            )}
           </div>
-          <ConnectButton.Custom>
-            {({ account, chain, mounted, openAccountModal, openConnectModal }) => {
-              const connected = mounted && account && chain;
-              return (
-                <button
-                  type="button"
-                  onClick={connected ? openAccountModal : openConnectModal}
-                  className="inline-flex h-12 items-center justify-center rounded-[18px] bg-lime px-6 text-[18px] font-medium text-ink"
-                >
-                  {connected ? "Wallet connected" : "Connect wallet"}
-                </button>
-              );
-            }}
-          </ConnectButton.Custom>
         </div>
-      </Card>
+      </main>
+    </div>
+  );
+}
 
-      <Card className="grid gap-3 rounded-[30px] p-8 md:grid-cols-2">
-        {[
-          ["Network", "Arc Testnet"],
-          ["Chain ID", String(ARC_CHAIN_ID)],
-          ["RPC", ARC_RPC_URL],
-          ["USDC ERC-20", ARC_USDC_ADDRESS],
-          ["Contract", HAS_CONTRACT ? ONELINK_CONTRACT_ADDRESS : "Not configured"],
-          ["Platform fee", `${PLATFORM_FEE_BPS} bps`],
-        ].map(([label, value]) => (
-          <div key={label} className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
-            <p className="mono-label text-[12px]">{label}</p>
-            <p className="mt-2 break-all text-[17px] font-semibold text-white/82">{value}</p>
-          </div>
-        ))}
-      </Card>
+function Section({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="border-b border-hairline pb-4">
+      <h2 className="font-display text-lg font-semibold tracking-tight">{title}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+    </div>
+  );
+}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <a
-          href={ARC_FAUCET_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 font-semibold text-white transition hover:border-lime/50"
-        >
-          Circle faucet
-          <ExternalLink className="mt-3 size-4 text-lime" />
-        </a>
-        <a
-          href={ARC_EXPLORER_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 font-semibold text-white transition hover:border-lime/50"
-        >
-          Arcscan explorer
-          <ExternalLink className="mt-3 size-4 text-lime" />
-        </a>
+function FieldRow({
+  label,
+  value,
+  onChange,
+  prefix,
+  mono,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  prefix?: string;
+  mono?: boolean;
+}) {
+  return (
+    <div>
+      <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+        {label}
+      </label>
+      <div className="flex items-center rounded-md border border-hairline bg-background focus-within:border-foreground/40">
+        {prefix && <span className="px-3 text-sm text-muted-foreground">{prefix}</span>}
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={cn(
+            "w-full bg-transparent px-3 py-2.5 text-sm outline-none",
+            mono && "font-mono text-xs",
+          )}
+        />
       </div>
+    </div>
+  );
+}
+
+function KV({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
+  return (
+    <div className="flex items-center justify-between border-b border-hairline pb-3 last:border-0">
+      <span className="text-xs text-muted-foreground">{k}</span>
+      <span className={cn("text-right text-sm", mono && "font-mono text-[11px] break-all")}>
+        {v}
+      </span>
+    </div>
+  );
+}
+
+function DangerRow({
+  title,
+  desc,
+  cta,
+  onClick,
+}: {
+  title: string;
+  desc: string;
+  cta: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-md border border-destructive/20 bg-destructive/[0.04] p-4">
+      <div>
+        <p className="text-sm font-medium">{title}</p>
+        <p className="text-xs text-muted-foreground">{desc}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onClick}
+        className="rounded-md border border-destructive/30 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10"
+      >
+        {cta}
+      </button>
     </div>
   );
 }
