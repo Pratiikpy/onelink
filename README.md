@@ -114,9 +114,9 @@ For the full evidence bundle (transaction hashes, screenshots, QA matrix), see [
       <sub><b>Landing</b> · route scope, proof positioning, and primary CTA.</sub>
     </td>
     <td width="50%">
-      <img src="./docs/screenshots/pay-unpaid-desktop.png" alt="Checkout" />
+      <img src="./docs/screenshots/product-canvas-desktop.png" alt="Request + Receipt cards" />
       <br />
-      <sub><b>Checkout</b> · Arc pre-flight, route picker, and live CCTP timeline.</sub>
+      <sub><b>Two surfaces</b> · the request, and the verifiable Arc-anchored receipt that lands seconds after settlement.</sub>
     </td>
   </tr>
 </table>

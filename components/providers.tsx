@@ -1,6 +1,6 @@
 "use client";
 
-import { getDefaultConfig, RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
+import { getDefaultConfig, RainbowKitProvider, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { arbitrumSepolia, arcTestnet, baseSepolia, polygonAmoy, sepolia } from "viem/chains";
@@ -32,9 +32,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           modalSize="compact"
-          theme={darkTheme({
-            accentColor: "#C9F267",
-            accentColorForeground: "#0A0A0C",
+          theme={lightTheme({
+            accentColor: "#0d0f12",
+            accentColorForeground: "#f7f5ef",
             borderRadius: "medium",
             fontStack: "system",
             overlayBlur: "small",

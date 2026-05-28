@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "OneLink Collect — One link. Supported USDC. Verified on Arc.";
+export const alt = "OneLink — One link. Supported USDC routes. Verified on Arc.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -11,12 +11,13 @@ export default function OG() {
         style={{
           width: "100%",
           height: "100%",
-          background: "#0A0A0C",
+          background: "#fbfbf8",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 80,
-          color: "#FAFAFA",
+          color: "#0d0f12",
+          fontFamily: "system-ui, sans-serif",
         }}
       >
         <div
@@ -24,27 +25,38 @@ export default function OG() {
             display: "flex",
             alignItems: "center",
             gap: 14,
-            color: "#FAFAFA",
             fontWeight: 600,
             fontSize: 30,
             letterSpacing: "-0.04em",
           }}
         >
-          <svg width="34" height="34" viewBox="0 0 36 36">
-            <circle
-              cx="18"
-              cy="18"
-              r="13"
+          <div
+            style={{
+              width: 42,
+              height: 42,
+              background: "#0d0f12",
+              borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 32 32"
               fill="none"
-              stroke="#FAFAFA"
-              strokeWidth="2.2"
+              stroke="#f7f5ef"
+              strokeWidth="2"
               strokeLinecap="round"
-              strokeDasharray="66 16"
-              transform="rotate(-40 18 18)"
-            />
-          </svg>
-          onelink
+            >
+              <path d="M19 9.5a7 7 0 0 0-9.9 0 7 7 0 0 0 0 9.9l2.2 2.2" />
+              <path d="M13 22.5a7 7 0 0 0 9.9 0 7 7 0 0 0 0-9.9L20.7 10.4" />
+            </svg>
+          </div>
+          <span>onelink</span>
         </div>
+
         <div
           style={{
             display: "flex",
@@ -56,38 +68,41 @@ export default function OG() {
             style={{
               display: "flex",
               flexWrap: "wrap",
-              fontSize: 96,
-              fontWeight: 500,
+              fontSize: 92,
+              fontWeight: 600,
               lineHeight: 1,
-              letterSpacing: "-0.03em",
-              maxWidth: 980,
+              letterSpacing: "-0.04em",
+              maxWidth: 1040,
             }}
           >
-            One link. Supported USDC. <span style={{ color: "#C9F267" }}>Verified on Arc.</span>
+            Get paid in USDC. <span style={{ color: "#75787f" }}>One link.</span>
           </div>
           <div
             style={{
-              fontSize: 30,
-              color: "#8F9198",
+              fontSize: 28,
+              color: "#5a5d65",
               fontWeight: 500,
-              maxWidth: 920,
+              maxWidth: 940,
+              lineHeight: 1.35,
             }}
           >
-            Mobile-first USDC payment links · Arc Testnet · Circle App Kit · CCTP bridging from
-            Base, Ethereum, Arbitrum Sepolia, and Polygon Amoy.
+            USDC payment links for freelancers, creators, and Web3 teams. Settled on Arc Testnet,
+            verified on-chain through Circle CCTP.
           </div>
         </div>
+
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            color: "#C9F267",
-            fontSize: 24,
-            fontWeight: 700,
+            color: "#5a5d65",
+            fontSize: 22,
+            fontWeight: 500,
+            letterSpacing: "0.02em",
           }}
         >
-          <span>Pay. Bridge. Settle.</span>
-          <span style={{ color: "#8F9198" }}>onelink.collect</span>
+          <span style={{ color: "#0d0f12", fontWeight: 600 }}>onelink-mauve-nu.vercel.app</span>
+          <span>Arc · USDC · CCTP</span>
         </div>
       </div>
     ),
