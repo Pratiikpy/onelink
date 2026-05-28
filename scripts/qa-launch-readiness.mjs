@@ -101,17 +101,23 @@ function rel(path) {
 async function captureFull(page, file) {
   // Force reveal/fade animations to settle before screenshot. We:
   //   1. Wait for fonts so layout doesn't shift mid-capture.
-  //   2. Scroll the entire page so IntersectionObserver fires for every
-  //      Reveal/CountUp.
-  //   3. Scroll back to top, give animations time to finish, then capture.
+  //   2. Force every `.reveal` element into the `is-in` state so the
+  //      content is opaque even if IntersectionObserver hasn't fired.
+  //   3. Scroll the entire page so any other observers also fire.
+  //   4. Scroll back to top, give animations time to finish, then capture.
   await page.evaluate(async () => {
     // @ts-expect-error fonts is fine
     if (document.fonts?.ready) await document.fonts.ready;
+    document.querySelectorAll(".reveal").forEach((el) => {
+      el.classList.add("is-in");
+      el.style.opacity = "1";
+      el.style.transform = "none";
+    });
     const total = document.documentElement.scrollHeight;
     const step = window.innerHeight;
     for (let y = 0; y < total; y += step) {
       window.scrollTo(0, y);
-      await new Promise((r) => setTimeout(r, 60));
+      await new Promise((r) => setTimeout(r, 80));
     }
     window.scrollTo(0, 0);
     await new Promise((r) => setTimeout(r, 600));
@@ -213,7 +219,10 @@ async function main() {
 
   try {
     for (const viewport of VIEWPORTS) {
-      const context = await browser.newContext(viewport.options);
+      const context = await browser.newContext({
+        ...viewport.options,
+        reducedMotion: "reduce",
+      });
       for (const route of ROUTES) {
         await testRoute(context, route, viewport, results);
       }
