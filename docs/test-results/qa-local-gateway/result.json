@@ -1,0 +1,28 @@
+{
+  "status": "green",
+  "generatedAt": "2026-05-28T07:42:21.401Z",
+  "localUrl": "http://127.0.0.1:3100",
+  "paymentUrl": "http://127.0.0.1:3100/pay/gateway-local-qa-20260528074131",
+  "receiptUrl": "http://127.0.0.1:3100/receipt/ecb5194b-ba2f-46f5-b512-5bbe95e4a215",
+  "amountUSDC": "0.02",
+  "deposit": {
+    "deposited": false,
+    "existingUsdc": "1.93"
+  },
+  "createHash": "0xf195cf33a580eefc27cb8314ec78b2fc08c64fcd1d1142cbbede688ed6b9bf8d",
+  "transactions": [
+    {
+      "chainId": 5042002,
+      "hash": "0xfbd46a2fd4a42ce56a4285015b91844825c1a721da84bde957a902fd8e142f00"
+    },
+    {
+      "chainId": 5042002,
+      "hash": "0x4fad0b3d0b02503ea3f2d335afbec8960b28f1c9a6159749c6544574181407d5"
+    },
+    {
+      "chainId": 5042002,
+      "hash": "0x8d92081641c403961f5d760b3e6b616dc0b493b4078600a9e049e7bf748b20c1"
+    }
+  ],
+  "reconciledTxHash": "0x8d92081641c403961f5d760b3e6b616dc0b493b4078600a9e049e7bf748b20c1"
+}
