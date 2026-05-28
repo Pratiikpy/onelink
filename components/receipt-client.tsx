@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BadgeCheck, Check, Copy, ExternalLink, ReceiptText } from "lucide-react";
+import { BadgeCheck, Check, Copy, ReceiptText } from "lucide-react";
+import { ProofDrawer } from "@/components/proof-drawer";
 import { Button, Card, Pill } from "@/components/ui";
-import { ARC_EXPLORER_URL, explorerTx, isDemoTxHash } from "@/lib/arc";
+import { isDemoTxHash } from "@/lib/arc";
 import type { PaymentLink } from "@/lib/payments";
 import { formatTimestamp, paymentMethodLabel, receiptPath, shortAddress, statusTone } from "@/lib/payments";
 import { getPaymentLinkById } from "@/lib/storage";
@@ -129,7 +130,7 @@ export function ReceiptClient({ id }: { id: string }) {
             ["Memo", link.memo],
             ["Receiver", shortAddress(link.recipientWallet)],
             ["Payer", shortAddress(link.payerWallet)],
-            ["Network", "Arc Testnet"],
+            ["Network", "Arc Testnet · USDC native gas"],
             ["Method", paymentMethodLabel(link.paymentMethod)],
             ["Created", formatTimestamp(link.createdAt)],
           ].map(([label, value]) => (
@@ -139,43 +140,27 @@ export function ReceiptClient({ id }: { id: string }) {
             </div>
           ))}
 
+          <ProofDrawer link={link} />
+
           {isDemoTxHash(link.txHash) && (
             <div className="rounded-2xl border border-amber/30 bg-amber/10 p-3 text-xs font-semibold text-amber">
               This receipt was generated in demo mode. No USDC moved on-chain.
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
             <Button variant="secondary" onClick={() => copy(receiptUrl)}>
               {copied ? <Check className="size-4 text-lime" /> : <Copy className="size-4" />}
-              {copied ? "Copied" : "Copy"}
+              {copied ? "Copied" : "Copy receipt URL"}
             </Button>
-            <a
-              href={
-                link.txHash && !isDemoTxHash(link.txHash)
-                  ? explorerTx(link.txHash)
-                  : ARC_EXPLORER_URL
-              }
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Button
-                variant="secondary"
-                className="w-full"
-                disabled={isDemoTxHash(link.txHash)}
-              >
-                <ExternalLink className="size-4" />
-                Arcscan
-              </Button>
-            </a>
-          </div>
-
-          <div className="grid gap-3 pt-1 sm:grid-cols-2">
             <Link href="/dashboard">
               <Button variant="ghost" className="w-full">
                 Back to links
               </Button>
             </Link>
+          </div>
+
+          <div className="pt-1">
             <Link href="/security">
               <Button variant="ghost" className="w-full">
                 Verification scope

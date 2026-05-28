@@ -33,6 +33,15 @@ export default function SecurityPage() {
             ],
           },
           {
+            title: "Why USDC is the gas token on Arc",
+            bullets: [
+              "Arc Testnet uses USDC as native gas. A payer never needs ETH or any other token to settle a OneLink invoice.",
+              "OneLink separates Arc's native USDC gas from the ERC-20 USDC payment balance, so fees and settlement amounts stay explicit.",
+              "Sub-second deterministic finality on Arc means the receipt page reflects on-chain settlement almost as fast as the wallet confirms.",
+              "Arcscan is the public source of truth. Every paid OneLink receipt links to the exact Arc transaction that moved the USDC.",
+            ],
+          },
+          {
             title: "Scope and limitations",
             bullets: [
               "This deployment operates on testnets and uses testnet USDC only. It is not a mainnet payment service.",

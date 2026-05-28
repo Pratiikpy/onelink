@@ -5,8 +5,16 @@ import Link from "next/link";
 import { useAccount, useBalance, useChainId, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Check, Copy, LockKeyhole, Route, Share2, ShieldCheck } from "lucide-react";
+import { ArcPreFlight } from "@/components/arc-preflight";
+import { BridgeStepTimeline } from "@/components/bridge-step-timeline";
 import { ARC_CHAIN_ID, ARC_USDC_ADDRESS, getSourceChain, SUPPORTED_SOURCE_CHAINS } from "@/lib/arc";
-import { bridgeUsdcToArc, ENABLE_GATEWAY_ROUTE, spendGatewayBalanceOnArc } from "@/lib/circle-payments";
+import {
+  bridgeUsdcToArc,
+  ENABLE_GATEWAY_ROUTE,
+  spendGatewayBalanceOnArc,
+  type BridgeStepName,
+  type BridgeStepState,
+} from "@/lib/circle-payments";
 import {
   ALLOW_DEMO_MODE,
   erc20Abi,
@@ -19,7 +27,6 @@ import { shareOrCopy, useCopy } from "@/lib/share";
 import { confirmPaidSettlement, getPaymentLinkBySlug, updatePaymentStatus } from "@/lib/storage";
 
 type QuickRoute = "arc-direct" | "app-kit-bridge" | "unified-balance";
-type StepState = "done" | "active" | "pending" | "failed";
 
 const availableRoutes: QuickRoute[] = ENABLE_GATEWAY_ROUTE
   ? ["arc-direct", "app-kit-bridge", "unified-balance"]
@@ -77,55 +84,6 @@ function statusDot(link: PaymentLink, isExpired: boolean) {
     return "bg-danger";
   }
   return "bg-white/75";
-}
-
-function stepClasses(state: StepState) {
-  if (state === "done") return "border-lime bg-lime text-ink";
-  if (state === "active") return "border-lime/70 bg-lime/12 text-lime";
-  if (state === "failed") return "border-danger/50 bg-danger/12 text-[#ffbcbc]";
-  return "border-white/10 bg-white/[0.035] text-white/35";
-}
-
-function checkoutSteps({
-  link,
-  route,
-  isConnected,
-  activity,
-  isExpired,
-}: {
-  link: PaymentLink;
-  route: QuickRoute;
-  isConnected: boolean;
-  activity: string;
-  isExpired: boolean;
-}) {
-  const failed = link.status === "failed" || link.status === "cancelled" || link.status === "expired" || isExpired;
-  const paid = link.status === "paid";
-  const processing = link.status === "processing" || Boolean(activity);
-  const bridge = route === "app-kit-bridge";
-
-  return [
-    { label: "Link created", state: "done" as StepState },
-    { label: "Wallet connected", state: isConnected ? ("done" as StepState) : ("pending" as StepState) },
-    {
-      label: bridge ? "Circle CCTP bridge" : route === "unified-balance" ? "Gateway gated" : "Arc route ready",
-      state: failed
-        ? ("failed" as StepState)
-        : paid
-          ? ("done" as StepState)
-          : processing
-            ? ("active" as StepState)
-            : ("pending" as StepState),
-    },
-    {
-      label: "Arc settlement verified",
-      state: failed ? ("failed" as StepState) : paid ? ("done" as StepState) : ("pending" as StepState),
-    },
-    {
-      label: "Receipt ready",
-      state: failed ? ("failed" as StepState) : paid ? ("done" as StepState) : ("pending" as StepState),
-    },
-  ];
 }
 
 function friendlyPaymentError(err: unknown, route: QuickRoute) {
@@ -193,6 +151,16 @@ export function PayLinkClient({ slug }: { slug: string }) {
   const [activity, setActivity] = useState("");
   const { copied, copy } = useCopy();
   const [route, setRoute] = useState<QuickRoute>("arc-direct");
+  const [bridgeSteps, setBridgeSteps] = useState<
+    Partial<
+      Record<
+        BridgeStepName,
+        { state: BridgeStepState; txHash?: string; explorerUrl?: string; error?: string }
+      >
+    >
+  >({});
+  const [settleState, setSettleState] = useState<"idle" | "active" | "success" | "error">("idle");
+  const [receiptState, setReceiptState] = useState<"idle" | "active" | "success" | "error">("idle");
 
   useEffect(() => {
     async function load() {
@@ -236,6 +204,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
 
     if (HAS_CONTRACT) {
       if (!arcClient) throw new Error("Arc RPC client is not available.");
+      setSettleState("active");
       setActivity("Switching to Arc for settlement...");
       await switchChainAsync({ chainId: ARC_CHAIN_ID });
       setActivity("Approving Arc USDC...");
@@ -246,7 +215,10 @@ export function PayLinkClient({ slug }: { slug: string }) {
         args: [ONELINK_CONTRACT_ADDRESS, amountToUnits(link.amountUSDC)],
       });
       const approveReceipt = await arcClient.waitForTransactionReceipt({ hash: approveHash });
-      if (approveReceipt.status !== "success") throw new Error("USDC approval failed on Arc.");
+      if (approveReceipt.status !== "success") {
+        setSettleState("error");
+        throw new Error("USDC approval failed on Arc.");
+      }
 
       setActivity("Submitting Arc settlement...");
       const payHash =
@@ -264,8 +236,13 @@ export function PayLinkClient({ slug }: { slug: string }) {
               args: [link.contractLinkId],
             });
       const receipt = await arcClient.waitForTransactionReceipt({ hash: payHash });
-      if (receipt.status !== "success") throw new Error("Arc settlement transaction failed.");
+      if (receipt.status !== "success") {
+        setSettleState("error");
+        throw new Error("Arc settlement transaction failed.");
+      }
+      setSettleState("success");
 
+      setReceiptState("active");
       const paid = await confirmPaidSettlement(link.id, {
         txHash: payHash,
         payerWallet: address,
@@ -273,11 +250,13 @@ export function PayLinkClient({ slug }: { slug: string }) {
         sourceChain: method === "arc-direct" ? "Arc_Testnet" : "Bridged",
       });
       if (paid) setLink(paid);
+      setReceiptState("success");
       setActivity("Settled on Arc.");
       return;
     }
 
     setActivity("Recording preview-only demo settlement...");
+    setSettleState("active");
     const demoSuffix = crypto
       .randomUUID()
       .replaceAll("-", "")
@@ -291,11 +270,16 @@ export function PayLinkClient({ slug }: { slug: string }) {
       sourceChain: "Arc_Testnet demo",
     });
     if (paid) setLink(paid);
+    setSettleState("success");
+    setReceiptState("success");
   }
 
   async function pay() {
     setError("");
     setActivity("");
+    setBridgeSteps({});
+    setSettleState("idle");
+    setReceiptState("idle");
     if (!isConnected || !address) return;
     if (!link) return;
     if (isExpired) {
@@ -333,7 +317,23 @@ export function PayLinkClient({ slug }: { slug: string }) {
         });
         if (processing) setLink(processing);
         setActivity(`Bridging USDC from ${source.label} to Arc via Circle CCTP...`);
-        await bridgeUsdcToArc({ connector, source, amount: link.amountUSDC, recipient: address });
+        await bridgeUsdcToArc({
+          connector,
+          source,
+          amount: link.amountUSDC,
+          recipient: address,
+          onStep: (update) => {
+            setBridgeSteps((current) => ({
+              ...current,
+              [update.step]: {
+                state: update.state,
+                txHash: update.txHash,
+                explorerUrl: update.explorerUrl,
+                error: update.error,
+              },
+            }));
+          },
+        });
         await settleOnArc("app-kit-bridge");
       }
 
@@ -360,6 +360,8 @@ export function PayLinkClient({ slug }: { slug: string }) {
         if (failed) setLink(failed);
       }
       setActivity("");
+      setSettleState((current) => (current === "active" ? "error" : current));
+      setReceiptState((current) => (current === "active" ? "error" : current));
       setError(friendlyPaymentError(err, route));
     } finally {
       setBusy(false);
@@ -505,30 +507,23 @@ export function PayLinkClient({ slug }: { slug: string }) {
         {activity && <p className="text-[12px] text-lime">{activity}</p>}
         {error && <p className="text-[12px] text-[#ffbcbc]">{error}</p>}
 
-        <div className="rounded-[18px] border border-white/10 bg-white/[0.025] p-4">
-          <div className="flex items-center justify-between">
-            <p className="mono-label text-[10px]">Payment timeline</p>
-            <p className="text-[11px] font-medium text-white/38">Settlement before status</p>
-          </div>
-          <div className="mt-4 space-y-2">
-            {checkoutSteps({ link, route, isConnected, activity, isExpired }).map((step, index) => (
-              <div key={step.label} className="flex items-center gap-3">
-                <span
-                  className={`grid size-6 shrink-0 place-items-center rounded-full border text-[10px] font-bold ${stepClasses(step.state)}`}
-                >
-                  {step.state === "done" ? <Check className="size-3" /> : index + 1}
-                </span>
-                <span
-                  className={`text-[12px] font-medium ${
-                    step.state === "pending" ? "text-white/38" : step.state === "failed" ? "text-[#ffbcbc]" : "text-white/78"
-                  }`}
-                >
-                  {step.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        {!isClosed && (
+          <ArcPreFlight
+            amountUSDC={link.amountUSDC}
+            balanceUSDC={hasDirectBalance ? usdcBalance?.formatted : undefined}
+            isConnected={isConnected}
+            needsApproval
+          />
+        )}
+
+        {route === "app-kit-bridge" && (busy || Object.keys(bridgeSteps).length > 0 || link.status === "paid") && (
+          <BridgeStepTimeline
+            steps={bridgeSteps}
+            sourceLabel={provenBridgeSource.label}
+            settleState={settleState}
+            receiptState={receiptState}
+          />
+        )}
       </div>
 
       <div className="mt-auto pt-6">
