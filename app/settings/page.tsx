@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SettingsClient } from "@/components/settings-client";
-import { AppShell } from "@/components/app-shell";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -8,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function SettingsPage() {
-  return (
-    <AppShell>
-      <SettingsClient />
-    </AppShell>
-  );
+  return <SettingsClient />;
 }

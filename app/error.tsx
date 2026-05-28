@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { RotateCcw } from "lucide-react";
-import { Logo } from "@/components/logo";
+import { useEffect } from "react";
 
 export default function GlobalError({
   error,
@@ -11,42 +10,38 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-ink px-6 text-snow">
-      <section className="surface max-w-[720px] rounded-[34px] p-10 text-center">
-      <div className="flex justify-center">
-        <Logo />
-      </div>
-      <div>
-        <p className="mono-label mt-10 text-[14px]">Route error</p>
-        <h1 className="mt-4 text-[64px] font-medium leading-none tracking-[-0.04em] text-white">
-          Something broke
-        </h1>
-        <p className="mx-auto mt-5 max-w-[520px] text-[24px] leading-[1.35] text-white/55">
-          Retry the page. If it still fails, return home and create a fresh link.
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          Something went wrong
         </p>
-        {error.digest && (
-          <p className="mt-6 break-all rounded-[22px] border border-white/8 bg-white/[0.03] p-3 font-mono text-[13px] text-white/45">
-            Ref: {error.digest}
-          </p>
-        )}
+        <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight">
+          This page didn&apos;t load
+        </h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          A transient error interrupted the request. Try again or head home.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-2">
+          <button
+            type="button"
+            onClick={reset}
+            className="inline-flex h-10 items-center justify-center rounded-md bg-foreground px-5 text-sm font-medium text-background"
+          >
+            Try again
+          </button>
+          <Link
+            href="/"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-hairline bg-surface px-5 text-sm font-medium"
+          >
+            Go home
+          </Link>
+        </div>
       </div>
-      <div className="mt-8 grid grid-cols-2 gap-3">
-        <button
-          onClick={reset}
-          className="inline-flex h-16 items-center justify-center gap-2 rounded-[22px] bg-lime px-6 text-[22px] font-medium text-ink"
-        >
-          <RotateCcw className="size-4" />
-          Try again
-        </button>
-        <Link
-          href="/"
-          className="inline-flex h-16 items-center justify-center rounded-[22px] border border-white/12 bg-white/8 px-6 text-[22px] font-medium text-white"
-        >
-          Home
-        </Link>
-      </div>
-      </section>
-    </main>
+    </div>
   );
 }

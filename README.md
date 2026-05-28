@@ -30,6 +30,7 @@ A premium testnet payment-link product for freelancers: create one shareable lin
 
 - [What it does](#what-it-does) · 30-second tour
 - [Why OneLink](#why-onelink)
+- [What makes it different](#what-makes-it-different)
 - [Built on Arc + Circle](#built-on-arc--circle)
 - [Verified scope](#verified-scope) · with live evidence per row
 - [Visual walkthrough](#visual-walkthrough)
@@ -63,6 +64,15 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
 
 ---
 
+## What makes it different
+
+- **USDC is the only token a payer needs.** Arc's native gas is USDC, so there's no ETH-for-gas dance. The same balance pays the invoice and the network fee.
+- **Server-verified state, not browser trust.** The browser asks; an API verifies the matching Arc event before flipping `paid` or `cancelled`. The contract is the source of truth.
+- **Every claim has live evidence.** Each row in the verified-scope table links to a real `docs/test-results/` report with transaction hashes you can re-check on Arcscan.
+- **Premium design on a standard Web3 stack.** Editorial Apple-minimal UI built with shadcn/ui, Radix primitives, Inter, and `tw-animate-css`, paired with wagmi + viem + RainbowKit + WalletConnect.
+
+---
+
 ## Built on Arc + Circle
 
 | Layer | Choice | Why it matters |
@@ -70,7 +80,7 @@ OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, o
 | Settlement | **[Arc Testnet](https://testnet.arcscan.app)** · chain id `5042002` | USDC is the native gas token. Sub-second deterministic finality. No ETH-for-gas friction. |
 | Bridge | **[Circle CCTP](https://developers.circle.com/cctp) via [App Kit](https://docs.arc.network/app-kit)** | Native USDC burn-and-mint between supported testnets and Arc, with retry-safe step events. |
 | Receipts | Arcscan transaction + server reconciliation | Every paid receipt links to the exact on-chain settlement. |
-| Stack | Next.js 15 · React 19 · TypeScript · Tailwind · wagmi · viem · RainbowKit · WalletConnect · Foundry · Supabase | Standard Web3 stack; nothing exotic. |
+| Stack | Next.js 15 · React 19 · TypeScript · Tailwind · shadcn/ui · Radix UI · Inter · wagmi · viem · RainbowKit · WalletConnect · Foundry · Supabase | Standard Web3 stack with a premium component library. |
 
 ---
 
@@ -171,7 +181,7 @@ Repo modules:
 | Path | What lives there |
 | --- | --- |
 | [`app/`](./app) | Next.js routes, API handlers, whitepaper, trust pages |
-| [`components/`](./components) | Shared UI and product flows (Arc pre-flight, bridge timeline, proof drawer) |
+| [`components/`](./components) | Shared product flows (Arc pre-flight, bridge timeline, gateway timeline, proof drawer) plus `onelink/*` brand components and `ui/*` shadcn primitives. |
 | [`contracts/`](./contracts) | OneLinkCollect Solidity contract and Foundry tests (27 passing) |
 | [`lib/`](./lib) | Arc, Circle, payment, storage, and reconciliation utilities |
 | [`scripts/`](./scripts) | Live QA and deployment verification scripts |
@@ -245,6 +255,8 @@ Raw automation artifacts are intentionally not part of the public README. Public
 | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | System design, settlement model, trust boundaries, and current product limits. |
 | [`docs/UI_UX_AUDIT.md`](./docs/UI_UX_AUDIT.md) | Final visual audit, responsive checks, and remaining non-UI product limits. |
 | [`docs/PRD.md`](./docs/PRD.md) | Product requirements and end-to-end behavior definition. |
+| [`docs/PRODUCT_INFO.md`](./docs/PRODUCT_INFO.md) | Every product fact in one place: features, flows, mechanics, scope, technology, verification, limits. |
+| [`docs/BEST_POSSIBLE_ONELINK.md`](./docs/BEST_POSSIBLE_ONELINK.md) | Master vision — what the best possible OneLink looks like across Arc, Circle, product, UI, responsiveness, and roadmap. |
 | [`docs/AI_BUILD_PROCESS.md`](./docs/AI_BUILD_PROCESS.md) | How Codex, MCP tools, local skills, and evidence-first QA were used. |
 | [`docs/pitch/PITCH_DECK_BRIEF.md`](./docs/pitch/PITCH_DECK_BRIEF.md) | Pitch deck narrative, copy, and design direction. |
 | [`docs/SECURITY_REVIEW.md`](./docs/SECURITY_REVIEW.md) | Dependency alert disposition and enabled GitHub security controls. |
@@ -252,6 +264,12 @@ Raw automation artifacts are intentionally not part of the public README. Public
 | [`SUPPORT.md`](./SUPPORT.md) | Support boundaries, public issue guidance, and security-report routing. |
 | [`supabase/schema.sql`](./supabase/schema.sql) | Database schema, RLS policies, and immutability trigger. |
 | [`contracts/src/OneLinkCollect.sol`](./contracts/src/OneLinkCollect.sol) | Arc Testnet settlement contract. |
+
+---
+
+## Acknowledgments
+
+Built on the work of the **[Arc](https://docs.arc.network)** and **[Circle](https://developers.circle.com)** teams whose primitives — USDC-native gas, CCTP, App Kit, and the deployed Gateway contracts — make this product possible. Wallet UX powered by **wagmi**, **viem**, **RainbowKit**, and **WalletConnect/Reown**. Component system inspired by **shadcn/ui** and the **Radix UI** primitives.
 
 ---
 

@@ -1,7 +1,9 @@
 "use client";
 
 import { Check, Loader2, X } from "lucide-react";
+
 import type { BridgeStepState, GatewayStepName } from "@/lib/circle-payments";
+import { cn } from "@/lib/utils";
 
 type StageState = BridgeStepState | "idle";
 
@@ -29,10 +31,10 @@ const stages: { id: GatewayStepName; label: string; detail: string }[] = [
 ];
 
 function dotClasses(state: StageState) {
-  if (state === "success") return "border-lime bg-lime text-ink";
-  if (state === "active") return "border-lime/55 bg-lime/[0.14] text-lime";
-  if (state === "error") return "border-danger/45 bg-danger/[0.12] text-[#ffbcbc]";
-  return "border-white/10 bg-white/[0.04] text-white/35";
+  if (state === "success") return "border-success bg-success text-success-foreground";
+  if (state === "active") return "border-foreground bg-background text-foreground";
+  if (state === "error") return "border-destructive bg-destructive/10 text-destructive";
+  return "border-hairline bg-background text-muted-foreground";
 }
 
 export function GatewayStepTimeline({
@@ -40,15 +42,22 @@ export function GatewayStepTimeline({
   sourceLabel,
   className = "",
 }: {
-  steps: Partial<Record<GatewayStepName, { state: BridgeStepState; sourceLabel?: string; txHash?: string; error?: string }>>;
+  steps: Partial<
+    Record<
+      GatewayStepName,
+      { state: BridgeStepState; sourceLabel?: string; txHash?: string; error?: string }
+    >
+  >;
   sourceLabel?: string;
   className?: string;
 }) {
   return (
-    <div className={`rounded-[18px] border border-white/10 bg-white/[0.025] p-4 ${className}`}>
+    <div className={cn("rounded-[18px] border border-hairline bg-surface p-4", className)}>
       <div className="flex items-center justify-between gap-3">
-        <p className="mono-label text-[10px]">Gateway timeline</p>
-        <span className="text-right text-[11px] font-medium text-white/38">
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          Gateway timeline
+        </p>
+        <span className="text-right text-[11px] font-medium text-muted-foreground">
           Unified balance{sourceLabel ? ` · ${sourceLabel} → Arc` : ""}
         </span>
       </div>
@@ -56,25 +65,35 @@ export function GatewayStepTimeline({
       <ol className="mt-4 space-y-3">
         {stages.map((stage, index) => {
           const meta = steps[stage.id];
-          const state = meta?.state ?? "idle";
+          const state: StageState = meta?.state ?? "idle";
           return (
             <li key={stage.id} className="flex gap-3">
-              <span className={`grid size-7 shrink-0 place-items-center rounded-full border text-[11px] font-bold ${dotClasses(state)}`}>
+              <span
+                className={cn(
+                  "grid h-7 w-7 shrink-0 place-items-center rounded-full border text-[11px] font-bold",
+                  dotClasses(state),
+                )}
+              >
                 {state === "success" ? (
-                  <Check className="size-3.5" />
+                  <Check className="h-3.5 w-3.5" />
                 ) : state === "active" ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : state === "error" ? (
-                  <X className="size-3.5" />
+                  <X className="h-3.5 w-3.5" />
                 ) : (
                   index + 1
                 )}
               </span>
               <div className="min-w-0 flex-1">
-                <p className={state === "active" ? "text-[13px] font-semibold text-lime" : "text-[13px] font-semibold text-white/82"}>
+                <p
+                  className={cn(
+                    "text-[13px] font-semibold",
+                    state === "active" ? "text-foreground" : "text-foreground",
+                  )}
+                >
                   {stage.label}
                 </p>
-                <p className="mt-1 text-[11.5px] leading-5 text-white/50">
+                <p className="mt-1 text-[11.5px] leading-5 text-muted-foreground">
                   {meta?.error && state === "error" ? meta.error : stage.detail}
                 </p>
               </div>
