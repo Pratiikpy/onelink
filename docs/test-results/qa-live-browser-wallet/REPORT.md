@@ -1,6 +1,6 @@
 # OneLink Live QA - Browser Wallet Full Flow
 
-Generated: 2026-05-26T15:45:27.469Z
+Generated: 2026-05-28T06:07:57.815Z
 Base URL: https://onelink-mauve-nu.vercel.app
 Status: green
 
@@ -9,13 +9,13 @@ Status: green
 | Step | Result | Evidence |
 | --- | --- | --- |
 | UI wallet discovery | green | EIP-6963 browser wallet connected through RainbowKit |
-| UI create link | green | [Arc createLink](https://testnet.arcscan.app/tx/0x31010fb359a647788a44d0219756e92f9cb618117ce4352c3fed128595521d44) |
-| Cross-context load | green | Payer browser loaded `browser-wallet-qa-20260526154443-0-02-og0FX9` from Supabase |
-| UI approval | green | [Arc approve](https://testnet.arcscan.app/tx/0x66a0190974dbd96424a0432e3250ec41ac1e75442f4fd3c24fde9b49b519db98) |
-| UI settlement | green | [Arc payLink](https://testnet.arcscan.app/tx/0x6b921b06d601e88cf1cdb0ea1eb5237cd89dc7220c0ef2ab6b910f46b312c4ab) |
+| UI create link | green | [Arc createLink](https://testnet.arcscan.app/tx/0xeea2a1c67dd0949992db55227650d39b12bcdca5ac1a23b005ad6ca6926ce8af) |
+| Cross-context load | green | Payer browser loaded `browser-wallet-qa-20260528060729-0-02-P1Uan0` from Supabase |
+| UI approval | green | [Arc approve](https://testnet.arcscan.app/tx/0x31ac963ad040ba48b253b98ad8eb5ca4ad1d13252486916f03d3802002fc9133) |
+| UI settlement | green | [Arc payLink](https://testnet.arcscan.app/tx/0x02e5ba951ec59baeeddf687059240d0cea439a319c1732303bf8db49e608366c) |
 | Server reconciliation | green | Supabase persisted `paid` with matching settlement tx |
 | Paid refresh | green | Payer page remained paid after reload |
-| Receipt | green | https://onelink-mauve-nu.vercel.app/receipt/7e41bf18-b61c-4af2-baeb-b10f219d58e8 |
+| Receipt | green | https://onelink-mauve-nu.vercel.app/receipt/5e122d17-4d70-4140-af1f-54dcbec3828a |
 
 ## Artifacts
 
@@ -23,6 +23,7 @@ Status: green
 - docs/test-results/qa-live-browser-wallet/payer-before-payment.png
 - docs/test-results/qa-live-browser-wallet/payer-paid-after-refresh.png
 - docs/test-results/qa-live-browser-wallet/receipt.png
+- docs/test-results/qa-live-browser-wallet/videos/
 
 ## Scope Note
 

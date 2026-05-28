@@ -202,7 +202,7 @@ async function main() {
     await payPage.goto(paymentUrl, { waitUntil: "networkidle", timeout: 60_000 });
     await assertBody(payPage, /Pay on Arc/i, "payer Arc route");
     await payPage.screenshot({ path: resolve(OUT_DIR, "payer-before-payment.png"), fullPage: true });
-    await payPage.getByRole("button", { name: /Pay on Arc/i }).click();
+    await payPage.getByRole("button", { name: "Pay on Arc", exact: true }).click();
     await payPage.getByText("Paid", { exact: true }).waitFor({ timeout: 180_000 });
     await payPage.reload({ waitUntil: "networkidle", timeout: 60_000 });
     await assertBody(payPage, /Paid/i, "persisted paid page after refresh");
