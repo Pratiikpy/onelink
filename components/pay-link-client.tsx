@@ -478,13 +478,27 @@ export function PayLinkClient({ slug }: { slug: string }) {
                 const detail = routeDetails[nextRoute];
                 const Icon = detail.icon;
                 const active = route === nextRoute;
-                const enabled = availableRoutes.includes(nextRoute);
+                const enabled = availableRoutes.includes(nextRoute) && !busy;
                 return (
                   <button
                     key={nextRoute}
                     type="button"
                     disabled={!enabled}
-                    onClick={() => enabled && setRoute(nextRoute)}
+                    onClick={() => {
+                      if (!enabled) return;
+                      if (route !== nextRoute) {
+                        // Clear any prior route's timeline state so the UI
+                        // never shows stale steps after a route switch.
+                        setBridgeSteps({});
+                        setGatewaySteps({});
+                        setGatewaySourceLabel(undefined);
+                        setSettleState("idle");
+                        setReceiptState("idle");
+                        setError("");
+                        setActivity("");
+                      }
+                      setRoute(nextRoute);
+                    }}
                     className={`w-full rounded-[16px] border p-4 text-left transition ${
                       active
                         ? "border-lime/45 bg-lime/[0.08]"
@@ -545,6 +559,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
             amountUSDC={link.amountUSDC}
             balanceUSDC={hasDirectBalance ? usdcBalance?.formatted : undefined}
             isConnected={isConnected}
+            route={route}
             needsApproval
           />
         )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Check, Fuel, ShieldCheck, Wallet, Zap } from "lucide-react";
+import { ArrowUpRight, Check, Fuel, Route as RouteIcon, ShieldCheck, Sparkles, Wallet, Zap } from "lucide-react";
 import {
   ARC_CHAIN_ID,
   ARC_EXPLORER_URL,
@@ -17,6 +17,8 @@ type PreFlightItem = {
   icon: typeof Wallet;
 };
 
+export type PreFlightRoute = "arc-direct" | "app-kit-bridge" | "unified-balance";
+
 function toneClasses(tone: PreFlightTone) {
   if (tone === "ready") return "border-lime/35 bg-lime/[0.08] text-lime";
   if (tone === "attention") return "border-amber/35 bg-amber/[0.08] text-amber";
@@ -31,23 +33,33 @@ function iconWrapClasses(tone: PreFlightTone) {
 
 /**
  * Arc pre-flight checklist. Shows the payer everything they need to know before
- * signing: which network they'll settle on, their Arc USDC balance, whether
- * they need to top up, that USDC is the gas token on Arc, and that the receipt
+ * signing: which network they'll settle on, how their Arc USDC will be sourced
+ * for the chosen route, that USDC is the gas token on Arc, and that the receipt
  * lands on Arcscan after server verification.
  *
  * Used on the checkout pay screen. Honest about Arc's quirks (USDC-as-gas,
  * 6 decimals on the ERC-20 surface) without overwhelming the payer.
+ *
+ * The balance/sourcing row adapts per route:
+ *  - arc-direct: shows the connected wallet's Arc USDC balance (with faucet
+ *    helper if low).
+ *  - app-kit-bridge: explains that the bridge will mint Arc USDC to the wallet
+ *    before settlement. No faucet helper.
+ *  - unified-balance: explains that Gateway will mint Arc USDC to the wallet
+ *    from a confirmed unified balance before settlement. No faucet helper.
  */
 export function ArcPreFlight({
   amountUSDC,
   balanceUSDC,
   isConnected,
+  route = "arc-direct",
   needsApproval = true,
   className = "",
 }: {
   amountUSDC: string;
   balanceUSDC?: string;
   isConnected: boolean;
+  route?: PreFlightRoute;
   needsApproval?: boolean;
   className?: string;
 }) {
@@ -57,33 +69,51 @@ export function ArcPreFlight({
   const sufficient = hasBalance && balanceNumber >= amountNumber;
   const missing = hasBalance ? Math.max(0, amountNumber - balanceNumber) : null;
 
-  const balanceItem: PreFlightItem = !isConnected
-    ? {
-        label: "Arc ERC-20 USDC",
-        value: "Connect wallet to check",
-        tone: "info",
-        icon: Wallet,
-      }
-    : !hasBalance
-      ? {
-          label: "Arc ERC-20 USDC",
-          value: "Loading…",
-          tone: "info",
-          icon: Wallet,
-        }
-      : sufficient
-        ? {
-            label: "Arc ERC-20 USDC",
-            value: `${balanceNumber.toFixed(2)} USDC · enough for direct payment`,
-            tone: "ready",
-            icon: Wallet,
-          }
-        : {
-            label: "Arc ERC-20 USDC",
-            value: `${balanceNumber.toFixed(2)} USDC · need ${missing!.toFixed(2)} more`,
-            tone: "attention",
-            icon: Wallet,
-          };
+  let sourceItem: PreFlightItem;
+
+  if (route === "app-kit-bridge") {
+    sourceItem = {
+      label: "Arc USDC source",
+      value: "Circle CCTP bridges your USDC into Arc before settlement",
+      tone: "info",
+      icon: RouteIcon,
+    };
+  } else if (route === "unified-balance") {
+    sourceItem = {
+      label: "Arc USDC source",
+      value: "Circle Gateway mints from your confirmed unified balance",
+      tone: "info",
+      icon: Sparkles,
+    };
+  } else if (!isConnected) {
+    sourceItem = {
+      label: "Arc USDC balance",
+      value: "Connect wallet to check",
+      tone: "info",
+      icon: Wallet,
+    };
+  } else if (!hasBalance) {
+    sourceItem = {
+      label: "Arc USDC balance",
+      value: "Loading…",
+      tone: "info",
+      icon: Wallet,
+    };
+  } else if (sufficient) {
+    sourceItem = {
+      label: "Arc USDC balance",
+      value: `${balanceNumber.toFixed(2)} USDC · enough to pay`,
+      tone: "ready",
+      icon: Wallet,
+    };
+  } else {
+    sourceItem = {
+      label: "Arc USDC balance",
+      value: `${balanceNumber.toFixed(2)} USDC · need ${missing!.toFixed(2)} more`,
+      tone: "attention",
+      icon: Wallet,
+    };
+  }
 
   const items: PreFlightItem[] = [
     {
@@ -92,7 +122,7 @@ export function ArcPreFlight({
       tone: "ready",
       icon: ShieldCheck,
     },
-    balanceItem,
+    sourceItem,
     {
       label: "Gas",
       value: "USDC native gas · no ETH on Arc",
@@ -114,6 +144,12 @@ export function ArcPreFlight({
       icon: Check,
     },
   ];
+
+  // The faucet helper only makes sense for arc-direct, where the payer has to
+  // bring USDC to Arc themselves. For bridge / unified-balance, the route fills
+  // that USDC on Arc as part of the flow.
+  const showFaucetHelper =
+    route === "arc-direct" && isConnected && hasBalance && !sufficient;
 
   return (
     <div
@@ -152,13 +188,13 @@ export function ArcPreFlight({
         })}
       </ul>
 
-      {isConnected && hasBalance && !sufficient && (
+      {showFaucetHelper && (
         <div className="mt-3 flex flex-col gap-2 rounded-[14px] border border-amber/30 bg-amber/[0.07] p-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-[12px] font-semibold text-amber">Top up Arc USDC</p>
             <p className="mt-0.5 text-[11.5px] leading-5 text-amber/85">
-              Arc Testnet needs ERC-20 USDC for payment and native USDC for gas. Use
-              the Circle faucet, then refresh this page.
+              Arc Testnet uses native USDC for gas, while payment settlement still
+              uses ERC-20 USDC. Use the Circle faucet, then refresh this page.
             </p>
           </div>
           <a
