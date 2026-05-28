@@ -39,7 +39,7 @@ export function MobileNavSheet({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open menu"
-        className="inline-grid h-10 w-10 place-items-center rounded-full border border-hairline bg-surface text-foreground md:hidden"
+        className="-mr-2 inline-grid h-10 w-10 place-items-center rounded-md text-foreground transition-colors hover:bg-muted md:hidden"
       >
         <Menu className="h-[18px] w-[18px]" />
       </button>

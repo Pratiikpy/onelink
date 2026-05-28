@@ -87,7 +87,7 @@ export function SettingsClient() {
         </h1>
 
         <div className="mt-10 grid gap-10 md:grid-cols-[180px_1fr]">
-          <nav className="flex flex-row gap-1 overflow-x-auto md:flex-col">
+          <nav className="-mx-6 flex flex-row gap-1 overflow-x-auto px-6 md:mx-0 md:flex-col md:overflow-visible md:px-0">
             {(
               [
                 ["profile", "Profile"],
@@ -101,7 +101,7 @@ export function SettingsClient() {
                 type="button"
                 onClick={() => setTab(k)}
                 className={cn(
-                  "relative rounded-md px-3 py-2 text-left text-sm transition-colors",
+                  "relative shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-left text-sm transition-colors",
                   tab === k ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >

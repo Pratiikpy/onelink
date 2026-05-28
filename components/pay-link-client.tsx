@@ -479,9 +479,9 @@ export function PayLinkClient({ slug }: { slug: string }) {
             </span>
             <StatusBadge status={link.status} />
           </div>
-          <p className="mt-6 font-display text-[64px] font-semibold leading-none tracking-[-0.045em] tabular-nums">
-            {formatUSDC(link.amountUSDC)}
-            <span className="ml-1.5 align-baseline text-base font-medium text-muted-foreground">
+          <p className="mt-6 flex items-baseline gap-2 font-display text-[64px] font-semibold leading-none tracking-[-0.045em] tabular-nums">
+            <span>{formatUSDC(link.amountUSDC)}</span>
+            <span className="text-lg font-medium tracking-tight text-muted-foreground">
               USDC
             </span>
           </p>

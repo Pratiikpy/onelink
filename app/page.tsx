@@ -41,7 +41,7 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 grid-bg [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
-        <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-28 md:pt-32 md:pb-36">
+        <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-20 md:pt-32 md:pb-28">
           <Reveal>
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
               <span className="mr-2 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-success align-middle animate-pulse-dot" />
