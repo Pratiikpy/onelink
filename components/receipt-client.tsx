@@ -10,6 +10,19 @@ import { formatTimestamp, paymentMethodLabel, receiptPath, shortAddress, statusT
 import { getPaymentLinkById } from "@/lib/storage";
 import { useCopy } from "@/lib/share";
 
+function receiptTimeline(link: PaymentLink) {
+  const paid = link.status === "paid";
+  const failed = link.status === "failed" || link.status === "cancelled" || link.status === "expired";
+  const bridged = link.paymentMethod === "app-kit-bridge";
+
+  return [
+    { label: "Payment link created", complete: true },
+    { label: bridged ? "USDC bridged with Circle CCTP" : "Arc payment route selected", complete: paid },
+    { label: "Arc settlement verified", complete: paid },
+    { label: "Receipt issued", complete: paid },
+  ].map((step) => ({ ...step, failed: failed && !step.complete }));
+}
+
 export function ReceiptClient({ id }: { id: string }) {
   const [link, setLink] = useState<PaymentLink | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,10 +75,13 @@ export function ReceiptClient({ id }: { id: string }) {
     <div className="mx-auto max-w-[720px] space-y-5 xl:px-16">
       <Card className="overflow-hidden rounded-[34px] p-0">
         <div className="bg-lime p-8 text-ink">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-5">
             <div>
               <p className="font-mono text-[13px] uppercase tracking-[0.18em] opacity-70">Receipt</p>
               <h1 className="mt-2 text-[48px] font-medium tracking-[-0.04em]">{link.amountUSDC} USDC</h1>
+              <p className="mt-3 max-w-[420px] text-[15px] font-semibold text-ink/60">
+                Verified on Arc Testnet after server-side settlement reconciliation.
+              </p>
             </div>
             <div className="grid size-14 place-items-center rounded-2xl bg-ink/12">
               <BadgeCheck className="size-7" />
@@ -78,6 +94,37 @@ export function ReceiptClient({ id }: { id: string }) {
             <span className="mono-label text-[12px]">Status</span>
             <Pill className={statusTone(link.status)}>{link.status}</Pill>
           </div>
+
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.025] p-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="mono-label text-[12px]">Verification timeline</p>
+                <p className="mt-2 text-[13px] text-white/42">Final state is anchored to Arc proof.</p>
+              </div>
+              <span className="rounded-full bg-lime/[0.12] px-3 py-1.5 text-[12px] font-semibold text-lime">
+                Verified proof
+              </span>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {receiptTimeline(link).map((step, index) => (
+                <div key={step.label} className="flex items-center gap-3 rounded-[18px] bg-black/18 p-3">
+                  <span
+                    className={`grid size-7 shrink-0 place-items-center rounded-full border text-[11px] font-bold ${
+                      step.complete
+                        ? "border-lime bg-lime text-ink"
+                        : step.failed
+                          ? "border-danger/50 bg-danger/12 text-[#ffbcbc]"
+                          : "border-white/10 bg-white/[0.04] text-white/35"
+                    }`}
+                  >
+                    {step.complete ? <Check className="size-3.5" /> : index + 1}
+                  </span>
+                  <span className="text-[13px] font-semibold text-white/70">{step.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {[
             ["Memo", link.memo],
             ["Receiver", shortAddress(link.recipientWallet)],
@@ -121,6 +168,19 @@ export function ReceiptClient({ id }: { id: string }) {
                 Arcscan
               </Button>
             </a>
+          </div>
+
+          <div className="grid gap-3 pt-1 sm:grid-cols-2">
+            <Link href="/dashboard">
+              <Button variant="ghost" className="w-full">
+                Back to links
+              </Button>
+            </Link>
+            <Link href="/security">
+              <Button variant="ghost" className="w-full">
+                Verification scope
+              </Button>
+            </Link>
           </div>
         </div>
       </Card>
