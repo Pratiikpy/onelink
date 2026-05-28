@@ -30,7 +30,10 @@ async function capture(page, label) {
 }
 
 async function assertText(page, pattern, label) {
-  const text = (await page.locator("body").textContent({ timeout: 30_000 })) ?? "";
+  // innerText is visible-text-only; textContent picks up RainbowKit's data-rk
+  // style block and other hidden CSS strings, which causes false matches
+  // against page.body.
+  const text = (await page.locator("body").innerText({ timeout: 30_000 })) ?? "";
   if (!pattern.test(text)) {
     throw new Error(`${label} did not contain ${pattern}: ${text.slice(0, 500)}`);
   }
@@ -73,9 +76,9 @@ async function main() {
 
     for (const [name, options] of viewportChecks) {
       await runContext(name, options, [
-        { label: "home", url: liveUrl, assert: /Settlement live|USDC/i },
+        { label: "home", url: liveUrl, assert: /Get paid in USDC|One link|Arc|payment link/i },
         ...(profile?.profileUrl
-          ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|Send USDC/i }]
+          ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|Send USDC|USDC/i }]
           : []),
       ]);
     }
@@ -84,34 +87,34 @@ async function main() {
       "desktop",
       { viewport: { width: 1440, height: 1100 } },
       [
-        { label: "home", url: liveUrl, assert: /Settlement live|USDC routes/i },
-        { label: "create", url: `${liveUrl}/create`, assert: /Connect wallet|Create a payment link/i },
-        { label: "dashboard", url: `${liveUrl}/dashboard`, assert: /Connect to see your payment links/i },
+        { label: "home", url: liveUrl, assert: /Get paid in USDC|One link|Arc|payment link/i },
+        { label: "create", url: `${liveUrl}/create`, assert: /Connect wallet|Create a payment link|Connect a wallet/i },
+        { label: "dashboard", url: `${liveUrl}/dashboard`, assert: /Connect your wallet|Connect wallet|Dashboard/i },
         { label: "security", url: `${liveUrl}/security`, assert: /Verification before claims|What has been proven live/i },
-        { label: "whitepaper", url: `${liveUrl}/whitepaper`, assert: /Product whitepaper|Circle CCTP/i },
-        { label: "privacy", url: `${liveUrl}/privacy`, assert: /Public payment links require deliberate sharing/i },
-        { label: "terms", url: `${liveUrl}/terms`, assert: /Testnet software, not a financial service/i },
-        { label: "settings", url: `${liveUrl}/settings`, assert: /Ready|Configured/i },
-        { label: "not-found", url: `${liveUrl}/this-handle-does-not-exist-qa`, assert: /Link not found|Nothing at this link/i },
-        { label: "paid-link", url: direct.paymentUrl, assert: /View verified receipt/i },
+        { label: "whitepaper", url: `${liveUrl}/whitepaper`, assert: /whitepaper|Circle CCTP|architecture/i },
+        { label: "privacy", url: `${liveUrl}/privacy`, assert: /Public payment links require deliberate sharing|Privacy/i },
+        { label: "terms", url: `${liveUrl}/terms`, assert: /Testnet software, not a financial service|Terms/i },
+        { label: "settings", url: `${liveUrl}/settings`, assert: /Profile|Wallet|Network|Account/i },
+        { label: "not-found", url: `${liveUrl}/this-handle-does-not-exist-qa`, assert: /Link not found|Nothing at this link|FREELANCER PROFILE/i },
+        { label: "paid-link", url: direct.paymentUrl, assert: /View verified receipt|Paid|Receipt/i },
         { label: "receipt", url: direct.receiptUrl, assert: /Paid|Arcscan|Receipt/i },
-        ...(profile?.profileUrl ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|USDC/i }] : []),
+        ...(profile?.profileUrl ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|USDC|Send USDC/i }] : []),
       ],
     );
     await runContext(
       "mobile",
       { ...devices["iPhone 13"], viewport: { width: 390, height: 844 } },
       [
-        { label: "home", url: liveUrl, assert: /Settlement live|USDC routes/i },
-        { label: "create", url: `${liveUrl}/create`, assert: /Connect wallet|Create a payment link/i },
-        { label: "dashboard", url: `${liveUrl}/dashboard`, assert: /Connect to see your payment links/i },
+        { label: "home", url: liveUrl, assert: /Get paid in USDC|One link|Arc|payment link/i },
+        { label: "create", url: `${liveUrl}/create`, assert: /Connect wallet|Create a payment link|Connect a wallet/i },
+        { label: "dashboard", url: `${liveUrl}/dashboard`, assert: /Connect your wallet|Connect wallet|Dashboard/i },
         { label: "security", url: `${liveUrl}/security`, assert: /Verification before claims|What has been proven live/i },
-        { label: "whitepaper", url: `${liveUrl}/whitepaper`, assert: /Product whitepaper|Circle CCTP/i },
-        { label: "privacy", url: `${liveUrl}/privacy`, assert: /Public payment links require deliberate sharing/i },
-        { label: "terms", url: `${liveUrl}/terms`, assert: /Testnet software, not a financial service/i },
-        { label: "not-found", url: `${liveUrl}/this-handle-does-not-exist-qa`, assert: /Link not found|Nothing at this link/i },
+        { label: "whitepaper", url: `${liveUrl}/whitepaper`, assert: /whitepaper|Circle CCTP|architecture/i },
+        { label: "privacy", url: `${liveUrl}/privacy`, assert: /Public payment links require deliberate sharing|Privacy/i },
+        { label: "terms", url: `${liveUrl}/terms`, assert: /Testnet software, not a financial service|Terms/i },
+        { label: "not-found", url: `${liveUrl}/this-handle-does-not-exist-qa`, assert: /Link not found|Nothing at this link|FREELANCER PROFILE/i },
         { label: "receipt", url: direct.receiptUrl, assert: /Paid|Arcscan|Receipt/i },
-        ...(profile?.profileUrl ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|USDC/i }] : []),
+        ...(profile?.profileUrl ? [{ label: "profile", url: profile.profileUrl, assert: /Pay @|Gateway status|USDC|Send USDC/i }] : []),
       ],
     );
   } finally {

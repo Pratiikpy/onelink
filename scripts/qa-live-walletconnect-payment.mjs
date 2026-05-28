@@ -275,7 +275,7 @@ async function main() {
     await page.getByRole("button", { name: /Pay.*on Arc/i }).click();
     await page.getByText("Paid", { exact: true }).waitFor({ timeout: 180_000 });
     await page.reload({ waitUntil: "networkidle", timeout: 60_000 });
-    await assertBody(page, /View verified receipt/i, "WalletConnect paid page after refresh");
+    await assertBody(page, /View receipt|View verified receipt/i, "WalletConnect paid page after refresh");
     await page.screenshot({ path: resolve(OUT_DIR, "walletconnect-paid-after-refresh.png"), fullPage: true });
 
     const { data, error } = await anon.from("payment_links").select("*").eq("id", id).single();

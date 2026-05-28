@@ -173,7 +173,7 @@ async function main() {
     await page.getByRole("button", { name: /Pay.*on Arc/i }).click();
     await page.getByText("Paid", { exact: true }).waitFor({ timeout: 180_000 });
     await page.reload({ waitUntil: "networkidle", timeout: 60_000 });
-    await assertBody(page, /View verified receipt/i, "profile paid persistence");
+    await assertBody(page, /View receipt|View verified receipt/i, "profile paid persistence");
     await page.screenshot({ path: resolve(OUT_DIR, "payment-paid-after-refresh.png"), fullPage: true });
 
     const slug = new URL(paymentUrl).pathname.split("/").pop();

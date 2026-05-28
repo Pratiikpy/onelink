@@ -14,7 +14,7 @@ async function main() {
   page.on("pageerror", (error) => errors.push(error.message));
 
   try {
-    await page.goto(LIVE_URL, { waitUntil: "networkidle", timeout: 60_000 });
+    await page.goto(`${LIVE_URL}/create`, { waitUntil: "networkidle", timeout: 60_000 });
     await page.getByRole("button", { name: /^Connect wallet$/i }).click();
     await page.getByRole("button", { name: "WalletConnect" }).click();
     await page.waitForTimeout(3_000);
