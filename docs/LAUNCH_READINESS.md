@@ -1,6 +1,6 @@
 # OneLink Launch Readiness
 
-Last verified: 2026-05-27
+Last verified: 2026-05-28
 
 Live product: https://onelink-mauve-nu.vercel.app
 
@@ -8,7 +8,7 @@ Final verified Vercel deployment: `dpl_6CAmiBa1DNkiiw4MgkAS4TQ2T62F`
 
 ## Verdict
 
-OneLink is ready for a professional Arc Testnet hackathon demo in the tested scope.
+OneLink is launch-ready for testnet hackathon judging in the tested scope. It is not mainnet-ready.
 
 - Desktop and mobile web app deployed on Vercel with a polished public journey, trust center, privacy page, terms page, branded errors, and mobile-safe navigation.
 - Standard invoices are registered in Supabase only after `/api/payments/create` verifies the Arc `PaymentLinkCreated` event and URL-derived link id.
@@ -45,7 +45,22 @@ This is not a mainnet readiness claim, and it is not an "any blockchain" claim. 
 
 ## Live Transaction Proof
 
-### Browser UI Direct Payment
+### 2026-05-28 re-verification pass
+
+A full re-verification of every flow ran on 2026-05-28. New on-chain proofs:
+
+| Flow | Settlement transaction |
+| --- | --- |
+| Direct Arc payment | https://testnet.arcscan.app/tx/0x508ebf9ac99613534e82d768d423c0d30c274c57d30f0181c9cba6805e5ddd46 |
+| Verified creator cancellation | https://testnet.arcscan.app/tx/0x9a7d08580a5313cb97220c21e2011d6f042cc0c6db0349d75a4cafc46bdc5138 |
+| Permanent profile payment | https://testnet.arcscan.app/tx/0xe6521e60bd25a01a82124ec22a368c9200480081b2708ffadcce23779aed0fea |
+| WalletConnect signed payment | https://testnet.arcscan.app/tx/0x2f5abeb1840cd6ed905cb3af6d72e7de7c6ad44c84a30050a79605eceea48daa |
+| Browser-wallet end-to-end | https://testnet.arcscan.app/tx/0x031e671e9321e60310276af91a1bb3b52c8079be86a824bc0378edd98a67a889 |
+| Base Sepolia → Arc bridge | `docs/test-results/qa-live-bridge-payment-ui/REPORT.md` (multi-tx CCTP chain) |
+
+The reproducible proof harness for this re-verification run also lives at `docs/test-results/qa-launch-readiness/REPORT.md` (50/50 green across 5 viewports × 10 routes after filtering Next.js prefetch aborts) and `docs/test-results/qa-launch-readiness/LAUNCH_VERDICT.md`.
+
+### Browser UI Direct Payment (original launch evidence)
 
 - Payment URL: https://onelink-mauve-nu.vercel.app/pay/browser-wallet-qa-20260526154443-0-02-og0FX9
 - Receipt URL: https://onelink-mauve-nu.vercel.app/receipt/7e41bf18-b61c-4af2-baeb-b10f219d58e8
