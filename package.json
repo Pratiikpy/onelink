@@ -46,6 +46,7 @@
     "qa:live:visual": "node scripts/qa-live-visual.mjs",
     "qa:live:bridge": "node scripts/qa-live-bridge.mjs",
     "qa:live:bridge-payment-ui": "node scripts/qa-live-bridge-payment-ui.mjs",
+    "qa:local:gateway": "node scripts/qa-local-gateway.mjs",
     "qa:live:profile": "node scripts/qa-live-profile.mjs",
     "qa:live:profile-payment": "node scripts/qa-live-profile-payment.mjs",
     "qa:live:browser-wallet": "node scripts/qa-live-browser-wallet.mjs",

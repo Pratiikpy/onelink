@@ -7,6 +7,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Check, Copy, LockKeyhole, Route, Share2, ShieldCheck } from "lucide-react";
 import { ArcPreFlight } from "@/components/arc-preflight";
 import { BridgeStepTimeline } from "@/components/bridge-step-timeline";
+import { GatewayStepTimeline } from "@/components/gateway-step-timeline";
 import { ARC_CHAIN_ID, ARC_USDC_ADDRESS, getSourceChain, SUPPORTED_SOURCE_CHAINS } from "@/lib/arc";
 import {
   bridgeUsdcToArc,
@@ -14,6 +15,7 @@ import {
   spendGatewayBalanceOnArc,
   type BridgeStepName,
   type BridgeStepState,
+  type GatewayStepName,
 } from "@/lib/circle-payments";
 import {
   ALLOW_DEMO_MODE,
@@ -61,9 +63,11 @@ const routeDetails: Record<
   },
   "unified-balance": {
     title: "Gateway unified balance",
-    label: "Next",
-    copy: "Reserved for a funded Gateway deposit-and-spend proof. It stays gated until verified end to end.",
-    badge: "Coming next",
+    label: ENABLE_GATEWAY_ROUTE ? "Gateway" : "Next",
+    copy: ENABLE_GATEWAY_ROUTE
+      ? "Spend confirmed Gateway USDC from a supported testnet source, mint on Arc, then settle the invoice."
+      : "Reserved for a funded Gateway deposit-and-spend proof. It stays gated until verified end to end.",
+    badge: ENABLE_GATEWAY_ROUTE ? "Unified balance" : "Coming next",
     icon: LockKeyhole,
   },
 };
@@ -104,6 +108,9 @@ function friendlyPaymentError(err: unknown, route: QuickRoute) {
   }
   if (lower.includes("bridge") || lower.includes("cctp")) {
     return "Circle CCTP bridge did not finish. If a burn/mint transaction completed, use the receipt links or retry after the network catches up.";
+  }
+  if (lower.includes("gateway")) {
+    return "Circle Gateway did not finish. Confirm you have deposited USDC into Gateway on a supported non-Arc testnet source, then retry.";
   }
   return message;
 }
@@ -161,6 +168,10 @@ export function PayLinkClient({ slug }: { slug: string }) {
   >({});
   const [settleState, setSettleState] = useState<"idle" | "active" | "success" | "error">("idle");
   const [receiptState, setReceiptState] = useState<"idle" | "active" | "success" | "error">("idle");
+  const [gatewaySteps, setGatewaySteps] = useState<
+    Partial<Record<GatewayStepName, { state: BridgeStepState; sourceLabel?: string; txHash?: string; error?: string }>>
+  >({});
+  const [gatewaySourceLabel, setGatewaySourceLabel] = useState<string | undefined>();
 
   useEffect(() => {
     async function load() {
@@ -278,6 +289,8 @@ export function PayLinkClient({ slug }: { slug: string }) {
     setError("");
     setActivity("");
     setBridgeSteps({});
+    setGatewaySteps({});
+    setGatewaySourceLabel(undefined);
     setSettleState("idle");
     setReceiptState("idle");
     if (!isConnected || !address) return;
@@ -346,7 +359,24 @@ export function PayLinkClient({ slug }: { slug: string }) {
         });
         if (processing) setLink(processing);
         setActivity("Spending your unified Gateway USDC balance onto Arc...");
-        await spendGatewayBalanceOnArc({ connector, amount: link.amountUSDC, recipient: address });
+        await spendGatewayBalanceOnArc({
+          connector,
+          amount: link.amountUSDC,
+          recipient: address,
+          preferredSourceChainId: chainId,
+          onStep: (update) => {
+            if (update.sourceLabel) setGatewaySourceLabel(update.sourceLabel);
+            setGatewaySteps((current) => ({
+              ...current,
+              [update.step]: {
+                state: update.state,
+                sourceLabel: update.sourceLabel,
+                txHash: update.txHash,
+                error: update.error,
+              },
+            }));
+          },
+        });
         await settleOnArc("unified-balance");
       }
     } catch (err) {
@@ -501,7 +531,10 @@ export function PayLinkClient({ slug }: { slug: string }) {
         )}
 
         {ENABLE_GATEWAY_ROUTE && isConnected && route === "unified-balance" && !isClosed && (
-          <p className="text-[12px] text-white/48">Uses confirmed USDC previously deposited into Circle Gateway.</p>
+          <p className="text-[12px] leading-5 text-white/48">
+            Uses confirmed USDC previously deposited into Circle Gateway on Base Sepolia, Ethereum Sepolia,
+            Arbitrum Sepolia, or Polygon Amoy. Arc is the settlement destination.
+          </p>
         )}
 
         {activity && <p className="text-[12px] text-lime">{activity}</p>}
@@ -523,6 +556,10 @@ export function PayLinkClient({ slug }: { slug: string }) {
             settleState={settleState}
             receiptState={receiptState}
           />
+        )}
+
+        {route === "unified-balance" && (busy || Object.keys(gatewaySteps).length > 0 || link.status === "paid") && (
+          <GatewayStepTimeline steps={gatewaySteps} sourceLabel={gatewaySourceLabel} />
         )}
       </div>
 
