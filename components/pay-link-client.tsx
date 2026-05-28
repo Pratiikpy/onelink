@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAccount, useBalance, useChainId, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Check, Copy, Share2 } from "lucide-react";
-import { ARC_CHAIN_ID, ARC_USDC_ADDRESS, getSourceChain } from "@/lib/arc";
+import { Check, Copy, LockKeyhole, Route, Share2, ShieldCheck } from "lucide-react";
+import { ARC_CHAIN_ID, ARC_USDC_ADDRESS, getSourceChain, SUPPORTED_SOURCE_CHAINS } from "@/lib/arc";
 import { bridgeUsdcToArc, ENABLE_GATEWAY_ROUTE, spendGatewayBalanceOnArc } from "@/lib/circle-payments";
 import {
   ALLOW_DEMO_MODE,
@@ -19,10 +19,47 @@ import { shareOrCopy, useCopy } from "@/lib/share";
 import { confirmPaidSettlement, getPaymentLinkBySlug, updatePaymentStatus } from "@/lib/storage";
 
 type QuickRoute = "arc-direct" | "app-kit-bridge" | "unified-balance";
+type StepState = "done" | "active" | "pending" | "failed";
 
 const availableRoutes: QuickRoute[] = ENABLE_GATEWAY_ROUTE
   ? ["arc-direct", "app-kit-bridge", "unified-balance"]
   : ["arc-direct", "app-kit-bridge"];
+const displayRoutes: QuickRoute[] = ["arc-direct", "app-kit-bridge", "unified-balance"];
+
+const provenBridgeSource = SUPPORTED_SOURCE_CHAINS[0];
+
+const routeDetails: Record<
+  QuickRoute,
+  {
+    title: string;
+    label: string;
+    copy: string;
+    badge: string;
+    icon: typeof Route;
+  }
+> = {
+  "arc-direct": {
+    title: "Pay on Arc",
+    label: "Fastest",
+    copy: "Use Arc Testnet USDC already in your wallet. Final state is verified on Arc before receipt.",
+    badge: "Direct settlement",
+    icon: ShieldCheck,
+  },
+  "app-kit-bridge": {
+    title: `Bridge from ${provenBridgeSource.label}`,
+    label: "Circle CCTP",
+    copy: "Move USDC into Arc through Circle App Kit, then settle the invoice on Arc.",
+    badge: "Base Sepolia proven",
+    icon: Route,
+  },
+  "unified-balance": {
+    title: "Gateway unified balance",
+    label: "Next",
+    copy: "Reserved for a funded Gateway deposit-and-spend proof. It stays gated until verified end to end.",
+    badge: "Coming next",
+    icon: LockKeyhole,
+  },
+};
 
 function statusLabel(link: PaymentLink, isExpired: boolean) {
   if (link.status === "paid") return "Paid";
@@ -40,6 +77,77 @@ function statusDot(link: PaymentLink, isExpired: boolean) {
     return "bg-danger";
   }
   return "bg-white/75";
+}
+
+function stepClasses(state: StepState) {
+  if (state === "done") return "border-lime bg-lime text-ink";
+  if (state === "active") return "border-lime/70 bg-lime/12 text-lime";
+  if (state === "failed") return "border-danger/50 bg-danger/12 text-[#ffbcbc]";
+  return "border-white/10 bg-white/[0.035] text-white/35";
+}
+
+function checkoutSteps({
+  link,
+  route,
+  isConnected,
+  activity,
+  isExpired,
+}: {
+  link: PaymentLink;
+  route: QuickRoute;
+  isConnected: boolean;
+  activity: string;
+  isExpired: boolean;
+}) {
+  const failed = link.status === "failed" || link.status === "cancelled" || link.status === "expired" || isExpired;
+  const paid = link.status === "paid";
+  const processing = link.status === "processing" || Boolean(activity);
+  const bridge = route === "app-kit-bridge";
+
+  return [
+    { label: "Link created", state: "done" as StepState },
+    { label: "Wallet connected", state: isConnected ? ("done" as StepState) : ("pending" as StepState) },
+    {
+      label: bridge ? "Circle CCTP bridge" : route === "unified-balance" ? "Gateway gated" : "Arc route ready",
+      state: failed
+        ? ("failed" as StepState)
+        : paid
+          ? ("done" as StepState)
+          : processing
+            ? ("active" as StepState)
+            : ("pending" as StepState),
+    },
+    {
+      label: "Arc settlement verified",
+      state: failed ? ("failed" as StepState) : paid ? ("done" as StepState) : ("pending" as StepState),
+    },
+    {
+      label: "Receipt ready",
+      state: failed ? ("failed" as StepState) : paid ? ("done" as StepState) : ("pending" as StepState),
+    },
+  ];
+}
+
+function friendlyPaymentError(err: unknown, route: QuickRoute) {
+  const message = err instanceof Error ? err.message : "Payment failed.";
+  const lower = message.toLowerCase();
+  if (lower.includes("user rejected") || lower.includes("rejected")) {
+    return "Wallet request was rejected. Nothing moved; you can try again when ready.";
+  }
+  if (lower.includes("unsupported") || lower.includes("select a supported")) {
+    return route === "app-kit-bridge"
+      ? `Switch to ${provenBridgeSource.label} for the proven Circle CCTP route, then retry Bridge & pay.`
+      : "Switch to Arc Testnet for direct payment, then retry.";
+  }
+  if (lower.includes("insufficient") || lower.includes("balance")) {
+    return route === "app-kit-bridge"
+      ? `Not enough USDC on the selected source chain. Fund ${provenBridgeSource.label} USDC or use direct Arc payment.`
+      : "Not enough Arc USDC for this payment. Fund Arc Testnet USDC, then retry.";
+  }
+  if (lower.includes("bridge") || lower.includes("cctp")) {
+    return "Circle CCTP bridge did not finish. If a burn/mint transaction completed, use the receipt links or retry after the network catches up.";
+  }
+  return message;
 }
 
 function makeDemoPayLink(slug: string): PaymentLink {
@@ -252,7 +360,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
         if (failed) setLink(failed);
       }
       setActivity("");
-      setError(err instanceof Error ? err.message : "Payment failed.");
+      setError(friendlyPaymentError(err, route));
     } finally {
       setBusy(false);
     }
@@ -330,25 +438,51 @@ export function PayLinkClient({ slug }: { slug: string }) {
           </div>
         </div>
 
-        {isConnected && !isClosed && (
-          <div className="rounded-[14px] border border-white/10 bg-[#1A1A1E] p-1.5">
-            <div className="grid grid-cols-3 gap-2">
-              {availableRoutes.map((nextRoute) => (
-                <button
-                  key={nextRoute}
-                  type="button"
-                  onClick={() => setRoute(nextRoute)}
-                  className={`h-9 rounded-[9px] text-[13px] ${
-                    route === nextRoute ? "bg-ink text-snow" : "text-white/55"
-                  }`}
-                >
-                  {nextRoute === "arc-direct"
-                    ? "Arc"
-                    : nextRoute === "app-kit-bridge"
-                      ? "Bridge"
-                      : "Unified"}
-                </button>
-              ))}
+        {!isClosed && (
+          <div className="space-y-3">
+            <p className="mono-label text-[10px]">Choose route</p>
+            <div className="space-y-2">
+              {displayRoutes.map((nextRoute) => {
+                const detail = routeDetails[nextRoute];
+                const Icon = detail.icon;
+                const active = route === nextRoute;
+                const enabled = availableRoutes.includes(nextRoute);
+                return (
+                  <button
+                    key={nextRoute}
+                    type="button"
+                    disabled={!enabled}
+                    onClick={() => enabled && setRoute(nextRoute)}
+                    className={`w-full rounded-[16px] border p-4 text-left transition ${
+                      active
+                        ? "border-lime/45 bg-lime/[0.08]"
+                        : "border-white/10 bg-white/[0.035] hover:border-white/20"
+                    } ${enabled ? "" : "cursor-not-allowed opacity-65"}`}
+                  >
+                    <span className="flex items-start gap-3">
+                      <span
+                        className={`grid size-9 shrink-0 place-items-center rounded-[12px] ${
+                          active ? "bg-lime text-ink" : "bg-white/[0.05] text-white/48"
+                        }`}
+                      >
+                        <Icon className="size-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center justify-between gap-3">
+                          <span className="text-[15px] font-semibold text-white">{detail.title}</span>
+                          <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-semibold text-white/48">
+                            {detail.label}
+                          </span>
+                        </span>
+                        <span className="mt-2 block text-[12px] leading-5 text-white/48">{detail.copy}</span>
+                        <span className="mt-3 inline-flex rounded-full bg-white/[0.05] px-2 py-1 text-[10px] font-semibold text-lime">
+                          {detail.badge}
+                        </span>
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -358,8 +492,9 @@ export function PayLinkClient({ slug }: { slug: string }) {
         )}
 
         {isConnected && route === "app-kit-bridge" && !isClosed && (
-          <p className="text-[12px] text-white/48">
-            Base Sepolia proven · Ethereum Sepolia, Arbitrum Sepolia, Polygon Amoy beta.
+          <p className="text-[12px] leading-5 text-white/48">
+            Proven route: {provenBridgeSource.label} to Arc through Circle CCTP. Other testnet sources stay beta
+            until they receive the same proof standard.
           </p>
         )}
 
@@ -369,6 +504,31 @@ export function PayLinkClient({ slug }: { slug: string }) {
 
         {activity && <p className="text-[12px] text-lime">{activity}</p>}
         {error && <p className="text-[12px] text-[#ffbcbc]">{error}</p>}
+
+        <div className="rounded-[18px] border border-white/10 bg-white/[0.025] p-4">
+          <div className="flex items-center justify-between">
+            <p className="mono-label text-[10px]">Payment timeline</p>
+            <p className="text-[11px] font-medium text-white/38">Settlement before status</p>
+          </div>
+          <div className="mt-4 space-y-2">
+            {checkoutSteps({ link, route, isConnected, activity, isExpired }).map((step, index) => (
+              <div key={step.label} className="flex items-center gap-3">
+                <span
+                  className={`grid size-6 shrink-0 place-items-center rounded-full border text-[10px] font-bold ${stepClasses(step.state)}`}
+                >
+                  {step.state === "done" ? <Check className="size-3" /> : index + 1}
+                </span>
+                <span
+                  className={`text-[12px] font-medium ${
+                    step.state === "pending" ? "text-white/38" : step.state === "failed" ? "text-[#ffbcbc]" : "text-white/78"
+                  }`}
+                >
+                  {step.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="mt-auto pt-6">

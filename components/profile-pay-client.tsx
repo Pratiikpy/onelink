@@ -9,6 +9,7 @@ import { isAddress } from "viem";
 import { BadgeCheck, Copy, ExternalLink, LockKeyhole, ReceiptText, Route, ShieldCheck } from "lucide-react";
 import { makeContractLinkId, makeSlug, paymentPath, shortAddress, type PaymentLink } from "@/lib/payments";
 import { getFreelancerProfile, type FreelancerProfile } from "@/lib/profiles";
+import { shareOrCopy } from "@/lib/share";
 import { savePaymentLink } from "@/lib/storage";
 
 const AMOUNT_RE = /^\d+(\.\d{1,6})?$/;
@@ -93,6 +94,15 @@ export function ProfilePayClient({ handle }: { handle: string }) {
     window.setTimeout(() => setCopied(false), 1400);
   }
 
+  async function shareProfileLink() {
+    if (!profile) return;
+    await shareOrCopy({
+      title: `Pay ${profileTitle(profile)} with OneLink`,
+      text: `Send USDC to @${profile.handle} through a supported OneLink route.`,
+      url: window.location.href,
+    });
+  }
+
   if (loading) return <p className="pt-16 text-center text-white/55">Loading profile...</p>;
   if (!profile) {
     return (
@@ -136,20 +146,40 @@ export function ProfilePayClient({ handle }: { handle: string }) {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={copyProfileLink}
-                className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-[14px] font-medium text-white/72 transition hover:border-lime/35 hover:text-lime"
-              >
-                <Copy className="size-4" />
-                {copied ? "Copied" : "Copy profile"}
-              </button>
+              <div className="grid shrink-0 grid-cols-2 gap-2 sm:w-[260px]">
+                <button
+                  type="button"
+                  onClick={copyProfileLink}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-[14px] font-medium text-white/72 transition hover:border-lime/35 hover:text-lime"
+                >
+                  <Copy className="size-4" />
+                  {copied ? "Copied" : "Copy"}
+                </button>
+                <button
+                  type="button"
+                  onClick={shareProfileLink}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-lime px-4 text-[14px] font-semibold text-ink transition hover:bg-[#d9fa7b]"
+                >
+                  Share
+                </button>
+              </div>
             </div>
 
             <p className="mt-8 max-w-[680px] text-[18px] leading-8 text-white/62 sm:text-[24px] sm:leading-9">
-              Pay this freelancer in USDC through a supported OneLink route. The payment is not marked
-              complete until settlement is verified and a receipt is available.
+              A client-ready USDC payment profile for invoices, retainers, and milestones. Payments stay
+              pending until OneLink verifies settlement and creates a receipt.
             </p>
+
+            <div className="mt-7 flex flex-wrap gap-2">
+              {["Invoice-ready", "Arc verified", "USDC routes", "Receipt proof"].map((badge) => (
+                <span
+                  key={badge}
+                  className="rounded-full border border-lime/20 bg-lime/[0.07] px-3 py-1.5 text-[12px] font-semibold text-lime"
+                >
+                  {badge}
+                </span>
+              ))}
+            </div>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
@@ -175,6 +205,10 @@ export function ProfilePayClient({ handle }: { handle: string }) {
               Direct Arc payment is available after checkout. Base Sepolia to Arc is the live-proven
               bridge path through Circle CCTP.
             </p>
+            <div className="mt-5 grid gap-2 text-[13px] font-medium text-white/58">
+              <span className="rounded-full bg-white/[0.035] px-3 py-2">Pay on Arc · fastest route</span>
+              <span className="rounded-full bg-white/[0.035] px-3 py-2">Bridge from Base Sepolia · proven route</span>
+            </div>
           </section>
           <section className="surface rounded-[26px] p-6">
             <ShieldCheck className="size-5 text-lime" />
@@ -183,6 +217,12 @@ export function ProfilePayClient({ handle }: { handle: string }) {
               Circle Gateway unified-balance checkout is intentionally hidden until a funded
               deposit, burn, and mint flow is proven end to end.
             </p>
+            <div className="mt-5 rounded-[18px] border border-white/10 bg-black/20 p-4">
+              <p className="mono-label text-[11px]">Next milestone</p>
+              <p className="mt-2 text-[14px] leading-6 text-white/58">
+                Prove funded Gateway deposit and spend before exposing it as a live payment option.
+              </p>
+            </div>
           </section>
         </div>
       </section>
