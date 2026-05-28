@@ -6,6 +6,17 @@ import type { SourceChain } from "@/lib/arc";
 
 export const ENABLE_GATEWAY_ROUTE = process.env.NEXT_PUBLIC_ENABLE_GATEWAY === "true";
 
+export type BridgeStepName = "approve" | "burn" | "fetchAttestation" | "mint";
+export type BridgeStepState = "pending" | "active" | "success" | "error";
+
+export type BridgeStepUpdate = {
+  step: BridgeStepName;
+  state: BridgeStepState;
+  txHash?: string;
+  explorerUrl?: string;
+  error?: string;
+};
+
 async function connectedAdapter(connector: Connector) {
   const provider = (await connector.getProvider()) as EIP1193Provider;
   const { createViemAdapterFromProvider } = await import("@circle-fin/adapter-viem-v2");
@@ -17,18 +28,58 @@ async function circleKit() {
   return new AppKit();
 }
 
+// Loose payload shape — App Kit emits a discriminated union per event, but we
+// only read the fields that exist on every step. Using `unknown` keeps us safe
+// even if Circle adds more fields to the payload later.
+type BridgeEventPayload = {
+  values?: {
+    state?: string;
+    txHash?: string;
+    explorerUrl?: string;
+    error?: string;
+  };
+};
+
+function readPayloadState(payload: BridgeEventPayload): BridgeStepState {
+  const raw = payload.values?.state;
+  if (raw === "success") return "success";
+  if (raw === "error") return "error";
+  if (raw === "pending") return "pending";
+  return "active";
+}
+
 export async function bridgeUsdcToArc({
   connector,
   source,
   amount,
   recipient,
+  onStep,
 }: {
   connector: Connector;
   source: SourceChain;
   amount: string;
   recipient: Address;
+  onStep?: (update: BridgeStepUpdate) => void;
 }) {
   const [adapter, kit] = await Promise.all([connectedAdapter(connector), circleKit()]);
+
+  if (onStep) {
+    // Mark every step as active in order. Skill: bridge-stablecoin (event handling).
+    const subscribe = (step: BridgeStepName) => {
+      kit.on(`bridge.${step}` as const, (payload: unknown) => {
+        const p = payload as BridgeEventPayload;
+        onStep({
+          step,
+          state: readPayloadState(p),
+          txHash: p.values?.txHash,
+          explorerUrl: p.values?.explorerUrl,
+          error: p.values?.error,
+        });
+      });
+    };
+    (["approve", "burn", "fetchAttestation", "mint"] satisfies BridgeStepName[]).forEach(subscribe);
+  }
+
   const result = await kit.bridge({
     from: { adapter, chain: source.appKitName },
     to: { adapter, chain: "Arc_Testnet", recipientAddress: recipient },
