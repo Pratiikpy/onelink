@@ -30,6 +30,7 @@ A premium testnet payment-link product for freelancers: create one shareable lin
 
 - [What it does](#what-it-does) · 30-second tour
 - [Why OneLink](#why-onelink)
+- [What makes it different](#what-makes-it-different)
 - [Built on Arc + Circle](#built-on-arc--circle)
 - [Verified scope](#verified-scope) · with live evidence per row
 - [Visual walkthrough](#visual-walkthrough)
@@ -60,6 +61,15 @@ Try it now → [**onelink-mauve-nu.vercel.app**](https://onelink-mauve-nu.vercel
 Freelancers lose time asking clients which wallet, chain, and address format they use. OneLink turns that into a single payment URL or profile handle. The launch build focuses on a verified testnet scope: Arc direct settlement and a Base Sepolia to Arc bridge route powered by Circle CCTP.
 
 OneLink is not claiming mainnet readiness, fiat/card payments, Solana support, or arbitrary-wallet instant settlement. The product language is intentionally limited to what has been proven live.
+
+---
+
+## What makes it different
+
+- **USDC is the only token a payer needs.** Arc's native gas is USDC, so there's no ETH-for-gas dance. The same balance pays the invoice and the network fee.
+- **Server-verified state, not browser trust.** The browser asks; an API verifies the matching Arc event before flipping `paid` or `cancelled`. The contract is the source of truth.
+- **Every claim has live evidence.** Each row in the verified-scope table links to a real `docs/test-results/` report with transaction hashes you can re-check on Arcscan.
+- **Premium design on a standard Web3 stack.** Editorial Apple-minimal UI built with shadcn/ui, Radix primitives, Inter, and `tw-animate-css`, paired with wagmi + viem + RainbowKit + WalletConnect.
 
 ---
 
@@ -254,6 +264,12 @@ Raw automation artifacts are intentionally not part of the public README. Public
 | [`SUPPORT.md`](./SUPPORT.md) | Support boundaries, public issue guidance, and security-report routing. |
 | [`supabase/schema.sql`](./supabase/schema.sql) | Database schema, RLS policies, and immutability trigger. |
 | [`contracts/src/OneLinkCollect.sol`](./contracts/src/OneLinkCollect.sol) | Arc Testnet settlement contract. |
+
+---
+
+## Acknowledgments
+
+Built on the work of the **[Arc](https://docs.arc.network)** and **[Circle](https://developers.circle.com)** teams whose primitives — USDC-native gas, CCTP, App Kit, and the deployed Gateway contracts — make this product possible. Wallet UX powered by **wagmi**, **viem**, **RainbowKit**, and **WalletConnect/Reown**. Component system inspired by **shadcn/ui** and the **Radix UI** primitives.
 
 ---
 
