@@ -147,21 +147,38 @@ async function main() {
 
     await page.goto(`${LIVE_URL}/pay/${insufficient.slug}`, { waitUntil: "networkidle", timeout: 60_000 });
     await assertText(page, /Need .* more Arc USDC/i, "insufficient funds");
-    const disabled = await page.getByRole("button", { name: /Pay on Arc/i }).isDisabled();
+    const disabled = await page.getByRole("button", { name: /Pay.*on Arc/i }).isDisabled();
     if (!disabled) throw new Error("Insufficient-balance payment button was not disabled.");
     await page.screenshot({ path: resolve(OUT_DIR, "insufficient-funds.png"), fullPage: true });
     rows.push(["Insufficient funds", "green", "Balance warning rendered and payment disabled"]);
 
     await page.goto(`${LIVE_URL}/pay/${rejected.slug}`, { waitUntil: "networkidle", timeout: 60_000 });
-    await page.getByRole("button", { name: /Pay on Arc/i }).click();
-    await page.getByText(/Payment failed|User rejected/i).first().waitFor({ timeout: 60_000 });
-    await assertText(page, /Payment failed|User rejected/i, "rejected action");
+    await page.getByRole("button", { name: /Pay.*on Arc/i }).click();
+    await page
+      .getByText(/Payment failed|User rejected|Wallet request was rejected|rejected/i)
+      .first()
+      .waitFor({ timeout: 60_000 });
+    await assertText(
+      page,
+      /Payment failed|User rejected|Wallet request was rejected|rejected/i,
+      "rejected action",
+    );
     await page.screenshot({ path: resolve(OUT_DIR, "rejected-wallet-action.png"), fullPage: true });
-    const { data: rejectedRow, error: rejectedError } = await supabase
-      .from("payment_links")
-      .select("status")
-      .eq("id", rejected.id)
-      .single();
+
+    // The catch handler does an async updatePaymentStatus("failed") to Supabase
+    // BEFORE setError() renders the user-visible message. Allow a short window
+    // for write propagation across Supabase replicas before reading status.
+    let rejectedRow = null;
+    let rejectedError = null;
+    for (let attempt = 0; attempt < 8; attempt++) {
+      ({ data: rejectedRow, error: rejectedError } = await supabase
+        .from("payment_links")
+        .select("status")
+        .eq("id", rejected.id)
+        .single());
+      if (rejectedRow?.status === "failed") break;
+      await new Promise((r) => setTimeout(r, 750));
+    }
     if (rejectedError || rejectedRow?.status !== "failed") {
       throw new Error(`Rejected wallet state did not persist as failed: ${rejectedError?.message || rejectedRow?.status}`);
     }

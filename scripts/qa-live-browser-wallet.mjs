@@ -182,8 +182,12 @@ async function main() {
     await createPage.locator("input").nth(0).fill(AMOUNT_USDC);
     await createPage.locator("input").nth(1).fill(memo);
     await createPage.getByRole("button", { name: /^never$/i }).click();
-    await createPage.getByRole("button", { name: /Sign & create link/i }).click();
-    await createPage.waitForURL(/\/pay\/.+/, { timeout: 120_000 });
+    await createPage.getByRole("button", { name: /^Review/i }).click();
+    await createPage.getByRole("button", { name: /^Continue/i }).click();
+    await createPage.getByRole("button", { name: /Open wallet to sign|Sign & create link/i }).click();
+    await createPage.getByRole("link", { name: /Preview pay page/i }).waitFor({ timeout: 120_000 });
+    await createPage.getByRole("link", { name: /Preview pay page/i }).click();
+    await createPage.waitForURL(/\/pay\/.+/, { timeout: 60_000 });
     paymentUrl = createPage.url();
     await createPage.screenshot({ path: resolve(OUT_DIR, "creator-created-link.png"), fullPage: true });
     await creatorSession.context.close();
@@ -200,9 +204,9 @@ async function main() {
     payerSession = await createWalletContext(browser, "payer", payer, publicClient);
     const payPage = await payerSession.context.newPage();
     await payPage.goto(paymentUrl, { waitUntil: "networkidle", timeout: 60_000 });
-    await assertBody(payPage, /Pay on Arc/i, "payer Arc route");
+    await assertBody(payPage, /Pay.*on Arc/i, "payer Arc route");
     await payPage.screenshot({ path: resolve(OUT_DIR, "payer-before-payment.png"), fullPage: true });
-    await payPage.getByRole("button", { name: "Pay on Arc", exact: true }).click();
+    await payPage.getByRole("button", { name: /Pay.*on Arc/i }).click();
     await payPage.getByText("Paid", { exact: true }).waitFor({ timeout: 180_000 });
     await payPage.reload({ waitUntil: "networkidle", timeout: 60_000 });
     await assertBody(payPage, /Paid/i, "persisted paid page after refresh");

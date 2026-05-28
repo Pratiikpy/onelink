@@ -170,7 +170,7 @@ async function main() {
     await page.waitForURL(/\/pay\/.+/, { timeout: 60_000 });
     paymentUrl = page.url();
     await page.screenshot({ path: resolve(OUT_DIR, "payment-before-settlement.png"), fullPage: true });
-    await page.getByRole("button", { name: /Pay on Arc/i }).click();
+    await page.getByRole("button", { name: /Pay.*on Arc/i }).click();
     await page.getByText("Paid", { exact: true }).waitFor({ timeout: 180_000 });
     await page.reload({ waitUntil: "networkidle", timeout: 60_000 });
     await assertBody(page, /View verified receipt/i, "profile paid persistence");

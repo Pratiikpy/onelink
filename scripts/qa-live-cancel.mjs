@@ -122,7 +122,14 @@ async function main() {
     await page.locator("input").nth(0).fill(AMOUNT_USDC);
     await page.locator("input").nth(1).fill(memo);
     await page.getByRole("button", { name: /^never$/i }).click();
-    await page.getByRole("button", { name: /Sign & create link/i }).click();
+    // New 3-step create flow: Step 1 → Review → Step 2 → Continue → Step 3 → Open wallet to sign
+    await page.getByRole("button", { name: /^Review/i }).click();
+    await page.getByRole("button", { name: /^Continue/i }).click();
+    await page.getByRole("button", { name: /Open wallet to sign|Sign & create link/i }).click();
+    // Step 4 ("Link is live"): wait for the "Share your link" success card,
+    // then navigate to the pay page via "Preview pay page".
+    await page.getByRole("link", { name: /Preview pay page/i }).waitFor({ timeout: 120_000 });
+    await page.getByRole("link", { name: /Preview pay page/i }).click();
     await page.waitForURL(/\/pay\//, { timeout: 60_000 });
     const paymentUrl = page.url();
     const slug = new URL(paymentUrl).pathname.split("/").pop();
@@ -140,11 +147,14 @@ async function main() {
     if ((await page.getByText(memo, { exact: true }).count()) < 1) {
       throw new Error("Newly created invoice is not visible in the creator dashboard.");
     }
-    const createdRow = page.getByText(memo, { exact: true }).first().locator("xpath=ancestor::div[contains(@class,'grid')][1]");
-    await createdRow.getByRole("button", { name: "Cancel payment link" }).click();
-    await page.getByText("Cancel payment link?", { exact: true }).waitFor();
+    // Dashboard is now a table with a row-level dropdown menu. Open the menu
+    // for the row, click "Cancel link", then confirm in the new ConfirmDialog.
+    const createdRow = page.getByText(memo, { exact: true }).first().locator("xpath=ancestor::tr[1]");
+    await createdRow.getByRole("button").last().click();
+    await page.getByRole("menuitem", { name: /Cancel link/i }).click();
+    await page.getByText("Cancel this payment link?", { exact: true }).waitFor({ timeout: 10_000 });
     await page.screenshot({ path: resolve(OUT_DIR, "cancel-confirmation.png"), fullPage: true });
-    await page.getByRole("button", { name: "Cancel link" }).click();
+    await page.getByRole("button", { name: /Cancel link on Arc/i }).click();
     await createdRow.getByText("Cancelled", { exact: true }).waitFor({ timeout: 60_000 });
     await page.screenshot({ path: resolve(OUT_DIR, "dashboard-cancelled.png"), fullPage: true });
 
