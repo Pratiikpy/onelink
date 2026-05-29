@@ -7,9 +7,9 @@
 A premium testnet payment-link product for freelancers: create one shareable link, let the payer use a supported USDC route, and finish with a server-verified Arc receipt.
 
 [![CI](https://github.com/Pratiikpy/onelink/actions/workflows/ci.yml/badge.svg)](https://github.com/Pratiikpy/onelink/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-c9f267.svg)](./LICENSE)
-[![Arc Testnet](https://img.shields.io/badge/Arc-Testnet-c9f267.svg)](https://testnet.arcscan.app)
-[![Circle CCTP](https://img.shields.io/badge/Circle-CCTP-c9f267.svg)](https://developers.circle.com/cctp)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1E50E5.svg)](./LICENSE)
+[![Arc Testnet](https://img.shields.io/badge/Arc-Testnet-1E50E5.svg)](https://testnet.arcscan.app)
+[![Circle CCTP](https://img.shields.io/badge/Circle-CCTP-1E50E5.svg)](https://developers.circle.com/cctp)
 
 [**Open live app**](https://onelink-mauve-nu.vercel.app) · [**How it works**](https://onelink-mauve-nu.vercel.app/how-it-works) · [**Pitch deck**](https://onelink-mauve-nu.vercel.app/pitch) · [**Read whitepaper**](https://onelink-mauve-nu.vercel.app/whitepaper) · [**Launch readiness**](./docs/LAUNCH_READINESS.md)
 
