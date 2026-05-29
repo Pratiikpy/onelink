@@ -424,7 +424,7 @@ The product always claims, and only claims:
 | **Arcscan** | The Arc Testnet block explorer at `https://testnet.arcscan.app`. |
 | **CCTP** | Circle Cross-Chain Transfer Protocol — burn USDC on a source chain, mint on a destination chain. |
 | **Circle App Kit** | `@circle-fin/app-kit` + adapter packages. SDK that wraps CCTP and Gateway flows. |
-| **Circle Gateway** | Unified USDC balance across multiple chains with sub-500ms transfers. Implemented but gated. |
+| **Circle Gateway** | Unified USDC balance across multiple chains. Implemented but gated until a funded end-to-end proof. |
 | **Link** | A payment-link record, identified by a `bytes32 linkId` on-chain and a slug off-chain. |
 | **Profile / handle** | A permanent `/{handle}` page tied to a wallet for ad-hoc payments without specific invoices. |
 | **Receipt** | A `/receipt/[id]` page that exposes the verified Arc settlement transaction. |

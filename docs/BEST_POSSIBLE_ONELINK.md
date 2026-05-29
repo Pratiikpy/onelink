@@ -316,7 +316,7 @@ Gateway unified balance - coming next
 Every page must be:
 
 - Mobile-first
-- Premium black/lime brand
+- Premium warm-white + blue (`#1E50E5`) v2 brand
 - No horizontal overflow
 - No awkward copy
 - No unstyled loading state

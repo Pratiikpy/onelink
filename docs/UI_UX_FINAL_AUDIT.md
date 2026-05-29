@@ -3,6 +3,8 @@
 _Captured against `https://onelink-mauve-nu.vercel.app` after the Reveal opacity hotfix (commit `045913a`)._
 _Reviewed: 15 page labels × desktop (1440 × 900) + mobile (390 × 844). Audit script: `scripts/audit-viewports.mjs`._
 
+> **⚠️ Superseded by the v2 fintech-blue redesign (PR #35, 2026-05-29).** This audit records the *pre-v2* Lovable theme — Inter Tight headlines, off-white `#fbfbf8`, and lime accents. The shipped product now uses the **Geist** type family and a single **confident blue `#1E50E5`** brand on a warm-white canvas. See `app/brand/page.tsx` for the canonical current brand. The findings below are retained as a historical snapshot.
+
 ---
 
 ## TL;DR

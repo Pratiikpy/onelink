@@ -4,7 +4,7 @@
 
 Create a premium 4-slide pitch deck for the OpenAI x Outskill AI Builders Hackathon.
 The deck should feel like a real fintech/Web3 product launch, not a generic hackathon presentation.
-It must match OneLink's existing brand system: black editorial background, electric lime proof accents,
+It must match OneLink's v2 brand system: a warm-white editorial canvas, near-black ink, one confident blue (`#1E50E5`) proof accent,
 large confident typography, polished product screenshots, and precise claims.
 
 The deck should help judges understand three things fast:
@@ -63,15 +63,15 @@ Use "Gateway planned / disabled until proven" if Gateway is mentioned.
 
 ### Colors
 
-- Background: near-black / ink, `#050607`, `#08090A`, `#0D0F10`.
-- Accent: electric lime, `#C9F267`.
-- Text: white / off-white, `#F7F8F3`.
-- Muted text: cool gray, `rgba(247,248,243,0.62)`.
-- Surfaces: charcoal cards with subtle borders.
+- Background: warm white, `#FBFBF8` (near-black ink `#0D0F12` for marks/fills).
+- Accent: confident blue, `#1E50E5` (tint `#EDF1FE`, deep `#1742C4`); USDC blue `#2775CA`.
+- Text: near-black ink, `#0D0F12`.
+- Muted text: cool gray.
+- Surfaces: white cards with hairline borders.
 
 ### Typography
 
-- Large, bold, compressed-feeling hero typography.
+- Large, bold hero typography set in **Geist Sans**; hashes and amounts in **Geist Mono**.
 - Very short titles.
 - Avoid tiny crowded text.
 - Each slide should be readable in 5 seconds.
@@ -402,7 +402,7 @@ Start with Web3-native freelancers accepting USDC today. Expand to global servic
 - Keep proof visible.
 - Show exact scope honestly.
 - Make each slide feel like a product launch page.
-- Use black/lime OneLink branding consistently.
+- Use OneLink's v2 warm-white + blue (`#1E50E5`) branding consistently.
 
 ## Do Not
 
