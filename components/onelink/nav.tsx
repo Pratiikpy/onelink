@@ -47,6 +47,9 @@ export function MarketingNav() {
           <Link href="/#routes" className="link-underline hover:text-foreground">
             Routes
           </Link>
+          <Link href="/how-it-works" className="link-underline hover:text-foreground">
+            How it works
+          </Link>
           <Link href="/#pricing" className="link-underline hover:text-foreground">
             Pricing
           </Link>
@@ -74,6 +77,7 @@ export function MarketingNav() {
             items={[
               { href: "/#product", label: "Product" },
               { href: "/#routes", label: "Routes" },
+              { href: "/how-it-works", label: "How it works" },
               { href: "/#pricing", label: "Pricing" },
               { href: "/whitepaper", label: "Whitepaper" },
               { href: "/security", label: "Security" },
@@ -116,6 +120,11 @@ export function MarketingFooter() {
             <li>
               <Link href="/create" className="hover:text-foreground">
                 Create link
+              </Link>
+            </li>
+            <li>
+              <Link href="/how-it-works" className="hover:text-foreground">
+                How it works
               </Link>
             </li>
             <li>
