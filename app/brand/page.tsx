@@ -55,26 +55,44 @@ export default function BrandPage() {
         {/* ── 01 · LOGO ────────────────────────────────────────── */}
         <Section index="01" title="Logo">
           <p>
-            The OneLink mark is an <strong className="font-medium text-foreground">open ring</strong>{" "}
-            — two interlocking monoline arcs forming a chain-link &ldquo;O&rdquo;,
-            optically centered inside a soft squircle. It is drawn in{" "}
+            The OneLink mark is a single{" "}
+            <strong className="font-medium text-foreground">open ring</strong> — one
+            monoline arc with a clean opening at the top, the &ldquo;O&rdquo; in
+            OneLink. It is drawn in{" "}
             <code className="font-mono text-[13px] text-foreground">currentColor</code>,
-            so it inherits whatever surface it sits on. Give it room; never
-            recolor the arcs.
+            so it sits in ink on light, brand-blue as an accent, or white inside a
+            filled chip. Give it room; never recolor, close, or rotate the ring.
           </p>
 
-          <div className="mt-9 grid gap-4 sm:grid-cols-3">
-            <SwatchCard label="Mark · 32px">
-              <LogoMark size={32} />
+          {/* Hero — the open ring, large, in brand blue */}
+          <div className="mt-9 grid place-items-center rounded-2xl border border-hairline bg-surface py-20 text-brand">
+            <LogoMark size={96} />
+          </div>
+
+          {/* The mark on every surface */}
+          <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <SwatchCard label="Mark · ink">
+              <LogoMark size={64} />
             </SwatchCard>
-            <SwatchCard label="Mark · 48px">
-              <LogoMark size={48} />
+            <SwatchCard label="Mark · brand">
+              <span className="text-brand">
+                <LogoMark size={64} />
+              </span>
             </SwatchCard>
-            <SwatchCard label="Mark · 96px">
-              <LogoMark size={96} />
+            <SwatchCard label="On brand">
+              <LogoMark size={64} withFrame />
+            </SwatchCard>
+            <SwatchCard label="On ink">
+              <span
+                className="grid place-items-center rounded-[28%] bg-foreground text-background"
+                style={{ width: 64, height: 64 }}
+              >
+                <LogoMark size={40} />
+              </span>
             </SwatchCard>
           </div>
 
+          {/* Lockups */}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <SwatchCard label="Horizontal lockup">
               <Logo size={32} />
@@ -85,11 +103,12 @@ export default function BrandPage() {
           </div>
 
           <p className="mt-6 rounded-xl border border-hairline bg-muted/40 px-5 py-4 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Usage —</span> default
-            to the framed mark on light. Pair with the lowercase{" "}
+            <span className="font-medium text-foreground">Usage —</span> the ink
+            ring is the default in the nav; brand-blue is the accent; the filled
+            blue chip is the app icon. Pair with the lowercase{" "}
             <span className="font-mono">onelink</span> wordmark for the lockup.
-            Don&apos;t outline, gradient, or rotate the arcs (a subtle hover tilt
-            on the lockup is the only motion the mark allows).
+            Don&apos;t outline, gradient, close, or rotate the ring (a subtle hover
+            tilt on the lockup is the only motion it allows).
           </p>
         </Section>
 
@@ -105,7 +124,19 @@ export default function BrandPage() {
             relaxed and readable.
           </p>
 
-          <div className="mt-9 space-y-4">
+          {/* Aa specimen */}
+          <div className="mt-9 flex items-end justify-between gap-6 overflow-hidden rounded-2xl border border-hairline bg-surface px-8 py-6">
+            <span className="font-display font-semibold leading-[0.85] tracking-[-0.05em] text-[120px] md:text-[176px]">
+              Aa
+            </span>
+            <div className="shrink-0 pb-4 text-right font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-foreground">Geist Sans</p>
+              <p className="mt-1">Variable · 100–900</p>
+              <p className="mt-3 tracking-normal">0123456789</p>
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-4">
             <TypeRow
               label="Display"
               meta="font-display · ~64px · semibold · -0.03em"
@@ -147,6 +178,23 @@ export default function BrandPage() {
                 Live on Arc Testnet · USDC native gas
               </p>
             </TypeRow>
+
+            <TypeRow label="Tabular figures" meta="font-mono · tabular-nums · aligned">
+              <div className="max-w-[280px] space-y-1.5 font-mono text-xl tabular-nums text-foreground">
+                <p className="flex justify-between">
+                  <span className="text-muted-foreground">USDC</span>
+                  <span>1,250.00</span>
+                </p>
+                <p className="flex justify-between">
+                  <span className="text-muted-foreground">USDC</span>
+                  <span>84,090.40</span>
+                </p>
+                <p className="flex justify-between">
+                  <span className="text-muted-foreground">USDC</span>
+                  <span>1,123,456.78</span>
+                </p>
+              </div>
+            </TypeRow>
           </div>
         </Section>
 
@@ -160,7 +208,32 @@ export default function BrandPage() {
             below render the real Tailwind tokens.
           </p>
 
-          <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Feature blocks — the one blue + the ink */}
+          <div className="mt-9 grid gap-4 md:grid-cols-[1.5fr_1fr]">
+            <div className="flex min-h-[200px] flex-col justify-between rounded-2xl bg-brand p-7 text-brand-foreground">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-brand-foreground/70">
+                Brand · the one blue
+              </p>
+              <div>
+                <p className="font-display text-5xl font-semibold tracking-[-0.03em]">#1E50E5</p>
+                <p className="mt-2 max-w-xs text-sm text-brand-foreground/75">
+                  Money actions, links, verified state. Used sparingly — one blue,
+                  never a flood.
+                </p>
+              </div>
+            </div>
+            <div className="flex min-h-[200px] flex-col justify-between rounded-2xl bg-foreground p-7 text-background">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-background/60">
+                Ink
+              </p>
+              <div>
+                <p className="font-display text-5xl font-semibold tracking-[-0.03em]">#101114</p>
+                <p className="mt-2 text-sm text-background/60">Body text, default fills.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <ColorCard
               token="background"
               hex="#FBFBF8"
