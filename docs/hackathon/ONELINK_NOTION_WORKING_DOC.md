@@ -8,6 +8,9 @@
 **GitHub:** https://github.com/Pratiikpy/onelink  
 **Launch readiness:** https://github.com/Pratiikpy/onelink/blob/main/docs/LAUNCH_READINESS.md
 
+> **Current status — 2026-05-29**
+> Testnet-ready and live at **https://onelink-mauve-nu.vercel.app** (Arc Testnet, chain `5042002`; settlement contract `0x9b7D5B4DAD4c9B1065908FA8C6C34d697E3cBD0c`). The premium trust + consistency pass (PR #28) is merged to `main` and deployed; money-moment polish is staged in PR #29. **Mainnet not ready · Circle Gateway implemented but gated · Solana not implemented.**
+
 ---
 
 ## 1. Product Snapshot
@@ -77,73 +80,27 @@ OneLink makes stablecoin payments feel closer to a professional checkout page, n
 
 ## 4. Visual Proof To Add In Notion
 
-Use these screenshots from the repository when building the Notion page.
+Curated production screenshots (latest UI, captured from the live deployment). Use these — six max — and link the full QA matrix rather than dumping every shot.
 
-### Hero / Landing Page
+### Hero / Landing (desktop)
 
-Add this as the first large visual.
+`docs/screenshots/prod/desktop-landing.png`
 
-`docs/screenshots/home-desktop.png`
+> OneLink landing — premium monochrome system, Arc Testnet scope, and the request + verifiable-receipt proof cards in one view.
 
-Suggested caption:
+### Mobile Landing
 
-> OneLink landing page: premium black/lime visual system, clear Arc Testnet scope, and direct path to create a payment link.
+`docs/screenshots/prod/mobile-landing.png`
 
-### Mobile Landing Page
+> Mobile-first: the full create → pay → receipt story, thumb-reachable on a phone.
 
-`docs/screenshots/home-mobile.png`
+### Verification / Security
 
-Suggested caption:
+`docs/screenshots/prod/desktop-security.png`
 
-> Mobile-first experience verified at narrow screen width.
+> "Verification before claims" — server-verified state, gated scope, and honest testnet boundaries.
 
-### Payment Checkout
-
-`docs/screenshots/pay-unpaid-desktop.png`
-
-Suggested caption:
-
-> Payment checkout page before settlement.
-
-### Verified Receipt
-
-`docs/screenshots/receipt-paid-desktop.png`
-
-Suggested caption:
-
-> Receipt view after successful verified payment.
-
-### Profile Page
-
-`docs/screenshots/profile-desktop.png`
-
-Suggested caption:
-
-> Linktree-style freelancer profile page for shareable payment presets.
-
-### Whitepaper Page
-
-`docs/screenshots/whitepaper-desktop.png`
-
-Suggested caption:
-
-> Judge-facing whitepaper page explaining product thesis, Arc/Circle usage, and verified scope.
-
-### WalletConnect Flow
-
-`docs/test-results/qa-live-walletconnect-payment/walletconnect-qr-modal.png`
-
-Suggested caption:
-
-> WalletConnect QR flow tested on the live public deployment.
-
-### Bridge Route UI
-
-`docs/test-results/qa-live-bridge-payment-ui/bridge-route-selected.png`
-
-Suggested caption:
-
-> Base Sepolia to Arc bridge route UI using Circle CCTP/App Kit scope.
+**Full visual proof + QA matrix:** https://github.com/Pratiikpy/onelink/blob/main/docs/LAUNCH_READINESS.md — transaction hashes, per-flow reports (direct, bridge, WalletConnect, profile, cancellation, failure states), and responsive QA at 390 / 768 / 1366 / 1440 / 1920 px.
 
 ---
 
