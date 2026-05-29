@@ -3,6 +3,7 @@ import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
+import { DemoBanner } from "@/components/onelink/demo-banner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -93,6 +94,7 @@ export default function RootLayout({
       className={`${inter.variable} ${interTight.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-sans antialiased">
+        <DemoBanner />
         <Providers>{children}</Providers>
         <Toaster />
       </body>

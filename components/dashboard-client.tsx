@@ -10,13 +10,16 @@ import {
   ExternalLink,
   MoreHorizontal,
   Plus,
+  ReceiptText,
   Search,
+  Share2,
   X,
 } from "lucide-react";
 
 import { AppNav } from "@/components/onelink/nav";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { StatusBadge } from "@/components/onelink/status-badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +44,7 @@ import {
   updatePaymentStatus,
 } from "@/lib/storage";
 import { formatUSDC, relativeTime, truncateAddr } from "@/lib/format";
+import { shareOrCopy } from "@/lib/share";
 import { cn } from "@/lib/utils";
 
 type TabFilter = "all" | PaymentStatus;
@@ -52,6 +56,11 @@ export function DashboardClient() {
 
   const [links, setLinks] = useState<PaymentLink[]>([]);
   const [loading, setLoading] = useState(true);
+  // A failed Supabase/RLS read must not masquerade as the empty "No links yet"
+  // state — surface it explicitly so the user knows to retry vs. create a link.
+  const [loadError, setLoadError] = useState("");
+  // Bumping this re-triggers the load effect (used by the "Try again" action).
+  const [reloadKey, setReloadKey] = useState(0);
   const [tab, setTab] = useState<TabFilter>("all");
   const [q, setQ] = useState("");
   // Cancel confirmation: track which link is pending cancellation and whether
@@ -64,16 +73,24 @@ export function DashboardClient() {
     let cancelled = false;
     if (!address) {
       setLinks([]);
+      setLoadError("");
       setLoading(false);
       return;
     }
     setLoading(true);
+    setLoadError("");
     listPaymentLinks(address)
       .then((rows) => {
         if (!cancelled) setLinks(rows);
       })
-      .catch(() => {
-        if (!cancelled) setLinks([]);
+      .catch((err) => {
+        console.error("Failed to load payment links", err);
+        if (!cancelled) {
+          setLinks([]);
+          setLoadError(
+            "We couldn't reach your link history. Check your connection and try again.",
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -81,7 +98,7 @@ export function DashboardClient() {
     return () => {
       cancelled = true;
     };
-  }, [address]);
+  }, [address, reloadKey]);
 
   const visible = useMemo(() => {
     let r = links;
@@ -129,6 +146,18 @@ export function DashboardClient() {
     toast.success("Link copied");
   }
 
+  async function shareLink(link: PaymentLink) {
+    if (typeof window === "undefined") return;
+    const url = `${window.location.origin}${paymentPath(link.slug)}`;
+    const result = await shareOrCopy({
+      title: `${link.amountUSDC} USDC · OneLink`,
+      text: link.memo,
+      url,
+    });
+    if (result === "copied") toast.success("Link copied");
+    else if (result === "failed") toast.error("Couldn't share link");
+  }
+
   async function cancelLink(link: PaymentLink) {
     if (!address) return;
     setCancelBusy(true);
@@ -146,6 +175,7 @@ export function DashboardClient() {
       }
       if (!arcClient) {
         toast.error("Arc RPC client unavailable");
+        setPendingCancel(null);
         return;
       }
       const txHash = await writeContractAsync({
@@ -162,6 +192,7 @@ export function DashboardClient() {
       setPendingCancel(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Cancel failed");
+      setPendingCancel(null);
     } finally {
       setCancelBusy(false);
     }
@@ -179,18 +210,14 @@ export function DashboardClient() {
             Connect your wallet to see your links
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            OneLink reads from Supabase scoped to your wallet — no account needed.
+            Your links stay private to your wallet — no signup needed.
           </p>
           <div className="mt-7 flex justify-center">
             <ConnectButton.Custom>
               {({ openConnectModal }) => (
-                <button
-                  type="button"
-                  onClick={openConnectModal}
-                  className="inline-flex h-10 items-center rounded-md bg-foreground px-5 text-sm font-medium text-background"
-                >
+                <Button size="lg" onClick={openConnectModal}>
                   Connect wallet
-                </button>
+                </Button>
               )}
             </ConnectButton.Custom>
           </div>
@@ -269,7 +296,7 @@ export function DashboardClient() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search memo or slug"
-              className="h-9 w-full rounded-md border border-hairline bg-surface pl-8 pr-3 text-sm outline-none focus:border-foreground/40"
+              className="h-9 w-full rounded-md border border-hairline bg-surface pl-8 pr-3 text-base outline-none focus:border-foreground/40 md:text-sm"
             />
             {q && (
               <button
@@ -290,78 +317,149 @@ export function DashboardClient() {
               <div key={i} className="h-14 rounded-md border border-hairline bg-surface shimmer" />
             ))}
           </div>
+        ) : loadError ? (
+          <ErrorState message={loadError} onRetry={() => setReloadKey((k) => k + 1)} />
         ) : visible.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="mt-6 overflow-hidden rounded-xl border border-hairline bg-surface">
-            <table className="w-full text-sm">
-              <thead className="border-b border-hairline bg-muted/40">
-                <tr className="text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                  <th className="px-4 py-3 font-medium">Memo</th>
-                  <th className="px-4 py-3 text-right font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="hidden px-4 py-3 font-medium md:table-cell">Payer</th>
-                  <th className="hidden px-4 py-3 font-medium md:table-cell">Created</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-hairline">
-                {visible.map((l) => (
-                  <tr key={l.id} className="group transition-colors hover:bg-muted/30">
-                    <td className="max-w-[16rem] px-4 py-4">
-                      <p className="truncate font-medium">{l.memo}</p>
+          <>
+            {/* Desktop: table */}
+            <div className="mt-6 hidden overflow-hidden rounded-xl border border-hairline bg-surface md:block">
+              <table className="w-full text-sm">
+                <thead className="border-b border-hairline bg-muted/40">
+                  <tr className="text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                    <th className="px-4 py-3 font-medium">Memo</th>
+                    <th className="px-4 py-3 text-right font-medium">Amount</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="hidden px-4 py-3 font-medium md:table-cell">Payer</th>
+                    <th className="hidden px-4 py-3 font-medium md:table-cell">Created</th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-hairline">
+                  {visible.map((l) => (
+                    <tr key={l.id} className="group transition-colors hover:bg-muted/30">
+                      <td className="max-w-[16rem] px-4 py-4">
+                        <p className="truncate font-medium">{l.memo}</p>
+                        <p className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">
+                          /{l.slug}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 text-right font-mono tabular-nums">
+                        {formatUSDC(l.amountUSDC)}{" "}
+                        <span className="text-muted-foreground">USDC</span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <StatusBadge status={l.status} />
+                      </td>
+                      <td className="hidden px-4 py-4 font-mono text-xs text-muted-foreground md:table-cell">
+                        {l.payerWallet ? truncateAddr(l.payerWallet) : "—"}
+                      </td>
+                      <td className="hidden px-4 py-4 text-xs text-muted-foreground md:table-cell">
+                        {relativeTime(l.createdAt)}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="rounded-md p-1.5 text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem onClick={() => copyLink(l.slug)}>
+                              <Copy className="mr-2 h-3.5 w-3.5" /> Copy link
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => shareLink(l)}>
+                              <Share2 className="mr-2 h-3.5 w-3.5" /> Share link
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href={paymentPath(l.slug)}>
+                                <ExternalLink className="mr-2 h-3.5 w-3.5" /> Open pay page
+                              </Link>
+                            </DropdownMenuItem>
+                            {l.status === "paid" && (
+                              <DropdownMenuItem asChild>
+                                <Link href={receiptPath(l.id)}>View receipt</Link>
+                              </DropdownMenuItem>
+                            )}
+                            {l.status === "unpaid" && (
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => setPendingCancel(l)}
+                              >
+                                Cancel link
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile: stacked cards */}
+            <div className="mt-6 space-y-3 md:hidden">
+              {visible.map((l) => (
+                <div
+                  key={l.id}
+                  className="rounded-xl border border-hairline bg-surface p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-mono text-lg font-semibold tabular-nums">
+                        {formatUSDC(l.amountUSDC)}{" "}
+                        <span className="text-sm font-normal text-muted-foreground">USDC</span>
+                      </p>
+                      <p className="mt-1 truncate text-sm font-medium">{l.memo}</p>
                       <p className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">
                         /{l.slug}
                       </p>
-                    </td>
-                    <td className="px-4 py-4 text-right font-mono tabular-nums">
-                      {formatUSDC(l.amountUSDC)}{" "}
-                      <span className="text-muted-foreground">USDC</span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={l.status} />
-                    </td>
-                    <td className="hidden px-4 py-4 font-mono text-xs text-muted-foreground md:table-cell">
-                      {l.payerWallet ? truncateAddr(l.payerWallet) : "—"}
-                    </td>
-                    <td className="hidden px-4 py-4 text-xs text-muted-foreground md:table-cell">
-                      {relativeTime(l.createdAt)}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="rounded-md p-1.5 text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => copyLink(l.slug)}>
-                            <Copy className="mr-2 h-3.5 w-3.5" /> Copy link
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={paymentPath(l.slug)}>
-                              <ExternalLink className="mr-2 h-3.5 w-3.5" /> Open pay page
-                            </Link>
-                          </DropdownMenuItem>
-                          {l.status === "paid" && (
-                            <DropdownMenuItem asChild>
-                              <Link href={receiptPath(l.id)}>View receipt</Link>
-                            </DropdownMenuItem>
-                          )}
-                          {l.status === "unpaid" && (
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => setPendingCancel(l)}
-                            >
-                              Cancel link
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <StatusBadge status={l.status} />
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyLink(l.slug)}
+                    >
+                      <Copy className="h-3.5 w-3.5" /> Copy
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => shareLink(l)}
+                    >
+                      <Share2 className="h-3.5 w-3.5" /> Share
+                    </Button>
+                    {l.status === "paid" ? (
+                      <Button asChild size="sm">
+                        <Link href={receiptPath(l.id)}>
+                          <ReceiptText className="h-3.5 w-3.5" /> Receipt
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button asChild size="sm">
+                        <Link href={paymentPath(l.slug)}>
+                          <ExternalLink className="h-3.5 w-3.5" /> Open
+                        </Link>
+                      </Button>
+                    )}
+                    {l.status === "unpaid" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => setPendingCancel(l)}
+                      >
+                        <X className="h-3.5 w-3.5" /> Cancel
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </main>
       <ConfirmDialog
@@ -441,6 +539,31 @@ function Sparkline({ data }: { data: number[] }) {
       />
       <circle cx={last[0]} cy={last[1]} r="1.75" fill="currentColor" />
     </svg>
+  );
+}
+
+function ErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="mt-10 rounded-2xl border border-destructive/30 bg-destructive/[0.05] px-6 py-16 text-center">
+      <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-destructive/30">
+        <X className="h-5 w-5 text-destructive" />
+      </div>
+      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight">
+        Couldn&rsquo;t load your links
+      </h3>
+      <p className="mt-1.5 text-sm text-muted-foreground">{message}</p>
+      <div className="mt-6 flex justify-center">
+        <Button variant="outline" onClick={onRetry}>
+          Try again
+        </Button>
+      </div>
+    </div>
   );
 }
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { MarketingNav, MarketingFooter } from "@/components/onelink/nav";
 import { Reveal } from "@/components/onelink/reveal";
 import { ARC_CHAIN_ID, ARC_USDC_ADDRESS, ARC_EXPLORER_URL } from "@/lib/arc";
-import { ONELINK_CONTRACT_ADDRESS } from "@/lib/contracts";
+import { HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS } from "@/lib/contracts";
 
 export const metadata: Metadata = {
   title: "Whitepaper",
@@ -169,7 +169,11 @@ export default function WhitepaperPage() {
             </li>
             <li>
               <span className="font-mono uppercase tracking-[0.16em]">Contract</span>
-              <span className="ml-3 font-mono">{ONELINK_CONTRACT_ADDRESS}</span>
+              <span className="ml-3 font-mono">
+                {HAS_CONTRACT
+                  ? ONELINK_CONTRACT_ADDRESS
+                  : "Demo mode — no settlement contract deployed"}
+              </span>
             </li>
             <li>
               <span className="font-mono uppercase tracking-[0.16em]">Explorer</span>

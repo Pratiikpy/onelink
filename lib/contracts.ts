@@ -6,6 +6,15 @@ export const ONELINK_CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_ONELINK_CONTRAC
 export const HAS_CONTRACT =
   ONELINK_CONTRACT_ADDRESS !== "0x0000000000000000000000000000000000000000";
 
+/**
+ * Canonical demo-mode truth. When no settlement contract is configured the app
+ * runs in demo mode: receipts use 0xDEM0… hashes, nothing settles on Arc, and
+ * the UI must NOT promise on-chain verification it cannot deliver. Gate all
+ * "server-verified / verified on Arcscan" claims on HAS_CONTRACT (or, for
+ * readability, on !IS_DEMO_MODE).
+ */
+export const IS_DEMO_MODE = !HAS_CONTRACT;
+
 export const PLATFORM_FEE_BPS = Number(process.env.NEXT_PUBLIC_PLATFORM_FEE_BPS || 0);
 
 export const ALLOW_DEMO_MODE = process.env.NEXT_PUBLIC_ALLOW_DEMO === "true";
