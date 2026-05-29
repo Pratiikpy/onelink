@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-type Size = 16 | 20 | 24 | 32 | 48 | 64 | 96;
+type Size = 16 | 20 | 24 | 32 | 40 | 48 | 64 | 96;
 
 /**
  * OneLink mark — two interlocking arcs forming a chain-link "O".
@@ -11,35 +11,35 @@ type Size = 16 | 20 | 24 | 32 | 48 | 64 | 96;
 export function LogoMark({
   size = 24,
   className,
-  withFrame = true,
+  withFrame = false,
 }: {
   size?: Size;
   className?: string;
   withFrame?: boolean;
 }) {
-  // Stroke compensates per size so the mark stays optically even.
-  const stroke = size <= 16 ? 1.4 : size <= 24 ? 1.5 : size <= 32 ? 1.6 : 1.75;
+  // Open-ring mark — a single arc with an opening at the top, the OneLink "O".
+  // currentColor stroke: inherits ink in the nav, flips to white on a brand frame.
+  const inner = withFrame ? Math.round(size * 0.62) : size;
   return (
     <span
       className={cn(
         "relative inline-grid place-items-center",
-        withFrame && "rounded-[28%] bg-foreground text-background",
+        withFrame && "rounded-[28%] bg-brand text-white",
         className,
       )}
       style={{ width: size, height: size }}
       aria-hidden
     >
       <svg
-        viewBox="0 0 32 32"
-        width={Math.round(size * 0.7)}
-        height={Math.round(size * 0.7)}
+        viewBox="0 0 100 100"
+        width={inner}
+        height={inner}
         fill="none"
         stroke="currentColor"
-        strokeWidth={stroke}
+        strokeWidth={8.5}
         strokeLinecap="round"
       >
-        <path d="M19 9.5a7 7 0 0 0-9.9 0 7 7 0 0 0 0 9.9l2.2 2.2" />
-        <path d="M13 22.5a7 7 0 0 0 9.9 0 7 7 0 0 0 0-9.9L20.7 10.4" />
+        <path d="M 74.4 20.9 A 38 38 0 1 1 25.6 20.9" />
       </svg>
     </span>
   );

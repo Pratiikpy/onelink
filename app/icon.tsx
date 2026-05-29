@@ -10,7 +10,7 @@ export default function Icon() {
         style={{
           width: "100%",
           height: "100%",
-          background: "#0d0f12",
+          background: "#1E50E5",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -18,16 +18,15 @@ export default function Icon() {
         }}
       >
         <svg
-          width="44"
-          height="44"
-          viewBox="0 0 32 32"
+          width="42"
+          height="42"
+          viewBox="0 0 100 100"
           fill="none"
-          stroke="#f7f5ef"
-          strokeWidth="2.2"
+          stroke="#ffffff"
+          strokeWidth="9"
           strokeLinecap="round"
         >
-          <path d="M19 9.5a7 7 0 0 0-9.9 0 7 7 0 0 0 0 9.9l2.2 2.2" />
-          <path d="M13 22.5a7 7 0 0 0 9.9 0 7 7 0 0 0 0-9.9L20.7 10.4" />
+          <path d="M 74.4 20.9 A 38 38 0 1 1 25.6 20.9" />
         </svg>
       </div>
     ),
