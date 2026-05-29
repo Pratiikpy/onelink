@@ -15,7 +15,7 @@ A premium testnet payment-link product for freelancers: create one shareable lin
 
 <br />
 
-<img src="./docs/screenshots/home-desktop.png" alt="OneLink landing page" width="900" />
+<img src="./docs/screenshots/prod/desktop-landing.png" alt="OneLink landing — production" width="900" />
 
 </div>
 
@@ -109,36 +109,21 @@ For the full evidence bundle (transaction hashes, screenshots, QA matrix), see [
 <table>
   <tr>
     <td width="50%">
-      <img src="./docs/screenshots/home-desktop.png" alt="Landing" />
+      <img src="./docs/screenshots/prod/mobile-landing.png" alt="Mobile landing" />
       <br />
-      <sub><b>Landing</b> · route scope, proof positioning, and primary CTA.</sub>
+      <sub><b>Mobile-first</b> · the full create → pay → receipt story, thumb-reachable on a phone.</sub>
     </td>
     <td width="50%">
-      <img src="./docs/screenshots/product-canvas-desktop.png" alt="Request + Receipt cards" />
+      <img src="./docs/screenshots/prod/desktop-security.png" alt="Security and verification scope" />
       <br />
-      <sub><b>Two surfaces</b> · the request, and the verifiable Arc-anchored receipt that lands seconds after settlement.</sub>
+      <sub><b>Verification before claims</b> · server-verified state, gated scope, and honest testnet boundaries.</sub>
     </td>
   </tr>
 </table>
 
 <p align="center">
-  <sub>Mobile, tablet, and deeper screen-by-screen QA live in <a href="./docs/LAUNCH_READINESS.md">launch readiness</a> and the reports under <a href="./docs/test-results/">docs/test-results</a>.</sub>
+  <sub>Fresh production captures. Mobile/tablet and deeper screen-by-screen QA live in <a href="./docs/LAUNCH_READINESS.md">launch readiness</a> and the reports under <a href="./docs/test-results/">docs/test-results</a>.</sub>
 </p>
-
-<table>
-  <tr>
-    <td width="50%">
-      <img src="./docs/screenshots/profile-mobile.png" alt="Mobile profile" />
-      <br />
-      <sub><b>Mobile profile</b> · Linktree-style payment page optimized for small screens.</sub>
-    </td>
-    <td width="50%">
-      <img src="./docs/screenshots/receipt-paid-desktop.png" alt="Verified receipt" />
-      <br />
-      <sub><b>Receipt</b> · Arcscan-backed proof drawer with server-verified flag.</sub>
-    </td>
-  </tr>
-</table>
 
 ---
 

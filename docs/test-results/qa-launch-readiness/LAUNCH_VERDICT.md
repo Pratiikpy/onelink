@@ -3,7 +3,7 @@
 **Live target:** https://onelink-mauve-nu.vercel.app
 **Repo:** github.com/Pratiikpy/onelink
 **Network:** Arc Testnet · chain `5042002` · USDC native gas
-**Settlement contract:** Demo mode — no settlement contract deployed. The contract address is sourced from `NEXT_PUBLIC_ONELINK_CONTRACT_ADDRESS` at deploy time (zero address when unset).
+**Settlement contract:** `0x9b7D5B4DAD4c9B1065908FA8C6C34d697E3cBD0c` on Arc Testnet, configured via `NEXT_PUBLIC_ONELINK_CONTRACT_ADDRESS` (the canonical source; the app falls back to the zero address / demo mode only when this is unset).
 **Generated:** 2026-05-28
 **Branches/PRs from this pass:** PR #19 (merged), PR #20 (open)
 
