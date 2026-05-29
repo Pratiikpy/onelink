@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+*.local
 .next
 node_modules
 out
@@ -11,6 +12,7 @@ broadcast
 contracts/cache
 contracts/out
 *.log
+*.stackdump
 tsconfig.tsbuildinfo
 .DS_Store
 .vercel

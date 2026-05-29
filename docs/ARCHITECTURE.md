@@ -74,7 +74,7 @@ Live evidence is summarized in [`LAUNCH_READINESS.md`](./LAUNCH_READINESS.md).
 ## Why Arc and Circle
 
 Arc gives the product a USDC-native settlement environment with predictable
-fees and fast finality. Circle App Kit and CCTP provide the bridge path used
+fees and deterministic on-chain finality. Circle App Kit and CCTP provide the bridge path used
 for the current cross-chain testnet route. Gateway is documented as a future
 upgrade, but the checkout does not expose it until the full funded flow is
 proven.

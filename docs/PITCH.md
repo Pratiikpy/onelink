@@ -123,7 +123,7 @@ This is not "another payment-link app." The distinctive bets are:
 
 | Route | Status | How it works |
 | --- | --- | --- |
-| **Arc-direct** | ✅ Live-proven | Payer holds USDC on Arc. Two txs: approve + `payLink`. Settles instantly. |
+| **Arc-direct** | ✅ Live-proven | Payer holds USDC on Arc. Two txs: approve + `payLink`. Settles directly on Arc. |
 | **Bridge via Circle CCTP** | ✅ Live-proven (Base Sepolia → Arc) | Approve + burn on the source chain, Circle attestation, mint on Arc, then settle — one flow via Circle App Kit. |
 | **Unified balance via Circle Gateway** | 🔒 Implemented but **gated** | EIP-712 burn-intents against a Gateway deposit. Disabled in checkout until a funded end-to-end proof is run. |
 
@@ -192,7 +192,7 @@ receipt: https://onelink-mauve-nu.vercel.app/receipt/7e41bf18-b61c-4af2-baeb-b10
 
 | Layer | Choice | Why it matters |
 | --- | --- | --- |
-| Settlement | **Arc Testnet** (chain `5042002`) | USDC is the native gas token; deterministic, fast finality; no ETH-for-gas friction. |
+| Settlement | **Arc Testnet** (chain `5042002`) | USDC is the native gas token; deterministic on-chain finality; no ETH-for-gas friction. |
 | Bridge | **Circle CCTP + App Kit** | Native USDC burn-and-mint from supported testnets into Arc, with retry-safe step events. |
 | Unified balance | **Circle Gateway** | Spend a deposited USDC balance cross-chain (gated until funded proof). |
 | Settlement contract | **`OneLinkCollect`** on Arc | One source of truth; a hard-capped ≤1% protocol fee enforced in the contract. |
