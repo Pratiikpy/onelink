@@ -73,7 +73,7 @@ _None._ The Reveal opacity bug was the only ship-blocker, and it's fixed and liv
 The `8` numeric badge next to `0x8fD0...EcdB requested` on the pay page is functional but generic. Swap to a deterministic identicon (jdenticon or boring-avatars seeded by address) so each recipient has a unique identity glyph. ~12 lines, no new dependencies if we hand-roll a tiny SVG hash-to-pattern.
 
 ### P-2 · Settlement contract row at landing footer
-The `0x9b7E5b4d4d4c9810b5908F46CaCe34eb9F3c0D6c` settlement contract address shows in mono with no copy-on-click affordance. Add the same copy icon used on `/receipt`, and a tiny tooltip "Read on Arcscan →" that opens the Arc explorer.
+The app currently runs in demo mode with no settlement contract deployed; the contract address is sourced from `NEXT_PUBLIC_ONELINK_CONTRACT_ADDRESS` at deploy time (zero address when unset). Once a contract is configured, render the address in mono with the same copy icon used on `/receipt`, plus a tiny tooltip "Read on Arcscan →" that opens the Arc explorer.
 
 ### P-3 · Profile page send-USDC card auto-focus
 On `/<handle>`, the `0` amount input doesn't auto-focus on mount. A payer's first interaction is always to type an amount. `autoFocus` on the input would shave a tap.

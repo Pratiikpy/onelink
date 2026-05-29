@@ -4,6 +4,7 @@ import { createPublicClient, decodeEventLog, getAddress, http, isAddressEqual, t
 import { ARC_CHAIN, ARC_RPC_URL } from "@/lib/arc";
 import { HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS, oneLinkCollectAbi } from "@/lib/contracts";
 import { amountToUnits, type PaymentMethod } from "@/lib/payments";
+import { clientKey, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 type SettlementRequest = {
   id?: string;
@@ -13,7 +14,11 @@ type SettlementRequest = {
   sourceChain?: string;
 };
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
+  const rl = rateLimit(clientKey(req, "payments-reconcile"), { limit: 30, windowMs: 60_000 });
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSec);
+
+  const request = req;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey || !HAS_CONTRACT) {

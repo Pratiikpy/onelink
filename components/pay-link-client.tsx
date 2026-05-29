@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   useAccount,
   useBalance,
@@ -11,12 +12,12 @@ import {
   useWriteContract,
 } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { ArrowRight, ChevronRight, ExternalLink, Wallet } from "lucide-react";
+import { ArrowRight, Check, ChevronRight, ExternalLink, Wallet } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/onelink/logo";
 import { StatusBadge } from "@/components/onelink/status-badge";
 import { StepTimeline, type Step } from "@/components/onelink/step-timeline";
-import { DemoBanner } from "@/components/onelink/demo-banner";
 import {
   ARC_CHAIN_ID,
   ARC_FAUCET_URL,
@@ -45,6 +46,7 @@ import {
   receiptPath,
   type PaymentLink,
 } from "@/lib/payments";
+import { friendlyError } from "@/lib/errors";
 import { shareOrCopy, useCopy } from "@/lib/share";
 import {
   confirmPaidSettlement,
@@ -82,31 +84,6 @@ function makeDemoPayLink(slug: string): PaymentLink {
   };
 }
 
-function friendlyError(err: unknown, route: QuickRoute) {
-  const message = err instanceof Error ? err.message : "Payment failed.";
-  const lower = message.toLowerCase();
-  if (lower.includes("user rejected") || lower.includes("rejected")) {
-    return "Wallet request was rejected. Nothing moved; try again when ready.";
-  }
-  if (lower.includes("unsupported") || lower.includes("select a supported")) {
-    return route === "app-kit-bridge"
-      ? `Switch to ${provenBridgeSource.label} for the proven Circle CCTP route, then retry.`
-      : "Switch to Arc Testnet for direct payment, then retry.";
-  }
-  if (lower.includes("insufficient") || lower.includes("balance")) {
-    return route === "app-kit-bridge"
-      ? `Not enough USDC on the selected source chain. Fund ${provenBridgeSource.label} or use direct Arc payment.`
-      : "Not enough Arc USDC for this payment. Fund Arc Testnet USDC, then retry.";
-  }
-  if (lower.includes("bridge") || lower.includes("cctp")) {
-    return "Circle CCTP bridge did not finish. If a burn/mint completed, refresh; otherwise retry.";
-  }
-  if (lower.includes("gateway")) {
-    return "Circle Gateway did not finish. Confirm you have deposited USDC into Gateway, then retry.";
-  }
-  return message;
-}
-
 export function PayLinkClient({ slug }: { slug: string }) {
   const { address, isConnected, connector } = useAccount();
   const chainId = useChainId();
@@ -121,6 +98,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
   const [activity, setActivity] = useState("");
   const [route, setRoute] = useState<QuickRoute>("arc-direct");
   const { copied, copy } = useCopy();
+  const paidToastFiredFor = useRef<string | null>(null);
 
   const [bridgeSteps, setBridgeSteps] = useState<
     Partial<
@@ -170,6 +148,14 @@ export function PayLinkClient({ slug }: { slug: string }) {
     chainId: ARC_CHAIN_ID,
     query: { enabled: Boolean(address) },
   });
+
+  // Fire a single celebratory toast the first time a link reaches "paid".
+  useEffect(() => {
+    if (link?.status !== "paid" || !link.id) return;
+    if (paidToastFiredFor.current === link.id) return;
+    paidToastFiredFor.current = link.id;
+    toast.success("Payment complete — receipt ready");
+  }, [link?.id, link?.status]);
 
   const amountNumber = link ? Number(link.amountUSDC) : 0;
   const balanceNumber = usdcBalance ? Number(usdcBalance.formatted) : 0;
@@ -324,7 +310,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
         if (failed) setLink(failed);
       }
       setActivity("");
-      setError(friendlyError(err, route));
+      setError(friendlyError(err, { route }));
     } finally {
       setBusy(false);
     }
@@ -332,8 +318,49 @@ export function PayLinkClient({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-md px-6 py-24 text-center text-sm text-muted-foreground">
-        Loading payment link…
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-hairline">
+          <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
+            <Logo />
+            <Link
+              href="/"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              What is OneLink?
+            </Link>
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-md px-6 py-14" aria-busy="true">
+          <span className="sr-only">Loading payment link</span>
+          {/* Recipient row */}
+          <div className="mb-7 flex items-center gap-3">
+            <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted motion-reduce:animate-none" />
+            <div className="space-y-2">
+              <div className="h-3.5 w-40 animate-pulse rounded bg-muted motion-reduce:animate-none" />
+              <div className="h-2.5 w-20 animate-pulse rounded bg-muted motion-reduce:animate-none" />
+            </div>
+          </div>
+
+          {/* Card */}
+          <div className="rounded-2xl border border-hairline bg-surface p-7">
+            <div className="flex items-center justify-between">
+              <div className="h-2.5 w-20 animate-pulse rounded bg-muted motion-reduce:animate-none" />
+              <div className="h-5 w-16 animate-pulse rounded-full bg-muted motion-reduce:animate-none" />
+            </div>
+            {/* Amount */}
+            <div className="mt-6 h-14 w-52 animate-pulse rounded-lg bg-muted motion-reduce:animate-none" />
+            {/* Memo lines */}
+            <div className="mt-4 space-y-2">
+              <div className="h-3 w-full animate-pulse rounded bg-muted motion-reduce:animate-none" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-muted motion-reduce:animate-none" />
+            </div>
+            {/* Route selector */}
+            <div className="mt-6 h-12 w-full animate-pulse rounded-lg bg-muted motion-reduce:animate-none" />
+            {/* Action button */}
+            <div className="mt-5 h-11 w-full animate-pulse rounded-xl bg-muted motion-reduce:animate-none" />
+          </div>
+        </main>
       </div>
     );
   }
@@ -350,12 +377,11 @@ export function PayLinkClient({ slug }: { slug: string }) {
         <p className="mt-3 text-sm text-muted-foreground">
           {error || "Ask the sender for a fresh OneLink URL."}
         </p>
-        <Link
-          href="/"
-          className="mt-7 inline-flex h-10 items-center rounded-md bg-foreground px-5 text-sm font-medium text-background"
-        >
-          Back to home
-        </Link>
+        <div className="mt-7 flex justify-center">
+          <Button asChild size="lg">
+            <Link href="/">Back to home</Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -439,7 +465,6 @@ export function PayLinkClient({ slug }: { slug: string }) {
 
   return (
     <div className="min-h-screen bg-background page-in">
-      <DemoBanner />
       <header className="border-b border-hairline">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
           <Logo />
@@ -494,13 +519,24 @@ export function PayLinkClient({ slug }: { slug: string }) {
 
           {/* States */}
           {isClosed && link.status === "paid" && (
-            <div className="mt-6">
-              <Link
-                href={receiptPath(link.id)}
-                className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-foreground text-sm font-medium text-background"
-              >
-                View receipt <ArrowRight className="h-4 w-4" />
-              </Link>
+            <div className="mt-7 flex flex-col items-center text-center">
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-success text-success-foreground animate-in zoom-in-50 duration-300 motion-reduce:animate-none">
+                <Check className="h-7 w-7" />
+              </span>
+              <h2 className="mt-4 font-display text-xl font-semibold tracking-[-0.02em]">
+                Payment complete
+              </h2>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                You paid {formatUSDC(link.amountUSDC)} USDC to{" "}
+                {truncateAddr(link.recipientWallet)}
+              </p>
+              <div className="mt-6 w-full">
+                <Button asChild size="lg" className="w-full">
+                  <Link href={receiptPath(link.id)}>
+                    View receipt <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
             </div>
           )}
           {isClosed && link.status === "cancelled" && (
@@ -593,7 +629,14 @@ export function PayLinkClient({ slug }: { slug: string }) {
                   href={ARC_FAUCET_URL}
                 />
                 <Pre ok label="USDC is the gas token on Arc — no ETH required" />
-                <Pre ok label="Receipt is server-verified before final state" />
+                <Pre
+                  ok
+                  label={
+                    HAS_CONTRACT
+                      ? "Receipt is server-verified before final state"
+                      : "Demo mode — illustrative receipt, no on-chain settlement"
+                  }
+                />
               </div>
 
               {/* Status / activity / error */}
@@ -605,35 +648,29 @@ export function PayLinkClient({ slug }: { slug: string }) {
                 {!isConnected ? (
                   <ConnectButton.Custom>
                     {({ openConnectModal }) => (
-                      <button
-                        type="button"
-                        onClick={openConnectModal}
-                        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-foreground text-sm font-medium text-background"
-                      >
+                      <Button onClick={openConnectModal} size="lg" className="w-full">
                         <Wallet className="h-4 w-4" /> Connect wallet
-                      </button>
+                      </Button>
                     )}
                   </ConnectButton.Custom>
                 ) : (
-                  <button
-                    type="button"
+                  <Button
                     onClick={pay}
+                    size="lg"
+                    className="w-full"
+                    loading={busy}
                     disabled={
-                      busy ||
                       isClosed ||
                       (route === "arc-direct" && !!usdcBalance && missingDirect > 0)
                     }
-                    className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-foreground text-sm font-medium text-background disabled:opacity-40"
                   >
-                    {busy
-                      ? "Processing…"
-                      : route === "arc-direct"
+                    {route === "arc-direct"
                       ? `Pay ${formatUSDC(link.amountUSDC)} USDC on Arc`
                       : route === "app-kit-bridge"
                       ? "Bridge & pay"
                       : "Pay with unified balance"}
                     <ChevronRight className="h-4 w-4" />
-                  </button>
+                  </Button>
                 )}
               </div>
             </>
@@ -669,15 +706,16 @@ export function PayLinkClient({ slug }: { slug: string }) {
         {/* Share */}
         {link.status === "unpaid" && !isExpired && (
           <div className="mt-6 grid grid-cols-2 gap-2">
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={() => copy(paymentUrl)}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-hairline bg-background text-sm font-medium hover:bg-muted"
             >
               {copied ? "Copied" : "Copy link"}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={() =>
                 shareOrCopy({
                   title: `Pay ${link.amountUSDC} USDC with OneLink`,
@@ -685,10 +723,9 @@ export function PayLinkClient({ slug }: { slug: string }) {
                   url: paymentUrl,
                 })
               }
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-hairline bg-background text-sm font-medium hover:bg-muted"
             >
               Share
-            </button>
+            </Button>
           </div>
         )}
 

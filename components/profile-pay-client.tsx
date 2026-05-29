@@ -9,7 +9,10 @@ import { isAddress } from "viem";
 import { ArrowRight, Copy, ShieldCheck } from "lucide-react";
 
 import { Logo } from "@/components/onelink/logo";
+import { Button } from "@/components/ui/button";
 import { ARC_CHAIN_ID } from "@/lib/arc";
+import { HAS_CONTRACT } from "@/lib/contracts";
+import { friendlyError } from "@/lib/errors";
 import {
   makeContractLinkId,
   makeSlug,
@@ -59,7 +62,7 @@ export function ProfilePayClient({ handle }: { handle: string }) {
         if (!cancelled) setProfile(p);
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Could not load profile.");
+        if (!cancelled) setError(friendlyError(err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -102,7 +105,7 @@ export function ProfilePayClient({ handle }: { handle: string }) {
       await savePaymentLink(payment);
       router.push(paymentPath(slug));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not start payment.");
+      setError(friendlyError(err));
     } finally {
       setBusy(false);
     }
@@ -156,12 +159,9 @@ export function ProfilePayClient({ handle }: { handle: string }) {
           <p className="mt-3 text-sm text-muted-foreground">
             {error || "This permanent payment link is not active. Check the handle or create a new request."}
           </p>
-          <Link
-            href="/create"
-            className="mt-7 inline-flex h-10 items-center rounded-md bg-foreground px-5 text-sm font-medium text-background"
-          >
-            Create a payment link
-          </Link>
+          <Button asChild className="mt-7">
+            <Link href="/create">Create a payment link</Link>
+          </Button>
         </main>
       </div>
     );
@@ -212,21 +212,19 @@ export function ProfilePayClient({ handle }: { handle: string }) {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={copyProfileLink}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline bg-background px-4 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="text-muted-foreground"
             >
               <Copy className="h-3.5 w-3.5" />
               {copied ? "Copied" : "Copy profile link"}
-            </button>
-            <button
-              type="button"
-              onClick={shareProfileLink}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-medium text-background"
-            >
+            </Button>
+            <Button type="button" size="sm" onClick={shareProfileLink}>
               Share
-            </button>
+            </Button>
           </div>
 
           <div className="mt-10 grid gap-3 md:grid-cols-3">
@@ -299,31 +297,36 @@ export function ProfilePayClient({ handle }: { handle: string }) {
             {error && <p className="mt-4 text-xs text-destructive">{error}</p>}
 
             {isConnected ? (
-              <button
+              <Button
                 type="button"
-                disabled={busy || !amount}
+                size="lg"
+                disabled={!amount}
+                loading={busy}
                 onClick={continueToPayment}
-                className="mt-5 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-foreground text-sm font-medium text-background disabled:opacity-40"
+                className="mt-5 w-full"
               >
                 {busy ? "Preparing…" : "Continue to pay"}
-                <ArrowRight className="h-4 w-4" />
-              </button>
+                {!busy && <ArrowRight className="h-4 w-4" />}
+              </Button>
             ) : (
               <ConnectButton.Custom>
                 {({ openConnectModal }) => (
-                  <button
+                  <Button
                     type="button"
+                    size="lg"
                     onClick={openConnectModal}
-                    className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-foreground text-sm font-medium text-background"
+                    className="mt-5 w-full"
                   >
                     Connect wallet to pay
-                  </button>
+                  </Button>
                 )}
               </ConnectButton.Custom>
             )}
 
             <p className="mt-3 text-center text-[11px] text-muted-foreground">
-              Settled on Arc · Verified on-chain · Non-custodial
+              {HAS_CONTRACT
+                ? "Settled on Arc · Verified on-chain · Non-custodial"
+                : "Arc Testnet · Demo mode · Non-custodial"}
             </p>
           </div>
         </aside>

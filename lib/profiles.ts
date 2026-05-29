@@ -3,6 +3,8 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Address } from "viem";
 
+import { ARC_CHAIN_ID } from "@/lib/arc";
+
 export type FreelancerProfile = {
   handle: string;
   wallet: Address;
@@ -11,7 +13,7 @@ export type FreelancerProfile = {
   updatedAt: string;
 };
 
-const profileStorageKey = "onelink:freelancer-profiles";
+export const PROFILE_STORAGE_KEY = "onelink:freelancer-profiles";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase =
@@ -27,33 +29,72 @@ export function normalizeHandle(value: string) {
     .slice(0, 32);
 }
 
-export function profileClaimMessage(handle: string, wallet: Address) {
-  return `OneLink profile claim\nHandle: ${normalizeHandle(handle)}\nRecipient: ${wallet}\nNetwork: Arc Testnet`;
+// How long a signed profile claim stays valid. The server rejects claims older
+// than this (and ones issued in the future beyond a small clock-skew window).
+// This — combined with the EIP-712 domain binding (name/version/chainId) — is
+// what bounds signature replay; see the note in the API route.
+export const PROFILE_CLAIM_TTL_SECONDS = 600;
+
+export type ProfileClaim = {
+  handle: string;
+  owner: `0x${string}`;
+  issuedAt: number;
+  expiresAt: number;
+};
+
+// EIP-712 typed-data builder for a profile-handle claim. Both the client signer
+// and the server verifier MUST build the struct from this single function so
+// the digest matches exactly. uint256 fields are bigint for viem.
+export function buildProfileClaimTypedData(claim: ProfileClaim) {
+  return {
+    domain: { name: "OneLink Collect", version: "1", chainId: ARC_CHAIN_ID },
+    types: {
+      ProfileClaim: [
+        { name: "handle", type: "string" },
+        { name: "owner", type: "address" },
+        { name: "issuedAt", type: "uint256" },
+        { name: "expiresAt", type: "uint256" },
+      ],
+    },
+    primaryType: "ProfileClaim" as const,
+    message: {
+      handle: claim.handle,
+      owner: claim.owner,
+      issuedAt: BigInt(claim.issuedAt),
+      expiresAt: BigInt(claim.expiresAt),
+    },
+  };
 }
 
 function readLocal() {
   if (typeof window === "undefined") return [] as FreelancerProfile[];
   try {
-    return JSON.parse(window.localStorage.getItem(profileStorageKey) || "[]") as FreelancerProfile[];
+    return JSON.parse(window.localStorage.getItem(PROFILE_STORAGE_KEY) || "[]") as FreelancerProfile[];
   } catch {
     return [] as FreelancerProfile[];
   }
 }
 
-export async function saveFreelancerProfile(profile: FreelancerProfile, signature?: `0x${string}`) {
+export async function saveFreelancerProfile(
+  profile: FreelancerProfile,
+  signature?: `0x${string}`,
+  claim?: ProfileClaim,
+) {
   if (supabase) {
-    if (!signature) throw new Error("Sign the wallet ownership message to claim a public handle.");
+    if (!signature || !claim) {
+      throw new Error("Sign the wallet ownership message to claim a public handle.");
+    }
     const response = await fetch("/api/profiles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profile, signature }),
+      body: JSON.stringify({ profile, claim, signature }),
     });
     const payload = (await response.json().catch(() => ({}))) as { error?: string };
     if (!response.ok) throw new Error(payload.error || "Profile claim failed.");
   }
 
   const profiles = readLocal().filter((existing) => existing.handle !== profile.handle);
-  window.localStorage.setItem(profileStorageKey, JSON.stringify([profile, ...profiles]));
+  window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify([profile, ...profiles]));
 }
 
 export async function getFreelancerProfile(handle: string) {

@@ -52,7 +52,7 @@ export default function Landing() {
             <h1 className="mt-6 max-w-4xl text-balance font-display font-semibold text-display-1">
               Get paid in USDC.
               <br />
-              <span className="text-muted-foreground/70">One link.</span>
+              <span className="text-muted-foreground">One link.</span>
             </h1>
           </Reveal>
           <Reveal delay={120}>
@@ -159,7 +159,11 @@ export default function Landing() {
                   />
                   <Row k="Expires" v={<span>in 5 days</span>} />
                 </div>
-                <button className="mt-7 inline-flex h-10 w-full items-center justify-center rounded-md bg-foreground text-sm font-medium text-background">
+                <button
+                  className="pointer-events-none mt-7 inline-flex h-10 w-full items-center justify-center rounded-md bg-foreground text-sm font-medium text-background"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                >
                   Connect wallet to pay
                 </button>
               </div>

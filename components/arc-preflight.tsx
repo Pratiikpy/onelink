@@ -17,6 +17,7 @@ import {
   ARC_FAUCET_URL,
   ARC_USDC_ADDRESS,
 } from "@/lib/arc";
+import { HAS_CONTRACT } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 
 type PreFlightTone = "ready" | "attention" | "info";
@@ -142,7 +143,9 @@ export function ArcPreFlight({
     },
     {
       label: "Receipt",
-      value: "Verified on Arcscan after server reconciliation",
+      value: HAS_CONTRACT
+        ? "Verified on Arcscan after server reconciliation"
+        : "Demo mode — illustrative receipt, no Arcscan transaction",
       tone: "info",
       icon: Check,
     },
