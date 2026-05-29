@@ -212,7 +212,7 @@ export function DashboardClient() {
           <p className="mt-3 text-sm text-muted-foreground">
             Your links stay private to your wallet — no signup needed.
           </p>
-          <div className="mt-7 flex justify-center">
+          <div className="mt-7 flex flex-col items-center gap-2">
             <ConnectButton.Custom>
               {({ openConnectModal }) => (
                 <Button size="lg" onClick={openConnectModal}>
@@ -220,6 +220,9 @@ export function DashboardClient() {
                 </Button>
               )}
             </ConnectButton.Custom>
+            <Button variant="link" asChild>
+              <Link href="/create">or create a link &rarr;</Link>
+            </Button>
           </div>
         </main>
       </div>
@@ -573,16 +576,17 @@ function EmptyState() {
       <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-hairline">
         <Plus className="h-5 w-5 text-muted-foreground" />
       </div>
-      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight">No links yet</h3>
-      <p className="mt-1.5 text-sm text-muted-foreground">
-        Create your first USDC payment link in under 30 seconds.
+      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight">
+        No payment links yet
+      </h3>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Create your first USDC link — it takes about 30 seconds.
       </p>
-      <Link
-        href="/create"
-        className="mt-6 inline-flex h-10 items-center gap-1.5 rounded-md bg-foreground px-4 text-sm font-medium text-background"
-      >
-        <Plus className="h-4 w-4" /> Create a link
-      </Link>
+      <div className="mt-7 flex justify-center">
+        <Button asChild size="lg">
+          <Link href="/create">Create your first link</Link>
+        </Button>
+      </div>
     </div>
   );
 }
