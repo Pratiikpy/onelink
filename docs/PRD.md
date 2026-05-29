@@ -25,7 +25,7 @@ receipts.
 **Why now.**
 
 - USDC is the largest stablecoin and Arc (Circle's purpose-built chain) makes
-  it the native gas token — sub-second settlement, no ETH-for-gas friction.
+  it the native gas token — deterministic on-chain finality, no ETH-for-gas friction.
 - Circle App Kit provides the CCTP bridge path used by OneLink's proven
   Base Sepolia to Arc Testnet payment flow.
 - WalletConnect lets a payer approve testnet settlement from a compatible
@@ -62,7 +62,7 @@ A successful v1 satisfies all four:
 
 1. **Create a link in under 30 seconds** — amount + memo + (optional) expiry. Recipient defaults to the connected wallet.
 2. **Pay through a supported route** — open the link on a phone, connect a wallet, and either pay directly on Arc Testnet or bridge funded Base Sepolia USDC to Arc via CCTP.
-3. **Receipt in under 5 seconds** — on-chain settlement, Arcscan transaction link, status flips to paid.
+3. **Receipt the moment settlement is verified** — on-chain settlement, Arcscan transaction link, status flips to paid.
 4. **Track everything** — a creator surface showing every link the user has created, with copy / share / cancel actions per link.
 
 If any of those four breaks for a non-trivial percentage of users, v1 isn't ready.
@@ -288,8 +288,8 @@ To go from this brief to a prototype:
 These are linked for the *product mental model*, not as visual targets.
 
 - **Stripe Payment Links** — the closest non-crypto analogue. https://stripe.com/payments/payment-links
-- **Circle App Kit docs** — the SDK that powers the bridge + unified-balance flows. https://docs.circle.com
-- **Arc Testnet docs** — the chain we settle on. https://docs.arc.io
+- **Circle App Kit docs** — the SDK that powers the bridge + unified-balance flows. https://developers.circle.com
+- **Arc Testnet docs** — the chain we settle on. https://docs.arc.network
 
 ---
 

@@ -241,7 +241,7 @@ is rate-limited — so a captured signature is not trivially replayable.
 | Layer | Choice (version) |
 | --- | --- |
 | Framework | Next.js `^15.1.7`, React `^19`, TypeScript `^5.7.3` (Node ≥22 <25) |
-| Styling | Tailwind v3 (`^3.4.17`), shadcn/ui on Radix, `tw-animate-css`, Inter / Inter Tight / JetBrains Mono |
+| Styling | Tailwind v3 (`^3.4.17`), shadcn/ui on Radix, `tw-animate-css`, Geist / Geist Mono |
 | Wallet / RPC | wagmi `^2.14.11`, viem `^2.23.5`, RainbowKit `^2.2.9`, `@tanstack/react-query`, WalletConnect / Reown |
 | Circle | `@circle-fin/app-kit ^1.6.1`, `@circle-fin/adapter-viem-v2 ^1.11.1` (CCTP); hand-rolled Gateway (EIP-712) |
 | Contract | Solidity `0.8.28`, Foundry (forge-std), 27 tests |
