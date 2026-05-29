@@ -539,7 +539,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
     !isConnected ? (
       <ConnectButton.Custom>
         {({ openConnectModal }) => (
-          <Button onClick={openConnectModal} size="lg" className="w-full">
+          <Button onClick={openConnectModal} variant="brand" size="lg" className="w-full">
             <Wallet className="h-4 w-4" /> Connect wallet
           </Button>
         )}
@@ -547,6 +547,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
     ) : (
       <Button
         onClick={pay}
+        variant="brand"
         size="lg"
         className="w-full"
         loading={busy}
@@ -672,6 +673,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
                       key={k}
                       type="button"
                       disabled={!enabled}
+                      aria-pressed={route === k}
                       onClick={() => {
                         if (!enabled) return;
                         if (k !== route) {
@@ -746,8 +748,20 @@ export function PayLinkClient({ slug }: { slug: string }) {
               </div>
 
               {/* Status / activity / error */}
-              {activity && <p className="mt-4 text-xs text-success">{activity}</p>}
-              {error && <p className="mt-4 text-xs text-destructive">{error}</p>}
+              {activity && (
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="mt-4 text-xs text-success"
+                >
+                  {activity}
+                </p>
+              )}
+              {error && (
+                <p role="alert" className="mt-4 text-xs text-destructive">
+                  {error}
+                </p>
+              )}
 
               {/* Action — inline on desktop; mobile uses the sticky BottomBar */}
               <div className="mt-5 hidden md:block">{renderAction()}</div>
@@ -807,13 +821,14 @@ export function PayLinkClient({ slug }: { slug: string }) {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() =>
-                shareOrCopy({
+              onClick={async () => {
+                const result = await shareOrCopy({
                   title: `Pay ${link.amountUSDC} USDC with OneLink`,
                   text: link.memo,
                   url: paymentUrl,
-                })
-              }
+                });
+                if (result === "failed") toast.error("Couldn't share");
+              }}
             >
               Share
             </Button>

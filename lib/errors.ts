@@ -16,16 +16,15 @@ const SAFE_FALLBACK =
 /**
  * Maps raw wallet / chain / Circle SDK errors to friendly, action-oriented
  * copy. Unrecognized errors fall back to SAFE_FALLBACK; the raw detail is
- * logged to the console in development only, never rendered to the user.
+ * always logged to the console so production failures leave a diagnostic
+ * trail, but is never rendered to the user.
  */
 export function friendlyError(err: unknown, opts: { route?: PayRoute } = {}): string {
   const { route } = opts;
   const raw = err instanceof Error ? err.message : typeof err === "string" ? err : "";
   const lower = raw.toLowerCase();
 
-  if (process.env.NODE_ENV !== "production") {
-    console.error("[onelink] error:", err);
-  }
+  console.error("[onelink] error:", err);
 
   if (!raw) return SAFE_FALLBACK;
   if (lower.includes("rejected") || lower.includes("denied") || lower.includes("user refused")) {

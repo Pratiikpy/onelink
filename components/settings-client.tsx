@@ -174,7 +174,7 @@ export function SettingsClient() {
                       label="Handle"
                       value={handle}
                       onChange={(v) => setHandle(v.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                      prefix="onelink.app/"
+                      prefix="onelink-mauve-nu.vercel.app/"
                       mono
                     />
                     <p className="text-[11px] text-muted-foreground">

@@ -12,6 +12,12 @@ import {
   type EIP1193Provider,
   type Hex,
 } from "viem";
+// Static type-only import so TS still checks the dynamic `kit.bridge(...)` call
+// site below (catches App Kit param-shape drift) at zero bundle cost — type
+// imports are erased at build. `AppKit` is the only publicly exported name; the
+// bridge param/return interfaces are internal, so we derive their shapes from
+// the exported class via Parameters / ReturnType.
+import type { AppKit } from "@circle-fin/app-kit";
 import type { SourceChain } from "@/lib/arc";
 import { ARC_CHAIN } from "@/lib/arc";
 import {
@@ -54,7 +60,13 @@ async function connectedAdapter(connector: Connector) {
   return createViemAdapterFromProvider({ provider });
 }
 
-async function circleKit() {
+// Derived from the publicly exported `AppKit` class so the bridge call site is
+// type-checked without importing the internal (non-exported) param/return
+// interfaces.
+type AppKitBridgeParams = Parameters<AppKit["bridge"]>[0];
+type AppKitBridgeResult = Awaited<ReturnType<AppKit["bridge"]>>;
+
+async function circleKit(): Promise<AppKit> {
   const { AppKit } = await import("@circle-fin/app-kit");
   return new AppKit();
 }
@@ -202,11 +214,12 @@ export async function bridgeUsdcToArc({
     (["approve", "burn", "fetchAttestation", "mint"] satisfies BridgeStepName[]).forEach(subscribe);
   }
 
-  const result = await kit.bridge({
+  const bridgeParams: AppKitBridgeParams = {
     from: { adapter, chain: source.appKitName },
     to: { adapter, chain: "Arc_Testnet", recipientAddress: recipient },
     amount,
-  });
+  };
+  const result: AppKitBridgeResult = await kit.bridge(bridgeParams);
 
   if (result.state !== "success") {
     throw new Error("Circle CCTP bridge did not complete. Retry the payment route.");

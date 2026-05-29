@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
+import { Button } from "@/components/ui/button";
+
 export default function GlobalError({
   error,
   reset,
@@ -27,19 +29,10 @@ export default function GlobalError({
           A transient error interrupted the request. Try again or head home.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-2">
-          <button
-            type="button"
-            onClick={reset}
-            className="inline-flex h-10 items-center justify-center rounded-md bg-foreground px-5 text-sm font-medium text-background"
-          >
-            Try again
-          </button>
-          <Link
-            href="/"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-hairline bg-surface px-5 text-sm font-medium"
-          >
-            Go home
-          </Link>
+          <Button onClick={reset}>Try again</Button>
+          <Button variant="outline" asChild>
+            <Link href="/">Go home</Link>
+          </Button>
         </div>
       </div>
     </div>

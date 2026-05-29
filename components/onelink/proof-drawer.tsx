@@ -5,6 +5,7 @@ import { ExternalLink, ShieldCheck } from "lucide-react";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -61,13 +62,13 @@ export function ProofDrawer({
           <SheetTitle className="font-display text-xl font-semibold tracking-tight">
             Settlement proof
           </SheetTitle>
-          <p className="text-xs text-muted-foreground">
+          <SheetDescription className="text-xs text-muted-foreground">
             {verified
               ? "Verified Arc Testnet receipt — read directly from the contract event log."
               : demo
               ? "Demo receipt — no on-chain settlement occurred."
               : "Awaiting verified on-chain settlement."}
-          </p>
+          </SheetDescription>
         </SheetHeader>
 
         {verified ? (

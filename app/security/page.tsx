@@ -72,9 +72,8 @@ export default function SecurityPage() {
               fee, so the wallet only needs one balance to complete the flow.
             </li>
             <li>
-              · Sub-second deterministic finality on Arc means the receipt
-              page reflects on-chain settlement almost as fast as the wallet
-              confirms.
+              · Deterministic on-chain finality on Arc means the receipt page
+              reflects settlement as soon as the wallet transaction confirms.
             </li>
             <li>
               · Arcscan is the public source of truth. Every paid OneLink

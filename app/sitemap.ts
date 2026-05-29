@@ -1,19 +1,21 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site-url";
 
-const appUrl =
-  process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+// Stable build-independent date so lastModified doesn't churn on every deploy
+// (argless build-time `new Date()` is the SEO problem we're avoiding here).
+const LAST_MODIFIED = new Date("2026-05-29");
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = appUrl.replace(/\/$/, "");
-  const now = new Date();
+  const base = SITE_URL.replace(/\/$/, "");
   return [
-    { url: `${base}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${base}/create`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${base}/pitch`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/whitepaper`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${base}/security`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${base}/privacy`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${base}/terms`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${base}/`, lastModified: LAST_MODIFIED, changeFrequency: "weekly", priority: 1 },
+    { url: `${base}/create`, lastModified: LAST_MODIFIED, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/pitch`, lastModified: LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/how-it-works`, lastModified: LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/whitepaper`, lastModified: LAST_MODIFIED, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${base}/security`, lastModified: LAST_MODIFIED, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/mobile`, lastModified: LAST_MODIFIED, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/privacy`, lastModified: LAST_MODIFIED, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${base}/terms`, lastModified: LAST_MODIFIED, changeFrequency: "monthly", priority: 0.3 },
   ];
 }
