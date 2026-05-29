@@ -246,7 +246,8 @@ export default function PitchPage() {
           <Headline>Every claim has a hash you can re-check.</Headline>
           <Body>
             Public Vercel deployment. Public test artifacts. Public on-chain
-            settlement. Nothing in this product is mocked.
+            settlement — every figure below links to an artifact you can
+            re-check yourself.
           </Body>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <BigMetric value="27/27" label="Forge tests" />
@@ -277,7 +278,7 @@ export default function PitchPage() {
               </span>
             </p>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Direct Arc payment · server-verified
+              Styled sample · links to a real Arc transaction
             </p>
             <div className="mt-5 grid gap-2 border-t border-hairline pt-4 text-sm">
               <KV k="Method" v="Direct on Arc" />

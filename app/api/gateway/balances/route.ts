@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { getAddress, type Address } from "viem";
 import { GATEWAY_API_BASE_URL, GATEWAY_EVM_TESTNET_SOURCES } from "@/lib/gateway";
+import { clientKey, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 type BalanceRequest = {
   depositor?: Address;
 };
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
+  const rl = rateLimit(clientKey(req, "gateway-balances"), { limit: 60, windowMs: 60_000 });
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSec);
+
+  const request = req;
   const body = (await request.json().catch(() => null)) as BalanceRequest | null;
   if (!body?.depositor) {
     return NextResponse.json({ error: "Gateway depositor is required." }, { status: 400 });
@@ -36,8 +41,12 @@ export async function POST(request: Request) {
   }));
 
   if (!gatewayResponse.ok) {
+    console.error("Circle Gateway balance lookup failed", {
+      status: gatewayResponse.status,
+      detail: payload,
+    });
     return NextResponse.json(
-      { error: "Circle Gateway balance lookup failed.", details: payload },
+      { error: "Gateway request failed." },
       { status: gatewayResponse.status },
     );
   }

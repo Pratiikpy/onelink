@@ -3,7 +3,7 @@
 **Live target:** https://onelink-mauve-nu.vercel.app
 **Repo:** github.com/Pratiikpy/onelink
 **Network:** Arc Testnet · chain `5042002` · USDC native gas
-**Settlement contract:** `0x9b7D5B4DAD4c9B1065908FA8C6C34d697E3cBD0c`
+**Settlement contract:** Demo mode — no settlement contract deployed. The contract address is sourced from `NEXT_PUBLIC_ONELINK_CONTRACT_ADDRESS` at deploy time (zero address when unset).
 **Generated:** 2026-05-28
 **Branches/PRs from this pass:** PR #19 (merged), PR #20 (open)
 
@@ -12,10 +12,12 @@
 ## Verdict
 
 **Launch-ready for testnet demo / hackathon judging.** All 12 live-QA flows
-run green against the production deployment, including the four real
-on-chain settlement paths (direct, bridge, WalletConnect, browser-wallet),
-real cancellation, real failure recovery, and a 50/50 visual-render sweep
-across five viewports.
+run green against the deployment in its testnet configuration — the four
+settlement routes (direct, bridge, WalletConnect, browser-wallet),
+cancellation, failure recovery, and a 50/50 visual-render sweep across five
+viewports. On-chain settlement is gated on a deployed `OneLinkCollect`
+contract; when none is configured the app runs in demo mode (receipts use
+`0xDEM0…` hashes and nothing settles on Arc).
 
 Two real bugs were found, fixed, and merged during the pass. No remaining
 issues block testnet launch. Mainnet readiness is explicitly out of scope —

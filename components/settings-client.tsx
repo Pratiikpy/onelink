@@ -1,27 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useSignTypedData } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { toast } from "sonner";
 
 import { AppNav } from "@/components/onelink/nav";
+import { Button } from "@/components/ui/button";
 import { ARC_CHAIN_ID, ARC_RPC_URL, ARC_USDC_ADDRESS } from "@/lib/arc";
 import { ALLOW_DEMO_MODE, HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS } from "@/lib/contracts";
 import { ENABLE_GATEWAY_ROUTE } from "@/lib/circle-payments";
+import { friendlyError } from "@/lib/errors";
 import {
+  buildProfileClaimTypedData,
   getFreelancerProfile,
   normalizeHandle,
+  PROFILE_CLAIM_TTL_SECONDS,
+  PROFILE_STORAGE_KEY,
   saveFreelancerProfile,
   type FreelancerProfile,
+  type ProfileClaim,
 } from "@/lib/profiles";
 import { truncateAddr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Tab = "profile" | "wallet" | "network" | "danger";
 
+// Shared (cross-device) storage is active when the public Supabase env vars are
+// present — the same condition lib/profiles.ts uses to decide between the signed
+// API claim and the local-only fallback.
+const SHARED_STORAGE =
+  !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
 export function SettingsClient() {
   const { address, isConnected } = useAccount();
+  const { signTypedDataAsync } = useSignTypedData();
   const [tab, setTab] = useState<Tab>("profile");
   const [profile, setProfile] = useState<FreelancerProfile | null>(null);
   const [handle, setHandle] = useState("");
@@ -65,11 +78,29 @@ export function SettingsClient() {
         createdAt: profile?.createdAt ?? now,
         updatedAt: now,
       };
-      await saveFreelancerProfile(next);
-      setProfile(next);
-      toast.success("Profile saved (local)");
+
+      if (SHARED_STORAGE) {
+        // Cross-device: prove wallet ownership with a time-boxed EIP-712 claim
+        // before the server will persist the handle.
+        const issuedAt = Math.floor(Date.now() / 1000);
+        const claim: ProfileClaim = {
+          handle: normalized,
+          owner: address as `0x${string}`,
+          issuedAt,
+          expiresAt: issuedAt + PROFILE_CLAIM_TTL_SECONDS,
+        };
+        const signature = await signTypedDataAsync(buildProfileClaimTypedData(claim));
+        await saveFreelancerProfile(next, signature, claim);
+        setProfile(next);
+        toast.success("Profile saved");
+      } else {
+        // Local-only demo mode: no signing required.
+        await saveFreelancerProfile(next);
+        setProfile(next);
+        toast.success("Profile saved (local)");
+      }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save profile");
+      toast.error(friendlyError(err));
     } finally {
       setBusy(false);
     }
@@ -125,13 +156,14 @@ export function SettingsClient() {
                     Connect a wallet to claim a handle.
                     <ConnectButton.Custom>
                       {({ openConnectModal }) => (
-                        <button
+                        <Button
                           type="button"
+                          size="sm"
                           onClick={openConnectModal}
-                          className="mt-3 inline-flex h-9 items-center rounded-md bg-foreground px-4 text-xs font-medium text-background"
+                          className="mt-3"
                         >
                           Connect wallet
-                        </button>
+                        </Button>
                       )}
                     </ConnectButton.Custom>
                   </div>
@@ -146,18 +178,19 @@ export function SettingsClient() {
                       mono
                     />
                     <p className="text-[11px] text-muted-foreground">
-                      Saved locally for this session. A signed handle claim flow will land in a
-                      future build for cross-device persistence.
+                      {SHARED_STORAGE
+                        ? "Claiming a handle requires a one-time wallet signature to prove ownership. No gas, no funds moved."
+                        : "Saved locally for this session. Connect shared storage for cross-device persistence."}
                     </p>
                     <div className="flex justify-end pt-2">
-                      <button
+                      <Button
                         type="button"
+                        size="sm"
                         onClick={saveProfile}
-                        disabled={busy}
-                        className="inline-flex h-9 items-center rounded-md bg-foreground px-4 text-sm font-medium text-background disabled:opacity-50"
+                        loading={busy}
                       >
-                        {busy ? "Saving…" : "Save changes"}
-                      </button>
+                        {busy ? (SHARED_STORAGE ? "Signing…" : "Saving…") : "Save changes"}
+                      </Button>
                     </div>
                   </>
                 )}
@@ -230,7 +263,7 @@ export function SettingsClient() {
                   onClick={() => {
                     if (typeof window !== "undefined") {
                       localStorage.removeItem("onelink:payment-links");
-                      localStorage.removeItem("onelink:profiles");
+                      localStorage.removeItem(PROFILE_STORAGE_KEY);
                       toast.success("Local demo data cleared");
                     }
                   }}
@@ -318,13 +351,9 @@ function DangerRow({
         <p className="text-sm font-medium">{title}</p>
         <p className="text-xs text-muted-foreground">{desc}</p>
       </div>
-      <button
-        type="button"
-        onClick={onClick}
-        className="rounded-md border border-destructive/30 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10"
-      >
+      <Button type="button" variant="outline" size="sm" onClick={onClick}>
         {cta}
-      </button>
+      </Button>
     </div>
   );
 }

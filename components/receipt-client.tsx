@@ -14,12 +14,14 @@ import {
 import { Logo } from "@/components/onelink/logo";
 import { HashMono } from "@/components/onelink/hash-mono";
 import { ProofDrawer } from "@/components/onelink/proof-drawer";
+import { Button } from "@/components/ui/button";
 import { ARC_EXPLORER_URL, isDemoTxHash } from "@/lib/arc";
 import type { PaymentLink } from "@/lib/payments";
 import { paymentMethodLabel } from "@/lib/payments";
 import { getPaymentLinkById } from "@/lib/storage";
 import { shareOrCopy, useCopy } from "@/lib/share";
 import { formatDateTime, formatUSDC, shortHash, truncateAddr } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 export function ReceiptClient({ id }: { id: string }) {
   const [link, setLink] = useState<PaymentLink | null>(null);
@@ -58,8 +60,52 @@ export function ReceiptClient({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-md px-6 py-24 text-center text-sm text-muted-foreground">
-        Loading receipt…
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-hairline">
+          <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
+            <Logo />
+            <Link
+              href="/dashboard"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Open dashboard
+            </Link>
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-xl px-6 py-14">
+          <div
+            className="rounded-2xl border border-hairline bg-surface p-8"
+            aria-hidden
+          >
+            {/* Status chip */}
+            <div className="h-5 w-44 rounded-md bg-muted animate-pulse motion-reduce:animate-none" />
+            {/* Amount */}
+            <div className="mt-7 h-16 w-56 rounded-lg bg-muted animate-pulse motion-reduce:animate-none" />
+            {/* Memo */}
+            <div className="mt-3 h-4 w-3/4 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+
+            {/* Key/value rows */}
+            <div className="mt-7 space-y-3 border-t border-hairline pt-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="h-3.5 w-20 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+                  <div className="h-3.5 w-28 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+                </div>
+              ))}
+            </div>
+
+            {/* Proof notice */}
+            <div className="mt-6 h-12 w-full rounded-md bg-muted animate-pulse motion-reduce:animate-none" />
+
+            {/* Button row */}
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              <div className="h-10 rounded-xl bg-muted animate-pulse motion-reduce:animate-none" />
+              <div className="h-10 rounded-xl bg-muted animate-pulse motion-reduce:animate-none" />
+            </div>
+            <div className="mt-2 h-11 w-full rounded-xl bg-muted animate-pulse motion-reduce:animate-none" />
+          </div>
+        </main>
       </div>
     );
   }
@@ -74,12 +120,9 @@ export function ReceiptClient({ id }: { id: string }) {
         <p className="mt-3 text-sm text-muted-foreground">
           {loadError || "Create and pay a link to generate a receipt."}
         </p>
-        <Link
-          href="/create"
-          className="mt-7 inline-flex h-10 items-center rounded-md bg-foreground px-5 text-sm font-medium text-background"
-        >
-          Create link
-        </Link>
+        <Button asChild size="lg" className="mt-7">
+          <Link href="/create">Create link</Link>
+        </Button>
       </div>
     );
   }
@@ -214,29 +257,27 @@ export function ReceiptClient({ id }: { id: string }) {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-2">
-            <a
-              href={arcscan}
-              target="_blank"
-              rel="noreferrer"
-              className={
-                demo
-                  ? "pointer-events-none inline-flex h-10 items-center justify-center gap-1.5 rounded-md border border-hairline bg-background text-sm font-medium opacity-50"
-                  : "inline-flex h-10 items-center justify-center gap-1.5 rounded-md border border-hairline bg-background text-sm font-medium hover:bg-muted"
-              }
+            <Button
+              asChild
+              variant="outline"
+              className={cn("w-full", demo && "pointer-events-none opacity-50")}
             >
-              <ExternalLink className="h-3.5 w-3.5" />
-              {demo ? "Demo · no Arcscan" : "Arcscan"}
-            </a>
-            <button
-              type="button"
+              <a href={arcscan} target="_blank" rel="noreferrer">
+                <ExternalLink className="h-3.5 w-3.5" />
+                {demo ? "Demo · no Arcscan" : "Arcscan"}
+              </a>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={() => copy(receiptUrl)}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-md border border-hairline bg-background text-sm font-medium hover:bg-muted"
             >
               {copied ? "Copied" : "Copy URL"}
-            </button>
+            </Button>
           </div>
-          <button
-            type="button"
+          <Button
+            size="lg"
+            className="mt-2 w-full"
             onClick={() =>
               shareOrCopy({
                 title: `${link.amountUSDC} USDC · OneLink receipt`,
@@ -244,10 +285,9 @@ export function ReceiptClient({ id }: { id: string }) {
                 url: receiptUrl,
               })
             }
-            className="mt-2 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-foreground text-sm font-medium text-background"
           >
             <Share2 className="h-4 w-4" /> Share receipt
-          </button>
+          </Button>
         </div>
 
         <p className="mt-6 text-center text-[11px] text-muted-foreground">

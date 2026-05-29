@@ -3,13 +3,18 @@ import { createClient } from "@supabase/supabase-js";
 import { createPublicClient, decodeEventLog, getAddress, http, isAddressEqual, type Hex } from "viem";
 import { ARC_CHAIN, ARC_RPC_URL } from "@/lib/arc";
 import { HAS_CONTRACT, ONELINK_CONTRACT_ADDRESS, oneLinkCollectAbi } from "@/lib/contracts";
+import { clientKey, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 type CancelRequest = {
   id?: string;
   txHash?: Hex;
 };
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
+  const rl = rateLimit(clientKey(req, "payments-cancel"), { limit: 20, windowMs: 60_000 });
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSec);
+
+  const request = req;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey || !HAS_CONTRACT) {

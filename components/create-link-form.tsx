@@ -11,7 +11,9 @@ import { ArrowLeft, ArrowRight, Check, Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppNav } from "@/components/onelink/nav";
+import { Button } from "@/components/ui/button";
 import { ARC_CHAIN_ID } from "@/lib/arc";
+import { friendlyError } from "@/lib/errors";
 import {
   HAS_CONTRACT,
   ONELINK_CONTRACT_ADDRESS,
@@ -122,7 +124,7 @@ export function CreateLinkForm() {
       setCreatedLink(verified ?? link);
       setStep(4);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not register the link.");
+      setError(friendlyError(err));
     } finally {
       setSigning(false);
     }
@@ -145,13 +147,9 @@ export function CreateLinkForm() {
           <div className="mt-7 flex justify-center">
             <ConnectButton.Custom>
               {({ openConnectModal }) => (
-                <button
-                  type="button"
-                  onClick={openConnectModal}
-                  className="inline-flex h-10 items-center rounded-md bg-foreground px-5 text-sm font-medium text-background"
-                >
+                <Button onClick={openConnectModal} size="lg">
                   Connect wallet
-                </button>
+                </Button>
               )}
             </ConnectButton.Custom>
           </div>
@@ -217,14 +215,14 @@ export function CreateLinkForm() {
                   value={memo}
                   onChange={(e) => setMemo(e.target.value)}
                   placeholder="What's this for?"
-                  className="w-full rounded-md border border-hairline bg-background px-3 py-2.5 text-sm outline-none focus:border-foreground/40"
+                  className="w-full rounded-md border border-hairline bg-background px-3 py-2.5 text-base md:text-sm outline-none focus:border-foreground/40"
                 />
               </Field>
               <Field label="Recipient" hint="Defaults to your connected wallet">
                 <input
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value)}
-                  className="w-full rounded-md border border-hairline bg-background px-3 py-2.5 font-mono text-xs outline-none focus:border-foreground/40"
+                  className="w-full rounded-md border border-hairline bg-background px-3 py-2.5 font-mono text-[16px] md:text-xs outline-none focus:border-foreground/40"
                 />
               </Field>
               <Field label="Expiry">
@@ -246,14 +244,14 @@ export function CreateLinkForm() {
                   ))}
                 </div>
               </Field>
-              <button
-                type="button"
+              <Button
                 onClick={() => setStep(2)}
                 disabled={!validInputs}
-                className="mt-2 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-foreground text-sm font-medium text-background disabled:opacity-40"
+                size="lg"
+                className="w-full"
               >
                 Review <ArrowRight className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           )}
 
@@ -284,20 +282,12 @@ export function CreateLinkForm() {
                 }
               />
               <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-hairline bg-background text-sm font-medium hover:bg-muted"
-                >
+                <Button variant="outline" size="lg" className="flex-1" onClick={() => setStep(1)}>
                   Back
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  className="inline-flex h-10 flex-[2] items-center justify-center gap-1.5 rounded-md bg-foreground text-sm font-medium text-background"
-                >
+                </Button>
+                <Button size="lg" className="flex-[2]" onClick={() => setStep(3)}>
                   Continue <ArrowRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -315,33 +305,34 @@ export function CreateLinkForm() {
                   ? "OneLink will register the link on Arc. You sign one transaction."
                   : "Demo mode — link is saved locally without a real chain transaction."}
               </p>
-              <div className="mt-6 space-y-2 rounded-lg border border-hairline bg-muted/40 p-3 text-left font-mono text-[11px]">
-                <p>
-                  <span className="text-muted-foreground">contract:</span> OneLinkCollect
-                </p>
-                <p>
-                  <span className="text-muted-foreground">method:</span> createLink(linkId, recipient, amount, expiresAt)
-                </p>
-                <p>
-                  <span className="text-muted-foreground">chain:</span> Arc Testnet ({ARC_CHAIN_ID})
-                </p>
-              </div>
+              <details className="mt-6 text-left">
+                <summary className="cursor-pointer text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                  Advanced details
+                </summary>
+                <div className="mt-3 space-y-2 rounded-lg border border-hairline bg-muted/40 p-3 font-mono text-[11px]">
+                  <p>
+                    <span className="text-muted-foreground">contract:</span> OneLinkCollect
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">method:</span> createLink(linkId, recipient, amount, expiresAt)
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">chain:</span> Arc Testnet ({ARC_CHAIN_ID})
+                  </p>
+                </div>
+              </details>
               {error && <p className="mt-4 text-xs text-destructive">{error}</p>}
-              <button
-                type="button"
+              <Button
                 onClick={sign}
-                disabled={signing}
-                className="mt-6 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-foreground text-sm font-medium text-background disabled:opacity-50"
+                size="lg"
+                className="w-full"
+                loading={signing}
               >
-                {signing ? "Waiting for signature…" : "Open wallet to sign"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="mt-2 text-sm text-muted-foreground hover:text-foreground"
-              >
+                {HAS_CONTRACT ? "Open wallet to sign" : "Save demo link"}
+              </Button>
+              <Button variant="ghost" size="sm" className="mt-2" onClick={() => setStep(2)}>
                 Cancel
-              </button>
+              </Button>
             </div>
           )}
 
@@ -362,39 +353,36 @@ export function CreateLinkForm() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 rounded-md border border-hairline bg-background p-2">
                     <span className="flex-1 truncate px-2 font-mono text-xs">{linkUrl}</span>
-                    <button
-                      type="button"
+                    <Button
+                      size="sm"
                       onClick={async () => {
                         await navigator.clipboard.writeText(linkUrl);
                         toast.success("Link copied");
                       }}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background"
                     >
                       <Copy className="h-3.5 w-3.5" /> Copy
-                    </button>
+                    </Button>
                   </div>
-                  <button
-                    type="button"
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
                     onClick={() =>
                       shareOrCopy({ title: createdLink.memo, url: linkUrl })
                     }
-                    className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-hairline bg-background text-sm font-medium hover:bg-muted"
                   >
                     <Share2 className="h-4 w-4" /> Share
-                  </button>
-                  <Link
-                    href={paymentPath(createdLink.slug)}
-                    className="inline-flex h-10 w-full items-center justify-center rounded-md bg-foreground text-sm font-medium text-background"
-                  >
-                    Preview pay page
-                  </Link>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button asChild size="lg" className="w-full">
+                    <Link href={paymentPath(createdLink.slug)}>Preview pay page</Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full"
                     onClick={() => router.push("/dashboard")}
-                    className="inline-flex h-9 w-full items-center justify-center text-sm text-muted-foreground hover:text-foreground"
                   >
                     Back to dashboard
-                  </button>
+                  </Button>
                 </div>
                 <div className="rounded-xl border border-hairline bg-background p-3">
                   <QRCodeSVG value={linkUrl} size={140} bgColor="transparent" fgColor="currentColor" />
