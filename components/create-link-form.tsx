@@ -11,6 +11,7 @@ import { ArrowLeft, ArrowRight, Check, Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppNav } from "@/components/onelink/nav";
+import { BottomBar } from "@/components/onelink/bottom-bar";
 import { Button } from "@/components/ui/button";
 import { ARC_CHAIN_ID } from "@/lib/arc";
 import { friendlyError } from "@/lib/errors";
@@ -166,7 +167,7 @@ export function CreateLinkForm() {
   return (
     <div className="min-h-screen bg-background page-in">
       <AppNav />
-      <main className="mx-auto max-w-2xl px-6 py-12">
+      <main className="mx-auto max-w-2xl px-6 py-12 pb-28 md:pb-12">
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -321,11 +322,15 @@ export function CreateLinkForm() {
                   </p>
                 </div>
               </details>
-              {error && <p className="mt-4 text-xs text-destructive">{error}</p>}
+              {error && (
+                <div className="mt-4 rounded-xl border border-destructive/20 bg-destructive/[0.05] p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
               <Button
                 onClick={sign}
                 size="lg"
-                className="w-full"
+                className="mt-4 hidden w-full md:inline-flex"
                 loading={signing}
               >
                 {HAS_CONTRACT ? "Open wallet to sign" : "Save demo link"}
@@ -392,6 +397,18 @@ export function CreateLinkForm() {
           )}
         </div>
       </main>
+      {step === 3 && (
+        <BottomBar>
+          <Button
+            onClick={sign}
+            size="lg"
+            className="w-full"
+            loading={signing}
+          >
+            {HAS_CONTRACT ? "Open wallet to sign" : "Save demo link"}
+          </Button>
+        </BottomBar>
+      )}
     </div>
   );
 }
