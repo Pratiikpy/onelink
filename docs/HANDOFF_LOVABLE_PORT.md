@@ -246,7 +246,7 @@ All four must pass green. Visual screenshots will refresh in `docs/test-results/
 
 ## Don't claim, don't show
 
-These rules from `CLAUDE.md` and `LAUNCH_READINESS.md` are non-negotiable:
+These rules from the project guidelines and `LAUNCH_READINESS.md` are non-negotiable:
 
 - No mainnet readiness anywhere
 - No "any blockchain" or "any chain" copy

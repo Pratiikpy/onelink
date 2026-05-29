@@ -14,11 +14,9 @@ contracts/out
 tsconfig.tsbuildinfo
 .DS_Store
 .vercel
-.claude
 .agents/
 .playwright-mcp
 tmp-ui-check/
-CLAUDE.md
 skills-lock.json
 
 # Local Playwright/QA video captures
