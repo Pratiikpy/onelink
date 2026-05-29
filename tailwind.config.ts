@@ -48,6 +48,14 @@ const config: Config = {
           DEFAULT: "oklch(var(--destructive))",
           foreground: "oklch(var(--destructive-foreground))",
         },
+        brand: {
+          DEFAULT: "var(--brand)",
+          hover: "var(--brand-hover)",
+          tint: "var(--brand-tint)",
+          text: "var(--brand-text)",
+          foreground: "#ffffff",
+        },
+        usdc: "var(--usdc)",
         hairline: "oklch(var(--foreground) / var(--hairline-alpha))",
         border: "oklch(var(--foreground) / var(--border-alpha))",
         input: "oklch(var(--foreground) / var(--input-alpha))",
@@ -62,9 +70,9 @@ const config: Config = {
         "3xl": "calc(var(--radius) + 12px)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-inter-tight)", "var(--font-inter)", "sans-serif"],
-        mono: ["var(--font-jetbrains-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        sans: ["var(--font-geist-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-geist-sans)", "ui-sans-serif", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       transitionTimingFunction: {
         "out-soft": "cubic-bezier(0.22, 1, 0.36, 1)",
