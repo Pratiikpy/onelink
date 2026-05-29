@@ -1,0 +1,16 @@
+{
+  "status": "green",
+  "generatedAt": "2026-05-29T22:20:55.225Z",
+  "liveUrl": "https://onelink-mauve-nu.vercel.app",
+  "paymentUrl": "https://onelink-mauve-nu.vercel.app/pay/rabby-ui-qa-20260529221905",
+  "amountUSDC": "0.02",
+  "creator": "0x8fD0be3b709827535e1d690C17a7e51f577cEcdB",
+  "payer": "0xf6F0888C3FBF62aFeb4c1cC929fE1C782D09B00a",
+  "slug": "rabby-ui-qa-20260529221905",
+  "id": "cefce277-f321-4e8e-8db2-c85a4012ce66",
+  "linkId": "0x9ed9df0f89a82ffdb50b45a0b8682cb6ab5955eb8235a5d44cda5febebbcaaca",
+  "createHash": "0x60ae7ec55158833affe94e551b61dcaeaa52d833ea1dd2ff232790d9493fb41a",
+  "paidUiObserved": true,
+  "onchainPaid": true,
+  "wallet": "real Rabby extension (EIP-6963), persistent profile, payer key imported via UI"
+}
