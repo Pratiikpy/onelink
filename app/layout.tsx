@@ -37,9 +37,9 @@ export const metadata: Metadata = {
     "Web3",
   ],
   openGraph: {
-    title: "OneLink Collect — Supported USDC payments settled on Arc.",
+    title: "OneLink Collect — Get paid in USDC. Verified on Arc.",
     description:
-      "Create and pay USDC collection links on Arc Testnet using implemented Circle App Kit routes.",
+      "Create and pay USDC payment links on Arc Testnet. Pay directly on Arc or bridge in via Circle CCTP — with a server-verified receipt.",
     url: SITE_URL,
     siteName: "OneLink Collect",
     type: "website",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "OneLink Collect",
     description:
-      "One link for supported testnet USDC routes, settled and verified on Arc.",
+      "One link to get paid in USDC, settled and verified on Arc.",
   },
   robots: {
     index: true,

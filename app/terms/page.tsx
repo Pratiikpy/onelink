@@ -5,6 +5,7 @@ import { Reveal } from "@/components/onelink/reveal";
 export const metadata: Metadata = {
   title: "Terms",
   description: "Plain-language terms covering OneLink's testnet scope and limitations.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

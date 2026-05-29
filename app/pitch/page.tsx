@@ -42,7 +42,7 @@ const TX = {
   walletconnect:
     "0x2f5abeb1840cd6ed905cb3af6d72e7de7c6ad44c84a30050a79605eceea48daa",
   browser: "0x031e671e9321e60310276af91a1bb3b52c8079be86a824bc0378edd98a67a889",
-  bridge: "0xc5ac72e58a77fd48c9f6781031557fbd63cc6c7556876f25b1bb218aea240ee3",
+  bridge: "0x06907a47b9c79da2164efcd5fe9f58fe708969fee27af4563c3b232c860911ad",
 } as const;
 
 function shortHash(h: string) {
@@ -180,8 +180,8 @@ function Problem() {
   return (
     <Section eyebrow="01 · The problem" title="Getting paid in USDC is still a support thread.">
       <SectionLead>
-        The asset is global and instant. The experience around it is anything
-        but — and freelancers absorb the friction on every invoice.
+        The asset is global and programmable. The experience around it is
+        anything but — and freelancers absorb the friction on every invoice.
       </SectionLead>
       <div className="mt-12 grid gap-3 md:grid-cols-3">
         {cards.map((c, i) => (

@@ -280,11 +280,11 @@ visual sweep.
 | Direct Arc settlement | `0x508ebf9ac99613534e82d768d423c0d30c274c57d30f0181c9cba6805e5ddd46` |
 | Creator cancellation | `0x9a7d08580a5313cb97220c21e2011d6f042cc0c6db0349d75a4cafc46bdc5138` |
 | Profile payment | `0xe6521e60bd25a01a82124ec22a368c9200480081b2708ffadcce23779aed0fea` |
-| WalletConnect signed `payLink` | `0x911565693a254c25aeb3bf87e2bf5e3ba5dec697f659cb898434536b1d40140b` |
-| Browser-wallet settlement | `0x6b921b06d601e88cf1cdb0ea1eb5237cd89dc7220c0ef2ab6b910f46b312c4ab` |
-| CCTP burn (Base Sepolia) | `0x051298e44c02b47ddc99b708bd3060c9287bba6cc130444219b3197b7630a9db` |
-| CCTP mint (Arc) | `0x7631260432ac0e65428f7286bae6ee1b3a2e6a5c2e86079154027ced0e97f79d` |
-| Bridge settlement (Arc) | `0xc5ac72e58a77fd48c9f6781031557fbd63cc6c7556876f25b1bb218aea240ee3` |
+| WalletConnect signed `payLink` | `0x2f5abeb1840cd6ed905cb3af6d72e7de7c6ad44c84a30050a79605eceea48daa` |
+| Browser-wallet settlement | `0x031e671e9321e60310276af91a1bb3b52c8079be86a824bc0378edd98a67a889` |
+| CCTP burn (Base Sepolia) | `0x9268c536eb8953233c5b3ca293380706ebcccb893a3f158d530bb6fa96a505c7` |
+| CCTP mint (Arc) | `0x539faa4e5564cb62350e384266895c7ded2b67cf924b6d713663ed03105ab584` |
+| Bridge settlement (Arc) | `0x06907a47b9c79da2164efcd5fe9f58fe708969fee27af4563c3b232c860911ad` |
 
 Arc txs: `https://testnet.arcscan.app/tx/<hash>`. Full evidence bundle:
 `docs/LAUNCH_READINESS.md`.

@@ -5,8 +5,9 @@ import { cn } from "@/lib/utils";
 type Size = 16 | 20 | 24 | 32 | 40 | 48 | 64 | 96;
 
 /**
- * OneLink mark — two interlocking arcs forming a chain-link "O".
- * Monoline, currentColor, optically centered inside a soft squircle.
+ * OneLink mark — a single open ring (one monoline arc with a clean opening at
+ * the top), the OneLink "O". currentColor stroke: inherits ink in the nav and
+ * flips to white when `withFrame` puts it on a filled brand-blue chip.
  */
 export function LogoMark({
   size = 24,

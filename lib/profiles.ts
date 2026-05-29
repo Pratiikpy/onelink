@@ -29,6 +29,22 @@ export function normalizeHandle(value: string) {
     .slice(0, 32);
 }
 
+// Handles that collide with a static app/ route segment (the router would shadow
+// the profile, leaving it permanently unreachable) plus common reserved words.
+// Claiming one is rejected on both the client and the server.
+export const RESERVED_HANDLES = new Set<string>([
+  "create", "dashboard", "pay", "receipt", "settings", "pitch", "whitepaper",
+  "mobile", "brand", "how-it-works", "security", "privacy", "terms", "api",
+  "admin", "login", "logout", "signin", "signup", "about", "home", "index",
+  "app", "www", "docs", "support", "help", "status", "profile", "profiles",
+  "link", "links", "new", "edit", "sitemap", "robots", "manifest", "favicon",
+  "icon", "apple-icon", "opengraph-image", "account", "billing", "onelink",
+]);
+
+export function isReservedHandle(value: string) {
+  return RESERVED_HANDLES.has(normalizeHandle(value));
+}
+
 // How long a signed profile claim stays valid. The server rejects claims older
 // than this (and ones issued in the future beyond a small clock-skew window).
 // This — combined with the EIP-712 domain binding (name/version/chainId) — is
@@ -80,6 +96,9 @@ export async function saveFreelancerProfile(
   signature?: `0x${string}`,
   claim?: ProfileClaim,
 ) {
+  if (isReservedHandle(profile.handle)) {
+    throw new Error("That handle is reserved — please choose another.");
+  }
   if (supabase) {
     if (!signature || !claim) {
       throw new Error("Sign the wallet ownership message to claim a public handle.");

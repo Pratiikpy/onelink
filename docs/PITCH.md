@@ -145,7 +145,7 @@ proven on the live public deployment with a real on-chain transaction:
 | Permanent profile payment | `0xe6521e60bd25a01a82124ec22a368c9200480081b2708ffadcce23779aed0fea` |
 | WalletConnect signed payment | `0x2f5abeb1840cd6ed905cb3af6d72e7de7c6ad44c84a30050a79605eceea48daa` |
 | Browser-wallet end-to-end | `0x031e671e9321e60310276af91a1bb3b52c8079be86a824bc0378edd98a67a889` |
-| Base Sepolia → Arc bridge settlement | `0xc5ac72e58a77fd48c9f6781031557fbd63cc6c7556876f25b1bb218aea240ee3` |
+| Base Sepolia → Arc bridge settlement | `0x06907a47b9c79da2164efcd5fe9f58fe708969fee27af4563c3b232c860911ad` |
 
 Open any of them at `https://testnet.arcscan.app/tx/<hash>`. A live example
 receipt: https://onelink-mauve-nu.vercel.app/receipt/7e41bf18-b61c-4af2-baeb-b10f219d58e8

@@ -5,6 +5,7 @@ import { Reveal } from "@/components/onelink/reveal";
 export const metadata: Metadata = {
   title: "Security",
   description: "How OneLink verifies payment state, what is in scope, and what is not.",
+  alternates: { canonical: "/security" },
 };
 
 export default function SecurityPage() {

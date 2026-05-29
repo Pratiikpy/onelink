@@ -5,6 +5,7 @@ import { getAddress, verifyTypedData, type Address, type Hex } from "viem";
 import { rateLimit, clientKey, tooManyRequests } from "@/lib/rate-limit";
 import {
   buildProfileClaimTypedData,
+  isReservedHandle,
   normalizeHandle,
   PROFILE_CLAIM_TTL_SECONDS,
   type ProfileClaim,
@@ -43,6 +44,9 @@ export async function POST(request: Request) {
   const handle = normalizeHandle(body?.profile?.handle ?? "");
   if (!handle || !body?.profile?.wallet || !body.signature || !body.claim) {
     return NextResponse.json({ error: "Profile claim is incomplete." }, { status: 400 });
+  }
+  if (isReservedHandle(handle)) {
+    return NextResponse.json({ error: "That handle is reserved and cannot be claimed." }, { status: 400 });
   }
 
   // The wallet that will receive funds — the only identity allowed to claim the

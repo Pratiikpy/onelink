@@ -131,23 +131,6 @@ export const gatewayMinterAbi = [
   },
 ] as const;
 
-export const gatewayWalletAbi = [
-  {
-    type: "function",
-    name: "deposit",
-    inputs: [
-      { name: "token", type: "address" },
-      { name: "value", type: "uint256" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-] as const;
-
-export function gatewaySourceByChainId(chainId: number) {
-  return GATEWAY_EVM_TESTNET_SOURCES.find((source) => source.chain.id === chainId);
-}
-
 export function toGatewayBytes32(address: Address) {
   return `0x${address.toLowerCase().replace(/^0x/, "").padStart(64, "0")}` as Hex;
 }

@@ -31,7 +31,7 @@ const APP_HOST = "onelink-mauve-nu.vercel.app";
 // A real, on-chain Base Sepolia → Arc bridge settlement. Linked from the
 // "Watch a payment" section so the route visual ends in genuine proof.
 const BRIDGE_TX =
-  "0xc5ac72e58a77fd48c9f6781031557fbd63cc6c7556876f25b1bb218aea240ee3";
+  "0x06907a47b9c79da2164efcd5fe9f58fe708969fee27af4563c3b232c860911ad";
 
 // A real example receipt the hero CTA points at.
 const EXAMPLE_RECEIPT = "7e41bf18-b61c-4af2-baeb-b10f219d58e8";
@@ -762,7 +762,7 @@ function WatchPayment() {
                 <CardRow
                   k="Tx hash"
                   v={
-                    <span className="font-mono text-xs">0xc5ac…0ee3</span>
+                    <span className="font-mono text-xs">0x0690…11ad</span>
                   }
                 />
                 <CardRow
