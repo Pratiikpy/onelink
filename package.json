@@ -53,7 +53,9 @@
     "qa:live:failure-states": "node scripts/qa-live-failure-states.mjs",
     "qa:live:walletconnect-modal": "node scripts/qa-live-walletconnect-modal.mjs",
     "qa:live:walletconnect-payment": "node scripts/qa-live-walletconnect-payment.mjs",
-    "qa:live:cancel": "node scripts/qa-live-cancel.mjs"
+    "qa:live:cancel": "node scripts/qa-live-cancel.mjs",
+    "qa:rabby:onboard": "node scripts/qa-rabby-onboard.mjs",
+    "qa:live:rabby-ui": "node scripts/qa-live-rabby-ui.mjs"
   },
   "dependencies": {
     "@circle-fin/adapter-viem-v2": "^1.11.1",
