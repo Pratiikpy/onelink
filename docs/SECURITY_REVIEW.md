@@ -18,7 +18,7 @@ Reviewed: 2026-05-27
 - `npm run qa:live:visual` and `npm run qa:live:walletconnect-modal` passed on
   the deployed app.
 - A fresh signed WalletConnect settlement passed on Arc Testnet:
-  [payLink transaction](https://testnet.arcscan.app/tx/0x911565693a254c25aeb3bf87e2bf5e3ba5dec697f659cb898434536b1d40140b).
+  [payLink transaction](https://testnet.arcscan.app/tx/0x2f5abeb1840cd6ed905cb3af6d72e7de7c6ad44c84a30050a79605eceea48daa).
 - CodeQL passed after dynamic payment and receipt route segments were URL-encoded;
   GitHub reports zero open code-scanning alerts.
 

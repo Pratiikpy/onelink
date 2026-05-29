@@ -5,6 +5,7 @@ import { Reveal } from "@/components/onelink/reveal";
 export const metadata: Metadata = {
   title: "Privacy",
   description: "What OneLink stores and what stays public on Arc.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

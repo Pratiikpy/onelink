@@ -67,22 +67,3 @@ export function paymentMethodLabel(method?: PaymentMethod | null) {
   if (!method) return "Pending";
   return methodLabels[method] ?? method;
 }
-
-// Deterministic en-US timestamp so receipts and screenshots look the same in
-// every browser, regardless of the visitor's locale.
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true,
-});
-
-export function formatTimestamp(input: string | number | Date) {
-  try {
-    return dateFormatter.format(new Date(input));
-  } catch {
-    return "—";
-  }
-}

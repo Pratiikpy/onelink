@@ -62,7 +62,7 @@ const PROOFS = [
   },
   {
     label: "Base → Arc bridge settlement",
-    hash: "0xc5ac72e58a77fd48c9f6781031557fbd63cc6c7556876f25b1bb218aea240ee3",
+    hash: "0x06907a47b9c79da2164efcd5fe9f58fe708969fee27af4563c3b232c860911ad",
   },
 ] as const;
 

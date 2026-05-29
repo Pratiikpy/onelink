@@ -42,7 +42,10 @@ const expiryHours: Record<Expiry, number | null> = {
   never: null,
 };
 
-const AMOUNT_RE = /^\d+(\.\d{1,6})?$/;
+// USDC is shown to 2 decimals everywhere (formatUSDC). Constrain input to match
+// so the displayed amount always equals the amount settled on-chain — a 6-decimal
+// link would otherwise render rounded and misstate what the contract enforces.
+const AMOUNT_RE = /^\d+(\.\d{1,2})?$/;
 
 export function CreateLinkForm() {
   const router = useRouter();
@@ -210,7 +213,14 @@ export function CreateLinkForm() {
                 <div className="flex items-baseline gap-2 border-b border-hairline pb-3 focus-within:border-foreground/40">
                   <input
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                    onChange={(e) => {
+                      // Strip non-numeric, collapse to one dot, cap at 2 decimals.
+                      const cleaned = e.target.value.replace(/[^0-9.]/g, "");
+                      const [whole, ...rest] = cleaned.split(".");
+                      setAmount(
+                        rest.length ? `${whole}.${rest.join("").slice(0, 2)}` : whole,
+                      );
+                    }}
                     inputMode="decimal"
                     placeholder="0"
                     aria-label="Amount in USDC"

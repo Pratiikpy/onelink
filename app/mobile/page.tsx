@@ -20,8 +20,8 @@ import { cn } from "@/lib/utils";
 
 // ── Real artifacts (per accuracy map) ────────────────────────────────────────
 const VERIFIED_TX =
-  "0x6b921b06d601e88cf1cdb0ea1eb5237cd89dc7220c0ef2ab6b910f46b312c4ab";
-const VERIFIED_TX_SHORT = "0x6b92…c4ab";
+  "0x031e671e9321e60310276af91a1bb3b52c8079be86a824bc0378edd98a67a889";
+const VERIFIED_TX_SHORT = "0x031e…a889";
 const VERIFIED_TX_URL = `https://testnet.arcscan.app/tx/${VERIFIED_TX}`;
 const RECIPIENT = "0x7a2f…91c4";
 const APP_URL = "onelink-mauve-nu.vercel.app";

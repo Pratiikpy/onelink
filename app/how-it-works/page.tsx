@@ -19,12 +19,13 @@ export const metadata: Metadata = {
   title: "How it works",
   description:
     "How OneLink turns an invoice into a server-verified USDC receipt on Arc Testnet — the flow, the trust model, the Arc + Circle integration, and links to verify every claim yourself.",
+  alternates: { canonical: "/how-it-works" },
 };
 
-// A real Arc Testnet settlement tx (from docs/LAUNCH_READINESS.md) so the
-// "verify it yourself" link points at genuine on-chain proof.
+// A real Arc Testnet settlement tx (re-verified 2026-05-28, qa-live-browser-wallet)
+// so the "verify it yourself" link points at genuine on-chain proof.
 const PROOF_TX =
-  "0x6b921b06d601e88cf1cdb0ea1eb5237cd89dc7220c0ef2ab6b910f46b312c4ab";
+  "0x031e671e9321e60310276af91a1bb3b52c8079be86a824bc0378edd98a67a889";
 
 const STEPS = [
   {

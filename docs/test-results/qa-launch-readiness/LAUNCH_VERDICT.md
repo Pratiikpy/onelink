@@ -7,6 +7,12 @@
 **Generated:** 2026-05-28
 **Branches/PRs from this pass:** PR #19 (merged), PR #20 (open)
 
+> ⚠️ **Superseded by the v2 fintech-blue redesign (PR #35, 2026-05-29).** This
+> verdict is a historical snapshot of the pre-v2 product. The shipped UI now uses
+> the **Geist** type family and a warm-white + blue (`#1E50E5`) brand; see
+> `app/brand/page.tsx` for the current source of truth. All functional/QA findings
+> below still hold.
+
 ---
 
 ## Verdict
@@ -90,7 +96,7 @@ out exact scope and limits.
 
 ### Premiumness pass (typography, spacing, hierarchy, motion, hover/focus)
 
-- Inter / Inter Tight font stack with `tabular-nums` on numeric strings,
+- Geist Sans / Geist Mono font stack with `tabular-nums` on numeric strings,
   `text-balance` on hero headlines, and proper letter-spacing / leading
   tuning per heading level.
 - Hairline borders (`oklch` color tokens), card-elevation utilities, and
