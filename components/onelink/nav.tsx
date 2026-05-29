@@ -41,16 +41,16 @@ export function MarketingNav() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 md:px-6">
         <Logo />
         <nav className="hidden items-center gap-8 text-[13px] text-muted-foreground md:flex">
-          <Link href="/#product" className="link-underline hover:text-foreground">
+          <Link href="/#build" className="link-underline hover:text-foreground">
             Product
           </Link>
-          <Link href="/#routes" className="link-underline hover:text-foreground">
+          <Link href="/#watch" className="link-underline hover:text-foreground">
             Routes
           </Link>
           <Link href="/how-it-works" className="link-underline hover:text-foreground">
             How it works
           </Link>
-          <Link href="/#pricing" className="link-underline hover:text-foreground">
+          <Link href="/how-it-works" className="link-underline hover:text-foreground">
             Pricing
           </Link>
           <Link href="/whitepaper" className="link-underline hover:text-foreground">
@@ -62,6 +62,12 @@ export function MarketingNav() {
         </nav>
         <div className="flex items-center gap-2 md:gap-3">
           <Link
+            href="/mobile"
+            className="hidden text-[13px] text-muted-foreground hover:text-foreground sm:inline"
+          >
+            Mobile
+          </Link>
+          <Link
             href="/pitch"
             className="hidden text-[13px] text-muted-foreground hover:text-foreground sm:inline"
           >
@@ -69,19 +75,20 @@ export function MarketingNav() {
           </Link>
           <Link
             href="/dashboard"
-            className="hidden md:inline-flex h-8 items-center rounded-full bg-foreground px-4 text-[13px] font-medium text-background transition-transform duration-200 hover:-translate-y-px"
+            className="hidden md:inline-flex h-8 items-center rounded-full bg-foreground px-4 text-[13px] font-medium text-background transition-transform duration-200 hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Open app
           </Link>
           <MobileNavSheet
             items={[
-              { href: "/#product", label: "Product" },
-              { href: "/#routes", label: "Routes" },
+              { href: "/#build", label: "Product" },
+              { href: "/#watch", label: "Routes" },
               { href: "/how-it-works", label: "How it works" },
-              { href: "/#pricing", label: "Pricing" },
+              { href: "/how-it-works", label: "Pricing" },
               { href: "/whitepaper", label: "Whitepaper" },
               { href: "/security", label: "Security" },
               { href: "/pitch", label: "Pitch" },
+              { href: "/mobile", label: "Mobile" },
               { href: "/brand", label: "Brand kit" },
               { href: "/dashboard", label: "Open app" },
             ]}
@@ -242,7 +249,7 @@ export function AppNav() {
                 className="h-4 w-4 rounded-full"
                 style={{
                   background:
-                    "conic-gradient(from 200deg, oklch(0.16 0.004 260), oklch(0.5 0.05 158), oklch(0.16 0.004 260))",
+                    "conic-gradient(from 200deg, oklch(0.16 0.004 260), oklch(0.42 0.06 158), oklch(0.16 0.004 260))",
                 }}
               />
               {truncateAddr(address)}

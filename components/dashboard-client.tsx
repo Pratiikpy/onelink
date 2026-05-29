@@ -142,8 +142,12 @@ export function DashboardClient() {
   async function copyLink(slug: string) {
     if (typeof window === "undefined") return;
     const url = `${window.location.origin}${paymentPath(slug)}`;
-    await navigator.clipboard.writeText(url);
-    toast.success("Link copied");
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    } catch {
+      toast.error("Couldn't copy link");
+    }
   }
 
   async function shareLink(link: PaymentLink) {
@@ -215,7 +219,7 @@ export function DashboardClient() {
           <div className="mt-7 flex flex-col items-center gap-2">
             <ConnectButton.Custom>
               {({ openConnectModal }) => (
-                <Button size="lg" onClick={openConnectModal}>
+                <Button variant="brand" size="lg" onClick={openConnectModal}>
                   Connect wallet
                 </Button>
               )}
@@ -299,12 +303,14 @@ export function DashboardClient() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search memo or slug"
+              aria-label="Search links"
               className="h-9 w-full rounded-md border border-hairline bg-surface pl-8 pr-3 text-base outline-none focus:border-foreground/40 md:text-sm"
             />
             {q && (
               <button
                 type="button"
                 onClick={() => setQ("")}
+                aria-label="Clear search"
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <X className="h-3.5 w-3.5" />
@@ -363,7 +369,10 @@ export function DashboardClient() {
                       </td>
                       <td className="px-4 py-4 text-right">
                         <DropdownMenu>
-                          <DropdownMenuTrigger className="rounded-md p-1.5 text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground">
+                          <DropdownMenuTrigger
+                            aria-label="Link actions"
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-44">
@@ -583,7 +592,7 @@ function EmptyState() {
         Create your first USDC link — it takes about 30 seconds.
       </p>
       <div className="mt-7 flex justify-center">
-        <Button asChild size="lg">
+        <Button asChild variant="brand" size="lg">
           <Link href="/create">Create your first link</Link>
         </Button>
       </div>

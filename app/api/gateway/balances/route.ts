@@ -24,17 +24,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Gateway depositor address is invalid." }, { status: 400 });
   }
 
-  const gatewayResponse = await fetch(`${GATEWAY_API_BASE_URL}/balances`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      token: "USDC",
-      sources: GATEWAY_EVM_TESTNET_SOURCES.map((source) => ({
-        domain: source.domain,
-        depositor,
-      })),
-    }),
-  });
+  let gatewayResponse: Response;
+  try {
+    gatewayResponse = await fetch(`${GATEWAY_API_BASE_URL}/balances`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: "USDC",
+        sources: GATEWAY_EVM_TESTNET_SOURCES.map((source) => ({
+          domain: source.domain,
+          depositor,
+        })),
+      }),
+    });
+  } catch {
+    return NextResponse.json({ error: "Gateway is unreachable." }, { status: 502 });
+  }
 
   const payload = await gatewayResponse.json().catch(async () => ({
     error: await gatewayResponse.text(),

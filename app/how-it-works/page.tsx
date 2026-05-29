@@ -13,6 +13,7 @@ import { MarketingNav, MarketingFooter } from "@/components/onelink/nav";
 import { Reveal } from "@/components/onelink/reveal";
 import { ARC_CHAIN_ID, ARC_EXPLORER_URL, ARC_USDC_ADDRESS } from "@/lib/arc";
 import { ONELINK_CONTRACT_ADDRESS } from "@/lib/contracts";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "How it works",
@@ -57,7 +58,7 @@ const LAYERS = [
     role: "Settlement",
     name: "Arc Testnet",
     detail:
-      "Chain 5042002. USDC is the native gas token, so a payer never needs ETH. Sub-second deterministic finality.",
+      "Chain 5042002. USDC is the native gas token, so a payer never needs ETH. Deterministic on-chain finality.",
   },
   {
     role: "Bridge",
@@ -95,7 +96,8 @@ export default function HowItWorks() {
           </Reveal>
           <Reveal delay={60}>
             <h1 className="mt-6 max-w-3xl text-balance font-display text-4xl font-semibold tracking-[-0.03em] md:text-[52px] md:leading-[1.05]">
-              From invoice to a receipt you can re-check on-chain.
+              From invoice to a receipt you can{" "}
+              <span className="text-brand">re-check on-chain</span>.
             </h1>
           </Reveal>
           <Reveal delay={120}>
@@ -123,7 +125,7 @@ export default function HowItWorks() {
               <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                 The flow
               </p>
-              <h2 className="mt-4 font-display text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
+              <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-0.03em] md:text-[44px]">
                 Four steps, two of them verified on-chain.
               </h2>
             </div>
@@ -162,7 +164,7 @@ export default function HowItWorks() {
                 <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                   Trust model
                 </p>
-                <h2 className="mt-4 font-display text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
+                <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-0.03em] md:text-[44px]">
                   The browser asks. The chain decides.
                 </h2>
                 <p className="mt-5 text-pretty text-muted-foreground">
@@ -220,7 +222,7 @@ export default function HowItWorks() {
               <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                 Arc + Circle integration
               </p>
-              <h2 className="mt-4 font-display text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
+              <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-0.03em] md:text-[44px]">
                 What each layer is actually doing.
               </h2>
             </div>
@@ -255,7 +257,7 @@ export default function HowItWorks() {
               <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                 Verify it yourself
               </p>
-              <h2 className="mt-4 font-display text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
+              <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-0.03em] md:text-[44px]">
                 Don&apos;t take our word for it.
               </h2>
             </div>
@@ -263,6 +265,7 @@ export default function HowItWorks() {
           <div className="grid gap-3 sm:grid-cols-2">
             <ProofLink
               external
+              accent
               href={`${ARC_EXPLORER_URL}/tx/${PROOF_TX}`}
               label="A real Arc settlement"
               sub="Open the on-chain transaction on Arcscan"
@@ -344,7 +347,7 @@ export default function HowItWorks() {
               <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/create"
-                  className="group inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background transition-transform duration-200 hover:-translate-y-px"
+                  className="group inline-flex h-11 items-center gap-2 rounded-full bg-brand px-6 text-sm font-medium text-brand-foreground transition-all duration-200 hover:bg-brand-hover hover:-translate-y-px"
                 >
                   Create a link{" "}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -372,16 +375,25 @@ function ProofLink({
   sub,
   icon,
   external = false,
+  accent = false,
 }: {
   href: string;
   label: string;
   sub: string;
   icon: React.ReactNode;
   external?: boolean;
+  accent?: boolean;
 }) {
   const inner = (
     <>
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-hairline bg-background text-muted-foreground transition-colors group-hover:text-foreground">
+      <span
+        className={cn(
+          "grid h-9 w-9 shrink-0 place-items-center rounded-lg border transition-colors",
+          accent
+            ? "border-brand/20 bg-brand-tint text-brand group-hover:text-brand"
+            : "border-hairline bg-background text-muted-foreground group-hover:text-foreground",
+        )}
+      >
         {icon}
       </span>
       <span className="min-w-0 flex-1">

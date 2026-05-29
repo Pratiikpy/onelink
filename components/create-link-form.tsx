@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAccount, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
@@ -60,8 +60,15 @@ export function CreateLinkForm() {
   const [createdLink, setCreatedLink] = useState<PaymentLink | null>(null);
   const [error, setError] = useState("");
 
-  // Initialize recipient with connected address
-  if (address && recipient === "") setRecipient(address);
+  // Seed the recipient with the connected address once, in an effect (never in
+  // render). The one-time guard keeps the field user-clearable afterwards.
+  const seededRecipient = useRef(false);
+  useEffect(() => {
+    if (address && !seededRecipient.current && recipient === "") {
+      seededRecipient.current = true;
+      setRecipient(address);
+    }
+  }, [address, recipient]);
 
   const validInputs =
     AMOUNT_RE.test(amount) &&
@@ -148,7 +155,7 @@ export function CreateLinkForm() {
           <div className="mt-7 flex justify-center">
             <ConnectButton.Custom>
               {({ openConnectModal }) => (
-                <Button onClick={openConnectModal} size="lg">
+                <Button onClick={openConnectModal} variant="brand" size="lg">
                   Connect wallet
                 </Button>
               )}
@@ -206,6 +213,7 @@ export function CreateLinkForm() {
                     onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
                     inputMode="decimal"
                     placeholder="0"
+                    aria-label="Amount in USDC"
                     className="w-full bg-transparent font-display text-5xl font-semibold tracking-tight tabular-nums outline-none"
                   />
                   <span className="font-mono text-sm text-muted-foreground">USDC</span>
@@ -216,6 +224,7 @@ export function CreateLinkForm() {
                   value={memo}
                   onChange={(e) => setMemo(e.target.value)}
                   placeholder="What's this for?"
+                  aria-label="Memo"
                   className="w-full rounded-md border border-hairline bg-background px-3 py-2.5 text-base md:text-sm outline-none focus:border-foreground/40"
                 />
               </Field>
@@ -223,6 +232,7 @@ export function CreateLinkForm() {
                 <input
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value)}
+                  aria-label="Recipient wallet address"
                   className="w-full rounded-md border border-hairline bg-background px-3 py-2.5 font-mono text-[16px] md:text-xs outline-none focus:border-foreground/40"
                 />
               </Field>
@@ -323,12 +333,16 @@ export function CreateLinkForm() {
                 </div>
               </details>
               {error && (
-                <div className="mt-4 rounded-xl border border-destructive/20 bg-destructive/[0.05] p-3 text-sm text-destructive">
+                <div
+                  role="alert"
+                  className="mt-4 rounded-xl border border-destructive/20 bg-destructive/[0.05] p-3 text-sm text-destructive"
+                >
                   {error}
                 </div>
               )}
               <Button
                 onClick={sign}
+                variant="brand"
                 size="lg"
                 className="mt-4 hidden w-full md:inline-flex"
                 loading={signing}
@@ -361,8 +375,12 @@ export function CreateLinkForm() {
                     <Button
                       size="sm"
                       onClick={async () => {
-                        await navigator.clipboard.writeText(linkUrl);
-                        toast.success("Link copied");
+                        try {
+                          await navigator.clipboard.writeText(linkUrl);
+                          toast.success("Link copied");
+                        } catch {
+                          toast.error("Couldn't copy");
+                        }
                       }}
                     >
                       <Copy className="h-3.5 w-3.5" /> Copy
@@ -372,9 +390,13 @@ export function CreateLinkForm() {
                     variant="outline"
                     size="lg"
                     className="w-full"
-                    onClick={() =>
-                      shareOrCopy({ title: createdLink.memo, url: linkUrl })
-                    }
+                    onClick={async () => {
+                      const result = await shareOrCopy({
+                        title: createdLink.memo,
+                        url: linkUrl,
+                      });
+                      if (result === "failed") toast.error("Couldn't share");
+                    }}
                   >
                     <Share2 className="h-4 w-4" /> Share
                   </Button>
@@ -401,6 +423,7 @@ export function CreateLinkForm() {
         <BottomBar>
           <Button
             onClick={sign}
+            variant="brand"
             size="lg"
             className="w-full"
             loading={signing}

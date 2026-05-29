@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+
 export default function NotFound() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -15,12 +17,9 @@ export default function NotFound() {
           never existed.
         </p>
         <div className="mt-8 flex justify-center gap-2">
-          <Link
-            href="/"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-foreground px-5 text-sm font-medium text-background transition-opacity hover:opacity-90"
-          >
-            Back to home
-          </Link>
+          <Button asChild>
+            <Link href="/">Back to home</Link>
+          </Button>
         </div>
       </div>
     </div>

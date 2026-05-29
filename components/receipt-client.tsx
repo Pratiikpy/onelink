@@ -276,6 +276,7 @@ export function ReceiptClient({ id }: { id: string }) {
             </Button>
           </div>
           <Button
+            variant="brand"
             size="lg"
             className="mt-2 w-full"
             onClick={() =>

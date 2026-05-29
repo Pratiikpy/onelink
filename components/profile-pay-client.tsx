@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { isAddress } from "viem";
 import { ArrowRight, Copy, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
 import { Logo } from "@/components/onelink/logo";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,13 @@ export function ProfilePayClient({ handle }: { handle: string }) {
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
   const [copied, setCopied] = useState(false);
+  const copyResetRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyResetRef.current !== null) window.clearTimeout(copyResetRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,24 +121,98 @@ export function ProfilePayClient({ handle }: { handle: string }) {
 
   async function copyProfileLink() {
     if (typeof window === "undefined") return;
-    await navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1400);
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      if (copyResetRef.current !== null) window.clearTimeout(copyResetRef.current);
+      copyResetRef.current = window.setTimeout(() => setCopied(false), 1400);
+    } catch {
+      toast.error("Couldn't copy link");
+    }
   }
 
   async function shareProfileLink() {
     if (!profile) return;
-    await shareOrCopy({
+    const result = await shareOrCopy({
       title: `Pay ${profileTitle(profile)} with OneLink`,
       text: `Send USDC to @${profile.handle}.`,
       url: typeof window !== "undefined" ? window.location.href : "",
     });
+    if (result === "failed") toast.error("Couldn't share");
   }
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-md px-6 py-24 text-center text-sm text-muted-foreground">
-        Loading profile…
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-hairline">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+            <Logo />
+            <Link
+              href="/"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Create your own
+            </Link>
+          </div>
+        </header>
+
+        <div className="border-b border-hairline bg-muted/40">
+          <div className="dot-bg h-28" />
+        </div>
+
+        <main
+          className="mx-auto grid max-w-5xl gap-10 px-6 py-14 md:grid-cols-[1fr_360px]"
+          aria-hidden
+        >
+          <section>
+            <div className="-mt-20 flex items-start gap-5">
+              {/* Avatar */}
+              <div className="h-20 w-20 shrink-0 rounded-2xl bg-muted ring-4 ring-background animate-pulse motion-reduce:animate-none" />
+              <div className="space-y-3 pt-3">
+                {/* Name */}
+                <div className="h-8 w-48 rounded-lg bg-muted animate-pulse motion-reduce:animate-none" />
+                {/* Handle */}
+                <div className="h-4 w-28 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+                {/* Accepts line */}
+                <div className="h-3.5 w-56 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="mt-6 flex gap-2">
+              <div className="h-9 w-36 rounded-md bg-muted animate-pulse motion-reduce:animate-none" />
+              <div className="h-9 w-20 rounded-md bg-muted animate-pulse motion-reduce:animate-none" />
+            </div>
+
+            {/* Meta cards */}
+            <div className="mt-10 grid gap-3 md:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-20 rounded-xl bg-muted animate-pulse motion-reduce:animate-none"
+                />
+              ))}
+            </div>
+          </section>
+
+          <aside>
+            {/* Send-USDC card */}
+            <div className="rounded-2xl border border-hairline bg-surface p-7">
+              <div className="h-3 w-24 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+              <div className="mt-4 h-14 w-40 rounded-lg bg-muted animate-pulse motion-reduce:animate-none" />
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-9 rounded-md bg-muted animate-pulse motion-reduce:animate-none"
+                  />
+                ))}
+              </div>
+              <div className="mt-5 h-11 w-full rounded-md bg-muted animate-pulse motion-reduce:animate-none" />
+              <div className="mt-5 h-11 w-full rounded-xl bg-muted animate-pulse motion-reduce:animate-none" />
+            </div>
+          </aside>
+        </main>
       </div>
     );
   }
@@ -258,6 +340,7 @@ export function ProfilePayClient({ handle }: { handle: string }) {
                 placeholder="0"
                 inputMode="decimal"
                 autoFocus
+                aria-label="Amount in USDC"
                 className="w-full bg-transparent font-display text-5xl font-semibold tracking-[-0.04em] tabular-nums outline-none"
               />
               <span className="font-mono text-sm text-muted-foreground">USDC</span>
@@ -279,6 +362,7 @@ export function ProfilePayClient({ handle }: { handle: string }) {
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               placeholder="What's this for? (optional)"
+              aria-label="Payment memo (optional)"
               className="mt-5 w-full rounded-md border border-hairline bg-background px-3 py-2.5 text-sm outline-none transition-colors focus:border-foreground/40"
             />
             <div className="mt-3 flex flex-wrap gap-1.5">

@@ -1,32 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { DemoBanner } from "@/components/onelink/demo-banner";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-const interTight = Inter_Tight({
-  subsets: ["latin"],
-  variable: "--font-inter-tight",
-  display: "swap",
-});
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-  display: "swap",
-});
-
-const appUrl =
-  process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+import { SITE_URL } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: "/" },
   title: {
     default: "OneLink Collect — One link. USDC routes. Verified on Arc.",
     template: "%s · OneLink Collect",
@@ -57,7 +40,7 @@ export const metadata: Metadata = {
     title: "OneLink Collect — Supported USDC payments settled on Arc.",
     description:
       "Create and pay USDC collection links on Arc Testnet using implemented Circle App Kit routes.",
-    url: appUrl,
+    url: SITE_URL,
     siteName: "OneLink Collect",
     type: "website",
   },
@@ -91,9 +74,20 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${interTight.variable} ${jetbrainsMono.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <body className="font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "OneLink Collect",
+              url: "https://onelink-mauve-nu.vercel.app",
+            }),
+          }}
+        />
         <DemoBanner />
         <Providers>{children}</Providers>
         <Toaster />

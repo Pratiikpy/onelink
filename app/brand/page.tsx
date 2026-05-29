@@ -1,46 +1,71 @@
-import type { Metadata } from "next";
+"use client";
+
+import type { ReactNode } from "react";
+import { ArrowRight, Check } from "lucide-react";
 
 import { MarketingNav, MarketingFooter } from "@/components/onelink/nav";
 import { Reveal } from "@/components/onelink/reveal";
 import { Logo, LogoMark } from "@/components/onelink/logo";
+import { StatusBadge } from "@/components/onelink/status-badge";
+import { Button } from "@/components/ui/button";
+import type { PaymentStatus } from "@/lib/payments";
+import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Brand kit",
-  description:
-    "OneLink brand kit — logo, color, typography, spacing, elevation, motion, iconography, and voice.",
-};
+// NOTE: this page documents the v2 design system as actually shipped. Every
+// value below is read off the real tokens (tailwind.config.ts + globals.css)
+// and the real components (Button, StatusBadge, Logo). It is a reference, not
+// a marketing page — accuracy over flourish.
 
 export default function BrandPage() {
   return (
     <div className="min-h-screen bg-background page-in">
       <MarketingNav />
 
-      <main className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <Reveal>
+      <main className="mx-auto max-w-6xl px-6 pb-24 pt-16 md:pt-24">
+        {/* ── HERO ─────────────────────────────────────────────── */}
+        <Reveal as="section">
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            Brand kit · v1
+            Brand kit · v2 · accurate to ship
           </p>
-          <h1 className="mt-6 font-display text-5xl font-semibold tracking-[-0.04em] md:text-[64px] md:leading-[1.08]">
-            The OneLink design system.
+          <h1 className="mt-6 max-w-3xl text-balance font-display text-5xl font-semibold leading-[1.05] tracking-[-0.03em] md:text-[64px] md:leading-[1.04]">
+            The OneLink <span className="text-brand">brand kit.</span>
           </h1>
           <p className="mt-7 max-w-2xl text-pretty text-[17px] leading-relaxed text-muted-foreground">
-            Editorial Apple-minimal. Hairlines, near-black on off-white,
-            two-stop elevation, calm motion. Designed to make a USDC payment
-            feel like a Stripe receipt — quiet, precise, and confident.
+            A calm, precise identity for a payments product. Plenty of white,
+            one confident blue, type that gets out of the way. Trustworthy by
+            restraint.
           </p>
+          <div className="mt-8 flex flex-wrap gap-2">
+            {[
+              "Stripe-clean",
+              "Mercury-calm",
+              "Linear-precise",
+              "USDC · Arc",
+            ].map((chip) => (
+              <span
+                key={chip}
+                className="inline-flex items-center rounded-full border border-hairline bg-surface px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
         </Reveal>
 
-        {/* Logo */}
-        <Section title="Logo">
+        {/* ── 01 · LOGO ────────────────────────────────────────── */}
+        <Section index="01" title="Logo">
           <p>
-            The OneLink mark is two interlocking arcs forming a chain-link
-            &ldquo;O&rdquo;. Monoline, optically centered inside a soft squircle, drawn in{" "}
-            <span className="font-mono">currentColor</span> so it inherits the
-            surface it sits on.
+            The OneLink mark is an <strong className="font-medium text-foreground">open ring</strong>{" "}
+            — two interlocking monoline arcs forming a chain-link &ldquo;O&rdquo;,
+            optically centered inside a soft squircle. It is drawn in{" "}
+            <code className="font-mono text-[13px] text-foreground">currentColor</code>,
+            so it inherits whatever surface it sits on. Give it room; never
+            recolor the arcs.
           </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            <SwatchCard label="Mark · 24px">
-              <LogoMark size={24} />
+
+          <div className="mt-9 grid gap-4 sm:grid-cols-3">
+            <SwatchCard label="Mark · 32px">
+              <LogoMark size={32} />
             </SwatchCard>
             <SwatchCard label="Mark · 48px">
               <LogoMark size={48} />
@@ -49,302 +74,332 @@ export default function BrandPage() {
               <LogoMark size={96} />
             </SwatchCard>
           </div>
+
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <SwatchCard label="Lockup">
+            <SwatchCard label="Horizontal lockup">
               <Logo size={32} />
             </SwatchCard>
-            <SwatchCard label="Stacked">
+            <SwatchCard label="Stacked lockup">
               <Logo size={48} variant="stacked" />
             </SwatchCard>
           </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <SwatchCard label="On dark" tone="invert">
-              <span className="text-background">
-                <Logo size={32} />
-              </span>
-            </SwatchCard>
-            <SwatchCard label="Mark, no frame" tone="dot">
-              <LogoMark size={32} withFrame={false} />
-            </SwatchCard>
+
+          <p className="mt-6 rounded-xl border border-hairline bg-muted/40 px-5 py-4 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Usage —</span> default
+            to the framed mark on light. Pair with the lowercase{" "}
+            <span className="font-mono">onelink</span> wordmark for the lockup.
+            Don&apos;t outline, gradient, or rotate the arcs (a subtle hover tilt
+            on the lockup is the only motion the mark allows).
+          </p>
+        </Section>
+
+        {/* ── 02 · TYPE ────────────────────────────────────────── */}
+        <Section index="02" title="Type">
+          <p>
+            One family does all the work.{" "}
+            <strong className="font-medium text-foreground">Geist</strong> for
+            display and body — a calm grotesque with real tabular numbers — and{" "}
+            <strong className="font-medium text-foreground">Geist Mono</strong>{" "}
+            for hashes, addresses, amounts, and eyebrow labels. Headlines run
+            tight (<span className="font-mono">-0.03em</span>); body stays
+            relaxed and readable.
+          </p>
+
+          <div className="mt-9 space-y-4">
+            <TypeRow
+              label="Display"
+              meta="font-display · ~64px · semibold · -0.03em"
+            >
+              <p className="font-display text-4xl font-semibold leading-[1.05] tracking-[-0.03em] md:text-[56px]">
+                Get paid in USDC.
+              </p>
+            </TypeRow>
+
+            <TypeRow label="Heading · h2" meta="font-display · 32px · semibold · -0.03em">
+              <p className="font-display text-[32px] font-semibold tracking-[-0.03em]">
+                One link. Verified on-chain.
+              </p>
+            </TypeRow>
+
+            <TypeRow label="Body" meta="font-sans · 17px · leading-relaxed">
+              <p className="max-w-xl text-[17px] leading-relaxed text-muted-foreground">
+                OneLink turns an invoice into a single shareable URL. It settles
+                on Arc Testnet and verifies on-chain — status follows
+                settlement, never the other way around.
+              </p>
+            </TypeRow>
+
+            <TypeRow label="Small / caption" meta="font-sans · 13px · muted">
+              <p className="text-[13px] text-muted-foreground">
+                Testnet only · non-custodial · every claim has a hash you can
+                re-check.
+              </p>
+            </TypeRow>
+
+            <TypeRow label="Mono" meta="font-mono · 13px · tabular-nums">
+              <p className="break-all font-mono text-[13px] tabular-nums text-foreground">
+                0x9b7D5B4DAD4c9B1065908FA8C6C34d697E3cBD0c
+              </p>
+            </TypeRow>
+
+            <TypeRow label="Mono · eyebrow" meta="font-mono · 11px · uppercase · 0.22em">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                Live on Arc Testnet · USDC native gas
+              </p>
+            </TypeRow>
           </div>
         </Section>
 
-        {/* Color */}
-        <Section title="Color">
+        {/* ── 03 · COLOR ───────────────────────────────────────── */}
+        <Section index="03" title="Color">
           <p>
-            Token names map 1:1 to Tailwind colors. Values are{" "}
-            <span className="font-mono">oklch</span> for perceptual uniformity
-            and consistent contrast across the system.
+            Off-white, ink, and one blue. The page stays calm warm-white and
+            ink; blue (<span className="font-mono">#1E50E5</span>) is the accent
+            — reserved for the money action, links, and verified state. USDC has
+            its own brand blue for chain marks; green means settled. Swatches
+            below render the real Tailwind tokens.
           </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+          <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <ColorCard
               token="background"
-              oklch="0.985 0.002 95"
-              hex="#fbfbf8"
-              role="Page background"
-              swatchClass="bg-background"
+              hex="#FBFBF8"
+              role="Page · warm off-white"
+              swatchClass="bg-background border border-hairline"
             />
             <ColorCard
               token="foreground"
-              oklch="0.16 0.004 260"
-              hex="#0d0f12"
-              role="Body text · primary fills"
+              hex="#101114"
+              role="Ink · body + default fills"
               swatchClass="bg-foreground"
-              dark
+              onDark
             />
             <ColorCard
               token="surface"
-              oklch="1 0 0"
-              hex="#ffffff"
+              hex="#FFFFFF"
               role="Cards · sticky bars"
-              swatchClass="bg-surface"
+              swatchClass="bg-surface border border-hairline"
             />
             <ColorCard
-              token="muted"
-              oklch="0.965 0.003 95"
-              hex="#f3f3f0"
-              role="Quiet panels"
-              swatchClass="bg-muted"
+              token="brand"
+              hex="#1E50E5"
+              role="Brand blue · money CTA"
+              swatchClass="bg-brand"
+              onDark
+              accent
             />
             <ColorCard
-              token="muted-foreground"
-              oklch="0.46 0.006 260"
-              hex="#6b6e75"
-              role="Secondary text"
-              swatchClass="bg-muted-foreground"
-              dark
+              token="brand-tint"
+              hex="#EDF1FE"
+              role="Blue wash · highlights"
+              swatchClass="bg-brand-tint"
             />
             <ColorCard
-              token="hairline"
-              oklch="0.16 0.004 260 / 0.07"
-              hex="rgba(13,15,18,0.07)"
-              role="Borders · dividers"
-              swatchClass="border border-hairline bg-background"
+              token="brand-text"
+              hex="#1742C4"
+              role="Blue text · on tint"
+              swatchClass="bg-brand-text"
+              onDark
+            />
+            <ColorCard
+              token="usdc"
+              hex="#2775CA"
+              role="USDC mark · chain swatch"
+              swatchClass="bg-usdc"
+              onDark
             />
             <ColorCard
               token="success"
-              oklch="0.42 0.06 158"
-              hex="#2d6857"
-              role="Verified · paid"
+              hex="#2D6857"
+              role="Verified · paid · settled"
               swatchClass="bg-success"
-              dark
+              onDark
             />
             <ColorCard
-              token="warning"
-              oklch="0.74 0.13 70"
-              hex="#d29447"
-              role="Processing"
-              swatchClass="bg-warning"
-              dark
-            />
-            <ColorCard
-              token="destructive"
-              oklch="0.55 0.2 25"
-              hex="#cd3a2c"
-              role="Failed · cancel"
-              swatchClass="bg-destructive"
-              dark
+              token="muted-foreground"
+              hex="#6B6E75"
+              role="Secondary text"
+              swatchClass="bg-muted-foreground"
+              onDark
             />
           </div>
         </Section>
 
-        {/* Typography */}
-        <Section title="Typography">
+        {/* ── 04 · COMPONENTS ──────────────────────────────────── */}
+        <Section index="04" title="Components">
           <p>
-            Two display faces and one mono. <span className="font-mono">Inter Tight</span> for
-            headlines, <span className="font-mono">Inter</span> for body, and{" "}
-            <span className="font-mono">JetBrains Mono</span> for hashes,
-            addresses, and labels.
+            These are the live components, not pictures of them.{" "}
+            <code className="font-mono text-[13px] text-foreground">Button</code>{" "}
+            is the one canonical CTA geometry (single radius, one tactile
+            hover/press, reduced-motion safe). Black is the workhorse;{" "}
+            <span className="text-brand">blue</span> is the money action.
           </p>
-          <div className="mt-8 space-y-6">
-            <TypeCard
-              token="text-display-1"
-              value="clamp(2.5rem, 11vw, 5.5rem)"
-              tracking="-0.04em"
-              sample="Get paid in USDC."
-              displayClass="font-display text-display-1 font-semibold tracking-[-0.04em]"
-            />
-            <TypeCard
-              token="text-display-2"
-              value="clamp(2rem, 7vw, 2.75rem)"
-              tracking="-0.035em"
-              sample="One link. Verified."
-              displayClass="font-display text-display-2 font-semibold tracking-[-0.035em]"
-            />
-            <TypeCard
-              token="h2"
-              value="44px / 1.05"
-              tracking="-0.03em"
-              sample="A payment link, and the proof it landed."
-              displayClass="font-display text-4xl font-semibold tracking-[-0.03em] md:text-[44px]"
-            />
-            <TypeCard
-              token="body"
-              value="17px / 1.55"
-              tracking="-0.012em"
-              sample="OneLink turns an invoice into a single shareable URL. Settled on Arc, verified on-chain, in under 30 seconds."
-              displayClass="text-[17px] leading-relaxed text-muted-foreground"
-            />
-            <TypeCard
-              token="mono / eyebrow"
-              value="11px / uppercase / tracking 0.22em"
-              tracking="0.22em"
-              sample="LIVE ON ARC TESTNET · USDC NATIVE"
-              displayClass="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
-            />
-            <TypeCard
-              token="mono / hash"
-              value="13px / tabular-nums"
-              tracking="normal"
-              sample="0x6b921b06d601e88cf1cdb0ea1eb5237cd89dc722"
-              displayClass="font-mono text-[13px] tabular-nums break-all"
-            />
-          </div>
-        </Section>
 
-        {/* Spacing & Radius */}
-        <Section title="Spacing & radius">
-          <p>
-            A 4-step scale, plus the Tailwind defaults. Radius tokens cluster
-            around <span className="font-mono">0.625rem</span> for the system{" "}
-            <span className="font-mono">--radius</span>.
-          </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {[
-              ["sm", "8px"],
-              ["md", "12px"],
-              ["lg", "16px"],
-              ["xl", "20px"],
-              ["2xl", "24px"],
-              ["3xl", "28px"],
-            ].map(([name, px]) => (
-              <div
-                key={name}
-                className="flex flex-col items-center gap-3 rounded-xl border border-hairline bg-surface p-6"
-              >
-                <div
-                  className="h-16 w-16 bg-foreground"
-                  style={{ borderRadius: `var(--radius)` }}
-                />
-                <div className="text-center">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    rounded-{name}
-                  </p>
-                  <p className="mt-1 font-mono text-[12px]">{px}</p>
-                </div>
+          {/* Buttons */}
+          <div className="mt-9 rounded-2xl border border-hairline bg-surface p-7 card-elev">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              Button · variants
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Button variant="brand">
+                Pay 250 USDC <ArrowRight />
+              </Button>
+              <Button variant="default">Create link</Button>
+              <Button variant="outline">View receipt</Button>
+              <Button variant="ghost">Cancel</Button>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Button variant="brand" size="sm">
+                Small
+              </Button>
+              <Button variant="brand" size="default">
+                Default
+              </Button>
+              <Button variant="brand" size="lg">
+                Large
+              </Button>
+              <Button variant="brand" size="xl">
+                Extra large
+              </Button>
+              <Button variant="brand" loading>
+                Settling
+              </Button>
+            </div>
+          </div>
+
+          {/* Status badges */}
+          <div className="mt-4 rounded-2xl border border-hairline bg-surface p-7 card-elev">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              StatusBadge · states
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              {(
+                [
+                  "paid",
+                  "processing",
+                  "unpaid",
+                  "expired",
+                  "cancelled",
+                  "failed",
+                ] as PaymentStatus[]
+              ).map((status) => (
+                <StatusBadge key={status} status={status} />
+              ))}
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Status follows settlement. A link only reads{" "}
+              <span className="font-medium text-foreground">Paid</span> after the
+              contract confirms — server-verified, never optimistic.
+            </p>
+          </div>
+
+          {/* Sample card + pill */}
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            {/* Sample settlement card — the card-lift treatment */}
+            <div className="rounded-2xl border border-hairline bg-surface p-7 card-lift">
+              <div className="flex items-center justify-between">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Sample card · card-lift
+                </p>
+                <StatusBadge status="paid" />
               </div>
-            ))}
-          </div>
-        </Section>
+              <p className="mt-5 font-display text-5xl font-semibold tabular-nums tracking-[-0.03em]">
+                250.00
+                <span className="ml-2 align-baseline font-mono text-base font-normal tracking-normal text-muted-foreground">
+                  USDC
+                </span>
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Design retainer · settled on Arc Testnet
+              </p>
+              <div className="mt-5 flex items-center gap-2">
+                <Button variant="brand" size="sm" className="flex-1">
+                  Pay this link <ArrowRight />
+                </Button>
+                <Button variant="outline" size="sm">
+                  Copy
+                </Button>
+              </div>
+            </div>
 
-        {/* Elevation */}
-        <Section title="Elevation">
-          <p>
-            Two stops only. Use sparingly — primary settlement card uses{" "}
-            <span className="font-mono">card-lift</span>, everything else uses{" "}
-            <span className="font-mono">card-elev</span> or no shadow.
-          </p>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2">
+            {/* Pills + tints */}
             <div className="rounded-2xl border border-hairline bg-surface p-7 card-elev">
               <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                card-elev
+                Pills · tints
               </p>
-              <p className="mt-3 font-display text-2xl font-semibold tracking-tight">
-                Quiet lift.
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Default for cards on hover and sticky elements.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-hairline bg-surface p-7 card-lift">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                card-lift
-              </p>
-              <p className="mt-3 font-display text-2xl font-semibold tracking-tight">
-                Primary card.
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Reserved for the receipt + checkout amount card.
-              </p>
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                <Pill>
+                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-dot" />
+                  All systems on Arc Testnet
+                </Pill>
+                <Pill>
+                  <span className="h-2 w-2 rounded-full bg-usdc" />
+                  USDC
+                </Pill>
+                <Pill className="border-brand/25 bg-brand-tint text-brand-text">
+                  <Check className="size-3" />
+                  Verified on-chain
+                </Pill>
+                <Pill className="font-mono">chain 5042002</Pill>
+                <Pill>Testnet</Pill>
+              </div>
+              <div className="mt-6 rounded-xl bg-brand-tint p-4">
+                <p className="text-sm text-brand-text">
+                  <span className="font-medium">Brand tint</span> — the only
+                  large blue surface allowed. Use it to frame a single highlight,
+                  never as a page background.
+                </p>
+              </div>
             </div>
           </div>
         </Section>
 
-        {/* Motion */}
-        <Section title="Motion">
+        {/* ── 05 · VOICE ───────────────────────────────────────── */}
+        <Section index="05" title="Voice">
           <p>
-            Calm, never bouncy. Three duration tokens, one easing. No parallax,
-            no spring, no overshoot.
+            Plain, present, never apologetic. We say only what we can prove, and
+            we name what we don&apos;t support. Confidence comes from evidence,
+            not adjectives.
           </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+
+          <div className="mt-9 grid gap-4 sm:grid-cols-2">
             {[
-              ["dur-fast", "160ms", "Hover, focus, button press"],
-              ["dur-base", "240ms", "Sheet, dropdown, tab"],
-              ["dur-slow", "420ms", "Page transitions, reveal"],
-            ].map(([name, value, role]) => (
+              {
+                head: "Honest about scope.",
+                body: "Arc-direct and Base→Arc bridging are live-proven. Gateway unified-balance is implemented but gated — we label it that way, every time.",
+              },
+              {
+                head: "Plain language.",
+                body: "No jargon walls, no hype. “Settled on Arc Testnet,” not “revolutionary cross-chain settlement layer.”",
+              },
+              {
+                head: "Proof-first.",
+                body: "Every claim has a hash you can re-check. 27/27 contract tests, 0 open security alerts, real Arcscan transactions.",
+              },
+              {
+                head: "Say only what you can prove.",
+                body: "No unproven latency numbers, no “any chain,” no mainnet or KYC claims. Settlement before status, always.",
+              },
+            ].map((v) => (
               <div
-                key={name}
-                className="rounded-xl border border-hairline bg-surface p-5"
+                key={v.head}
+                className="rounded-2xl border border-hairline bg-surface p-6"
               >
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                  {name}
+                <p className="flex items-center gap-2 font-display text-lg font-semibold tracking-[-0.02em]">
+                  <Check className="size-4 text-brand" />
+                  {v.head}
                 </p>
-                <p className="mt-2 font-display text-2xl font-semibold tabular-nums tracking-tight">
-                  {value}
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {v.body}
                 </p>
-                <p className="mt-1.5 text-xs text-muted-foreground">{role}</p>
               </div>
             ))}
           </div>
-          <div className="mt-6 rounded-xl border border-hairline bg-muted/40 p-5 text-sm text-muted-foreground">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em]">
-              Easing
-            </p>
-            <p className="mt-2 font-mono text-[13px]">
-              cubic-bezier(0.22, 1, 0.36, 1)
-            </p>
-            <p className="mt-2 text-xs">
-              The ease-out-soft curve used for every motion in the system.
-            </p>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <VoiceExample tone="say" text="Settled on Arc Testnet in this transaction — here's the hash." />
+            <VoiceExample tone="avoid" text="The fastest, most revolutionary payments on any chain." />
           </div>
-        </Section>
-
-        {/* Iconography */}
-        <Section title="Iconography">
-          <p>
-            Lucide React, 1.5px stroke weight, sized in 0.25rem multiples.
-            Never stroke 2.0 — it makes the system feel chunky.
-          </p>
-        </Section>
-
-        {/* Voice */}
-        <Section title="Voice">
-          <ul className="mt-2 space-y-3 text-base text-muted-foreground">
-            <li>
-              <strong className="font-medium text-foreground">
-                Calm, exact, never salesy.
-              </strong>{" "}
-              No exclamation marks unless absolutely earned.
-            </li>
-            <li>
-              <strong className="font-medium text-foreground">
-                Show, don&apos;t hype.
-              </strong>{" "}
-              Every claim links to its evidence.
-            </li>
-            <li>
-              <strong className="font-medium text-foreground">
-                Specific numbers.
-              </strong>{" "}
-              &ldquo;Under 30 seconds&rdquo; not &ldquo;fast.&rdquo;
-            </li>
-            <li>
-              <strong className="font-medium text-foreground">
-                Honest about scope.
-              </strong>{" "}
-              We name what we don&apos;t support.
-            </li>
-          </ul>
         </Section>
       </main>
 
@@ -353,37 +408,36 @@ export default function BrandPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/* ── Section shell ──────────────────────────────────────────── */
+function Section({
+  index,
+  title,
+  children,
+}: {
+  index: string;
+  title: string;
+  children: ReactNode;
+}) {
   return (
-    <Reveal as="section" className="mt-20 border-t border-hairline pt-12">
-      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-        {title}
-      </p>
-      <div className="mt-5 space-y-4 text-base leading-relaxed text-muted-foreground">
+    <Reveal as="section" className="mt-20 border-t border-hairline pt-12 md:mt-24">
+      <div className="flex items-baseline gap-3">
+        <span className="font-mono text-[11px] tabular-nums text-brand">{index}</span>
+        <h2 className="font-display text-sm font-medium uppercase tracking-[0.22em] text-muted-foreground">
+          {title}
+        </h2>
+      </div>
+      <div className="mt-6 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground">
         {children}
       </div>
     </Reveal>
   );
 }
 
-function SwatchCard({
-  label,
-  children,
-  tone = "default",
-}: {
-  label: string;
-  children: React.ReactNode;
-  tone?: "default" | "invert" | "dot";
-}) {
-  const cls =
-    tone === "invert"
-      ? "bg-foreground"
-      : tone === "dot"
-      ? "bg-muted"
-      : "bg-surface";
+/* ── Logo swatch frame ──────────────────────────────────────── */
+function SwatchCard({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className={`rounded-xl border border-hairline ${cls} flex flex-col items-center gap-4 p-8`}>
-      <div className="grid h-24 place-items-center">{children}</div>
+    <div className="flex flex-col items-center gap-5 rounded-2xl border border-hairline bg-surface p-8">
+      <div className="grid h-28 place-items-center">{children}</div>
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
@@ -391,74 +445,109 @@ function SwatchCard({
   );
 }
 
+/* ── Color swatch ───────────────────────────────────────────── */
 function ColorCard({
   token,
-  oklch,
   hex,
   role,
   swatchClass,
-  dark,
+  onDark,
+  accent,
 }: {
   token: string;
-  oklch: string;
   hex: string;
   role: string;
   swatchClass: string;
-  dark?: boolean;
+  onDark?: boolean;
+  accent?: boolean;
 }) {
-  const isHairline = token === "hairline";
   return (
-    <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
-      <div
-        className={`grid h-20 place-items-center ${isHairline ? "bg-muted/40" : swatchClass}`}
-      >
-        {isHairline ? (
-          <div className="h-px w-3/4 bg-foreground/[0.08]" aria-hidden />
-        ) : (
-          <span
-            className={`font-mono text-[10px] uppercase tracking-[0.18em] ${
-              dark ? "text-background" : "text-muted-foreground"
-            }`}
-          >
-            {token}
-          </span>
-        )}
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-surface">
+      <div className={cn("grid h-24 place-items-center", swatchClass)}>
+        <span
+          className={cn(
+            "font-mono text-[11px] tabular-nums tracking-wide",
+            onDark
+              ? accent
+                ? "text-brand-foreground"
+                : "text-background"
+              : "text-muted-foreground",
+          )}
+        >
+          {hex}
+        </span>
       </div>
-      <div className="space-y-1 p-4 text-xs">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          {role}
-        </p>
-        <p className="font-mono">{oklch}</p>
-        <p className="font-mono text-muted-foreground">{hex}</p>
+      <div className="space-y-1 p-4">
+        <p className="font-mono text-[12px] text-foreground">{token}</p>
+        <p className="text-[12px] text-muted-foreground">{role}</p>
       </div>
     </div>
   );
 }
 
-function TypeCard({
-  token,
-  value,
-  tracking,
-  sample,
-  displayClass,
+/* ── Type row ───────────────────────────────────────────────── */
+function TypeRow({
+  label,
+  meta,
+  children,
 }: {
-  token: string;
-  value: string;
-  tracking: string;
-  sample: string;
-  displayClass: string;
+  label: string;
+  meta: string;
+  children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-hairline bg-surface p-7">
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
+    <div className="rounded-2xl border border-hairline bg-surface p-6 md:p-7">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          {token}
+          {label}
         </p>
-        <p className="font-mono text-[11px] text-muted-foreground/70">
-          {value} · tracking {tracking}
-        </p>
+        <p className="font-mono text-[11px] text-muted-foreground">{meta}</p>
       </div>
-      <p className={`mt-5 ${displayClass}`}>{sample}</p>
+      <div className="mt-5">{children}</div>
+    </div>
+  );
+}
+
+/* ── Pill ───────────────────────────────────────────────────── */
+function Pill({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-3 py-1.5 text-[12px] text-foreground",
+        className,
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+/* ── Voice say/avoid example ────────────────────────────────── */
+function VoiceExample({ tone, text }: { tone: "say" | "avoid"; text: string }) {
+  const isSay = tone === "say";
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border p-5",
+        isSay ? "border-success/20 bg-success/5" : "border-hairline bg-muted/40",
+      )}
+    >
+      <p
+        className={cn(
+          "font-mono text-[11px] uppercase tracking-[0.18em]",
+          isSay ? "text-success" : "text-muted-foreground",
+        )}
+      >
+        {isSay ? "Say this" : "Avoid"}
+      </p>
+      <p
+        className={cn(
+          "mt-2 text-[15px] leading-relaxed",
+          isSay ? "text-foreground" : "text-muted-foreground line-through decoration-muted-foreground/30",
+        )}
+      >
+        {text}
+      </p>
     </div>
   );
 }

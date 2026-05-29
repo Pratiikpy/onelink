@@ -26,6 +26,15 @@
   --warning-foreground: 0.25 0.04 70;
   --destructive: 0.55 0.2 25;
   --destructive-foreground: 0.985 0.002 95;
+
+  /* v2 brand — one confident blue (Stripe/Mercury fintech) for key money
+     actions, links, and highlights. Base palette stays warm-white + ink. */
+  --brand: #1E50E5;
+  --brand-hover: #1A47CC;
+  --brand-tint: #EDF1FE;
+  --brand-text: #1742C4;
+  --usdc: #2775CA;
+
   --hairline-alpha: 0.07;
   --border-alpha: 0.07;
   --input-alpha: 0.12;
@@ -43,13 +52,13 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 body {
   background-color: oklch(var(--background));
   color: oklch(var(--foreground));
-  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   font-feature-settings: "ss01", "cv11", "cv05";
   line-height: 1.55;
   min-height: 100vh;
   margin: 0;
 }
-h1, h2, h3, h4 { font-family: var(--font-inter-tight), var(--font-inter), sans-serif; letter-spacing: -0.022em; line-height: 1.08; }
+h1, h2, h3, h4 { font-family: var(--font-geist-sans), sans-serif; letter-spacing: -0.022em; line-height: 1.08; }
 h1 { letter-spacing: -0.035em; }
 h2 { letter-spacing: -0.03em; }
 .font-mono, .tabular-nums { font-variant-numeric: tabular-nums; }
@@ -57,7 +66,7 @@ h2 { letter-spacing: -0.03em; }
 :focus-visible { outline: 2px solid color-mix(in oklab, oklch(var(--foreground)) 30%, transparent); outline-offset: 2px; border-radius: 6px; }
 
 @layer utilities {
-  .font-display { font-family: var(--font-inter-tight), var(--font-inter), sans-serif; }
+  .font-display { font-family: var(--font-geist-sans), sans-serif; }
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
   .card-elev { box-shadow: var(--elevation-card); }

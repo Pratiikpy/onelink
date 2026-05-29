@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 
@@ -19,6 +19,9 @@ export function MobileNavSheet({
   ctaHref?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     document.documentElement.style.overflow = open ? "hidden" : "";
@@ -33,12 +36,48 @@ export function MobileNavSheet({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Focus management: move focus into the panel on open, restore it to the
+  // hamburger trigger on close. The wasOpen guard prevents stealing focus on
+  // the initial mount (when the sheet has never been opened).
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (open) {
+      wasOpen.current = true;
+      closeRef.current?.focus();
+    } else if (wasOpen.current) {
+      triggerRef.current?.focus();
+    }
+  }, [open]);
+
+  // Focus trap: keep Tab focus cycling within the panel while open.
+  function onPanelKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== "Tab" || !panelRef.current) return;
+    const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey) {
+      if (active === first || !panelRef.current.contains(active)) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open menu"
+        aria-expanded={open}
         className="-mr-2 inline-grid h-10 w-10 place-items-center rounded-md text-foreground transition-colors hover:bg-muted md:hidden"
       >
         <Menu className="h-[18px] w-[18px]" />
@@ -56,6 +95,11 @@ export function MobileNavSheet({
           )}
         />
         <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+          onKeyDown={onPanelKeyDown}
           className={cn(
             "absolute inset-0 flex flex-col bg-background transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
             open ? "translate-y-0" : "-translate-y-2 opacity-0",
@@ -68,6 +112,7 @@ export function MobileNavSheet({
           <div className="flex h-14 items-center justify-between px-5">
             <Logo size={24} />
             <button
+              ref={closeRef}
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close menu"

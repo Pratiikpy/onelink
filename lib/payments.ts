@@ -56,18 +56,6 @@ export function receiptPath(id: string) {
   return `/receipt/${encodeURIComponent(id)}`;
 }
 
-export function shortAddress(address?: string | null) {
-  if (!address) return "Not connected";
-  return `${address.slice(0, 6)}…${address.slice(-4)}`;
-}
-
-export function statusTone(status: PaymentStatus) {
-  if (status === "paid") return "text-lime";
-  if (status === "processing") return "text-amber";
-  if (status === "failed" || status === "expired" || status === "cancelled") return "text-danger";
-  return "text-white/70";
-}
-
 const methodLabels: Record<PaymentMethod, string> = {
   "arc-direct": "Direct on Arc",
   "app-kit-bridge": "Bridged · App Kit",

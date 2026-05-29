@@ -30,11 +30,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Gateway transfer request is incomplete." }, { status: 400 });
   }
 
-  const gatewayResponse = await fetch(`${GATEWAY_API_BASE_URL}/transfer`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ burnIntent: body.burnIntent, signature: body.signature }], replacer),
-  });
+  let gatewayResponse: Response;
+  try {
+    gatewayResponse = await fetch(`${GATEWAY_API_BASE_URL}/transfer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([{ burnIntent: body.burnIntent, signature: body.signature }], replacer),
+    });
+  } catch {
+    return NextResponse.json({ error: "Gateway is unreachable." }, { status: 502 });
+  }
 
   const payload = await gatewayResponse.json().catch(async () => ({
     error: await gatewayResponse.text(),
