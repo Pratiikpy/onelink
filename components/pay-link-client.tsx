@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   useAccount,
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/onelink/logo";
 import { StatusBadge } from "@/components/onelink/status-badge";
 import { StepTimeline, type Step } from "@/components/onelink/step-timeline";
+import { BottomBar } from "@/components/onelink/bottom-bar";
 import {
   ARC_CHAIN_ID,
   ARC_FAUCET_URL,
@@ -57,6 +59,8 @@ import { formatUSDC, relativeTime, truncateAddr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type QuickRoute = "arc-direct" | "app-kit-bridge" | "unified-balance";
+type ArcStepName = "switch" | "approve" | "settle" | "verify";
+type ArcStepState = "active" | "success" | "error";
 
 const provenBridgeSource = SUPPORTED_SOURCE_CHAINS[0];
 
@@ -90,6 +94,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
   const arcClient = usePublicClient({ chainId: ARC_CHAIN_ID });
+  const router = useRouter();
 
   const [link, setLink] = useState<PaymentLink | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,6 +121,10 @@ export function PayLinkClient({ slug }: { slug: string }) {
       >
     >
   >({});
+  const [arcSteps, setArcSteps] = useState<
+    Partial<Record<ArcStepName, { state: ArcStepState; txHash?: string }>>
+  >({});
+  const [justSettled, setJustSettled] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,13 +158,18 @@ export function PayLinkClient({ slug }: { slug: string }) {
     query: { enabled: Boolean(address) },
   });
 
-  // Fire a single celebratory toast the first time a link reaches "paid".
+  // After a settlement completes THIS session, celebrate and auto-route to the
+  // receipt (the manual CTA stays as a fallback). `justSettled` gates this so it
+  // never fires when merely viewing an already-paid link.
   useEffect(() => {
-    if (link?.status !== "paid" || !link.id) return;
+    if (!justSettled || link?.status !== "paid" || !link.id) return;
     if (paidToastFiredFor.current === link.id) return;
     paidToastFiredFor.current = link.id;
     toast.success("Payment complete — receipt ready");
-  }, [link?.id, link?.status]);
+    const dest = receiptPath(link.id);
+    const t = setTimeout(() => router.push(dest), 1800);
+    return () => clearTimeout(t);
+  }, [justSettled, link?.id, link?.status, router]);
 
   const amountNumber = link ? Number(link.amountUSDC) : 0;
   const balanceNumber = usdcBalance ? Number(usdcBalance.formatted) : 0;
@@ -168,10 +182,16 @@ export function PayLinkClient({ slug }: { slug: string }) {
 
   async function settleOnArc(method: "arc-direct" | "app-kit-bridge" | "unified-balance" | "demo") {
     if (!link || !address) return;
+    const markArc = (key: ArcStepName, state: ArcStepState, txHash?: string) =>
+      setArcSteps((cur) => ({ ...cur, [key]: { state, txHash } }));
     if (HAS_CONTRACT) {
       if (!arcClient) throw new Error("Arc RPC client is not available.");
+      markArc("switch", "active");
       setActivity("Switching to Arc...");
       await switchChainAsync({ chainId: ARC_CHAIN_ID });
+      markArc("switch", "success");
+
+      markArc("approve", "active");
       setActivity("Approving Arc USDC...");
       const approveHash = await writeContractAsync({
         address: ARC_USDC_ADDRESS,
@@ -180,8 +200,13 @@ export function PayLinkClient({ slug }: { slug: string }) {
         args: [ONELINK_CONTRACT_ADDRESS, amountToUnits(link.amountUSDC)],
       });
       const approveReceipt = await arcClient.waitForTransactionReceipt({ hash: approveHash });
-      if (approveReceipt.status !== "success") throw new Error("USDC approval failed on Arc.");
+      if (approveReceipt.status !== "success") {
+        markArc("approve", "error");
+        throw new Error("USDC approval failed on Arc.");
+      }
+      markArc("approve", "success", approveHash);
 
+      markArc("settle", "active");
       setActivity("Submitting Arc settlement...");
       const payHash =
         link.settlementMode === "profile"
@@ -198,15 +223,22 @@ export function PayLinkClient({ slug }: { slug: string }) {
               args: [link.contractLinkId],
             });
       const receipt = await arcClient.waitForTransactionReceipt({ hash: payHash });
-      if (receipt.status !== "success") throw new Error("Arc settlement transaction failed.");
+      if (receipt.status !== "success") {
+        markArc("settle", "error");
+        throw new Error("Arc settlement transaction failed.");
+      }
+      markArc("settle", "success", payHash);
 
+      markArc("verify", "active");
       const paid = await confirmPaidSettlement(link.id, {
         txHash: payHash,
         payerWallet: address,
         paymentMethod: method,
         sourceChain: method === "arc-direct" ? "Arc_Testnet" : "Bridged",
       });
+      markArc("verify", "success");
       if (paid) setLink(paid);
+      setJustSettled(true);
       setActivity("Settled on Arc.");
       return;
     }
@@ -225,6 +257,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
       sourceChain: "Arc_Testnet demo",
     });
     if (paid) setLink(paid);
+    setJustSettled(true);
   }
 
   async function pay() {
@@ -232,6 +265,8 @@ export function PayLinkClient({ slug }: { slug: string }) {
     setActivity("");
     setBridgeSteps({});
     setGatewaySteps({});
+    setArcSteps({});
+    setJustSettled(false);
     if (!isConnected || !address) return;
     if (!link) return;
     if (isExpired) {
@@ -463,6 +498,72 @@ export function PayLinkClient({ slug }: { slug: string }) {
     };
   });
 
+  const arcTimeline: Step[] = (
+    ["switch", "approve", "settle", "verify"] as ArcStepName[]
+  ).map((k) => {
+    const meta = arcSteps[k];
+    const state = meta?.state ?? "pending";
+    return {
+      key: k,
+      label:
+        k === "switch"
+          ? "Switch to Arc Testnet"
+          : k === "approve"
+          ? "Approve Arc USDC"
+          : k === "settle"
+          ? "Settle on Arc"
+          : "Server-verify receipt",
+      detail:
+        k === "switch"
+          ? `Wallet network → Arc · chain ${ARC_CHAIN_ID}`
+          : k === "approve"
+          ? "ERC-20 allowance for OneLinkCollect"
+          : k === "settle"
+          ? "payLink / payRecipient settles on Arc"
+          : "Matched to the on-chain PaymentCompleted event",
+      hash: meta?.txHash,
+      status:
+        state === "success"
+          ? "done"
+          : state === "active"
+          ? "active"
+          : state === "error"
+          ? "failed"
+          : "pending",
+    };
+  });
+
+  // Single source for the primary action so the desktop inline button and the
+  // mobile sticky BottomBar never drift.
+  const renderAction = () =>
+    !isConnected ? (
+      <ConnectButton.Custom>
+        {({ openConnectModal }) => (
+          <Button onClick={openConnectModal} size="lg" className="w-full">
+            <Wallet className="h-4 w-4" /> Connect wallet
+          </Button>
+        )}
+      </ConnectButton.Custom>
+    ) : (
+      <Button
+        onClick={pay}
+        size="lg"
+        className="w-full"
+        loading={busy}
+        disabled={
+          isClosed ||
+          (route === "arc-direct" && !!usdcBalance && missingDirect > 0)
+        }
+      >
+        {route === "arc-direct"
+          ? `Pay ${formatUSDC(link.amountUSDC)} USDC on Arc`
+          : route === "app-kit-bridge"
+          ? "Bridge & pay"
+          : "Pay with unified balance"}
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    );
+
   return (
     <div className="min-h-screen bg-background page-in">
       <header className="border-b border-hairline">
@@ -477,7 +578,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-md px-6 py-14">
+      <main className={cn("mx-auto max-w-md px-6 pt-14 pb-14", !isClosed && "pb-28 md:pb-14")}>
         <div className="mb-7 flex items-center gap-3 text-sm">
           <span
             className="grid h-10 w-10 place-items-center rounded-full text-background font-display text-sm font-semibold"
@@ -536,6 +637,11 @@ export function PayLinkClient({ slug }: { slug: string }) {
                     View receipt <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
+                {justSettled && (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Taking you to your receipt…
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -643,41 +749,26 @@ export function PayLinkClient({ slug }: { slug: string }) {
               {activity && <p className="mt-4 text-xs text-success">{activity}</p>}
               {error && <p className="mt-4 text-xs text-destructive">{error}</p>}
 
-              {/* Action */}
-              <div className="mt-5">
-                {!isConnected ? (
-                  <ConnectButton.Custom>
-                    {({ openConnectModal }) => (
-                      <Button onClick={openConnectModal} size="lg" className="w-full">
-                        <Wallet className="h-4 w-4" /> Connect wallet
-                      </Button>
-                    )}
-                  </ConnectButton.Custom>
-                ) : (
-                  <Button
-                    onClick={pay}
-                    size="lg"
-                    className="w-full"
-                    loading={busy}
-                    disabled={
-                      isClosed ||
-                      (route === "arc-direct" && !!usdcBalance && missingDirect > 0)
-                    }
-                  >
-                    {route === "arc-direct"
-                      ? `Pay ${formatUSDC(link.amountUSDC)} USDC on Arc`
-                      : route === "app-kit-bridge"
-                      ? "Bridge & pay"
-                      : "Pay with unified balance"}
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+              {/* Action — inline on desktop; mobile uses the sticky BottomBar */}
+              <div className="mt-5 hidden md:block">{renderAction()}</div>
             </>
           )}
         </div>
 
         {/* Live timelines */}
+        {!isClosed &&
+          HAS_CONTRACT &&
+          route === "arc-direct" &&
+          (busy || Object.keys(arcSteps).length > 0) && (
+            <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                Arc settlement timeline
+              </p>
+              <div className="mt-5">
+                <StepTimeline steps={arcTimeline} />
+              </div>
+            </div>
+          )}
         {!isClosed &&
           route === "app-kit-bridge" &&
           (busy || Object.keys(bridgeSteps).length > 0) && (
@@ -736,6 +827,8 @@ export function PayLinkClient({ slug }: { slug: string }) {
           Verification scope and testnet boundaries →
         </Link>
       </main>
+
+      {!isClosed && <BottomBar>{renderAction()}</BottomBar>}
     </div>
   );
 }
