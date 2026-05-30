@@ -24,7 +24,6 @@ import {
   ARC_CHAIN_ID,
   ARC_FAUCET_URL,
   ARC_USDC_ADDRESS,
-  getSourceChain,
   SUPPORTED_SOURCE_CHAINS,
 } from "@/lib/arc";
 import {
@@ -290,9 +289,10 @@ export function PayLinkClient({ slug }: { slug: string }) {
         await settleOnArc("arc-direct");
       } else if (route === "app-kit-bridge") {
         if (!connector) throw new Error("Wallet connector missing.");
-        const source = getSourceChain(chainId);
-        if (!source) {
-          throw new Error("Select a supported testnet source chain. Base Sepolia is the verified bridge route.");
+        const source = provenBridgeSource;
+        if (chainId !== source.id) {
+          setActivity(`Switching to ${source.label}...`);
+          await switchChainAsync({ chainId: source.id });
         }
         const processing = await updatePaymentStatus(link.id, "processing", {
           payerWallet: address,
@@ -301,19 +301,19 @@ export function PayLinkClient({ slug }: { slug: string }) {
         });
         if (processing) setLink(processing);
         setActivity(`Bridging USDC from ${source.label} to Arc...`);
-        await bridgeUsdcToArc({
-          connector,
-          source,
-          amount: link.amountUSDC,
-          recipient: address,
+                await bridgeUsdcToArc({
+                  connector,
+                  source,
+                  amount: link.amountUSDC,
+                  recipient: address,
           onStep: (u) =>
             setBridgeSteps((cur) => ({
               ...cur,
               [u.step]: { state: u.state, txHash: u.txHash, explorerUrl: u.explorerUrl, error: u.error },
             })),
-        });
-        await settleOnArc("app-kit-bridge");
-      } else if (route === "unified-balance") {
+                });
+                await settleOnArc("app-kit-bridge");
+              } else if (route === "unified-balance") {
         if (!connector) throw new Error("Wallet connector missing.");
         const processing = await updatePaymentStatus(link.id, "processing", {
           payerWallet: address,
@@ -340,7 +340,12 @@ export function PayLinkClient({ slug }: { slug: string }) {
         const failed = await updatePaymentStatus(link.id, "failed", {
           payerWallet: address,
           paymentMethod: route,
-          sourceChain: route === "unified-balance" ? "Gateway_Unified_Testnet" : getSourceChain(chainId)?.appKitName,
+          sourceChain:
+            route === "unified-balance"
+              ? "Gateway_Unified_Testnet"
+              : route === "app-kit-bridge"
+              ? provenBridgeSource.appKitName
+              : "Arc_Testnet",
         });
         if (failed) setLink(failed);
       }
@@ -713,7 +718,7 @@ export function PayLinkClient({ slug }: { slug: string }) {
                         ? "Wallet on Arc Testnet"
                         : "Wallet will switch to Arc Testnet"
                       : route === "app-kit-bridge"
-                      ? `Source: ${getSourceChain(chainId)?.label ?? "switch to Base Sepolia"}`
+                      ? `Source: ${provenBridgeSource.label} (verified bridge route)`
                       : "Gateway: any deposited source"
                   }
                 />
