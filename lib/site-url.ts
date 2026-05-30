@@ -7,7 +7,7 @@
  * and to localhost in dev.
  */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.NEXT_PUBLIC_APP_URL?.trim() || undefined) ??
   (process.env.VERCEL_ENV === "production"
     ? "https://onelink-mauve-nu.vercel.app"
     : process.env.VERCEL_URL
