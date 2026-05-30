@@ -216,13 +216,34 @@ export async function bridgeUsdcToArc({
 
   const bridgeParams: AppKitBridgeParams = {
     from: { adapter, chain: source.appKitName },
-    to: { adapter, chain: "Arc_Testnet", recipientAddress: recipient },
+    // Route the Arc mint through Circle's Forwarding Service (Orbit relayer).
+    // With a single browser-wallet adapter, App Kit would otherwise have to
+    // switch the wallet from the source chain to Arc mid-bridge to submit the
+    // mint — browser wallets frequently stall on that mid-flow switch, leaving
+    // the transfer in `pending` (burn done, mint never lands). A forwarder-only
+    // destination lets the relayer fetch the attestation and submit the mint to
+    // `recipient` on Arc, so the wallet only ever signs on the source chain and
+    // the bridge resolves to `success`. Relay fee is deducted from minted USDC.
+    to: { chain: "Arc_Testnet", recipientAddress: recipient, useForwarder: true },
     amount,
   };
   const result: AppKitBridgeResult = await kit.bridge(bridgeParams);
 
   if (result.state !== "success") {
-    throw new Error("Circle CCTP bridge did not complete. Retry the payment route.");
+    const failedStep = result.steps.find((step) => step.state === "error");
+    const burnDone = result.steps.some(
+      (step) => step.name?.toLowerCase().includes("burn") && step.state === "success",
+    );
+    console.error("[onelink] bridge incomplete:", result.state, result.steps);
+    // Burn already succeeded (or still pending) → funds are in flight, not lost.
+    if (result.state === "pending" || burnDone) {
+      throw new Error(
+        "CCTP burn went through but the Arc mint is still finishing. Your USDC is in flight — wait a few seconds, then retry the payment.",
+      );
+    }
+    throw new Error(
+      failedStep?.errorMessage || "Circle CCTP bridge did not complete. Retry the payment route.",
+    );
   }
 
   return result;

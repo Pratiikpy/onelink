@@ -63,6 +63,36 @@ type ArcStepState = "active" | "success" | "error";
 
 const provenBridgeSource = SUPPORTED_SOURCE_CHAINS[0];
 
+// After a forwarded CCTP bridge reports success, poll the payer's Arc USDC
+// balance until it covers `needed` before settling. The forwarder confirms via
+// IRIS, which can precede on-chain spendability by a few seconds; this bounded
+// wait removes the race without blocking forever. Resolves either way — if the
+// balance never arrives, settlement will surface its own precise error.
+async function waitForArcUsdc(
+  client: ReturnType<typeof usePublicClient>,
+  owner: `0x${string}`,
+  needed: bigint,
+  setActivity: (s: string) => void,
+  { tries = 25, intervalMs = 3000 }: { tries?: number; intervalMs?: number } = {},
+) {
+  if (!client) return;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const balance = (await client.readContract({
+        address: ARC_USDC_ADDRESS,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [owner],
+      })) as bigint;
+      if (balance >= needed) return;
+    } catch {
+      // transient RPC hiccup — keep polling
+    }
+    setActivity("Waiting for bridged USDC to land on Arc...");
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+}
+
 const availableRoutes: QuickRoute[] = ENABLE_GATEWAY_ROUTE
   ? ["arc-direct", "app-kit-bridge", "unified-balance"]
   : ["arc-direct", "app-kit-bridge"];
@@ -301,19 +331,24 @@ export function PayLinkClient({ slug }: { slug: string }) {
         });
         if (processing) setLink(processing);
         setActivity(`Bridging USDC from ${source.label} to Arc...`);
-                await bridgeUsdcToArc({
-                  connector,
-                  source,
-                  amount: link.amountUSDC,
-                  recipient: address,
+        await bridgeUsdcToArc({
+          connector,
+          source,
+          amount: link.amountUSDC,
+          recipient: address,
           onStep: (u) =>
             setBridgeSteps((cur) => ({
               ...cur,
               [u.step]: { state: u.state, txHash: u.txHash, explorerUrl: u.explorerUrl, error: u.error },
             })),
-                });
-                await settleOnArc("app-kit-bridge");
-              } else if (route === "unified-balance") {
+        });
+        // The forwarder reports success when Circle's relayer confirms the mint,
+        // which can land a beat before the USDC is spendable on Arc. Wait for the
+        // payer's Arc balance to cover the amount (bounded) so the settlement
+        // approve/payLink can't fail with "insufficient balance".
+        await waitForArcUsdc(arcClient, address, amountToUnits(link.amountUSDC), setActivity);
+        await settleOnArc("app-kit-bridge");
+      } else if (route === "unified-balance") {
         if (!connector) throw new Error("Wallet connector missing.");
         const processing = await updatePaymentStatus(link.id, "processing", {
           payerWallet: address,
